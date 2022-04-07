@@ -19,6 +19,8 @@ dependencies {
     implementation("io.quarkus:quarkus-kotlin")
     implementation("io.quarkus:quarkus-mongodb-panache-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("it.skrape:skrapeit:1.2.1")
+    implementation("it.skrape:skrapeit-browser-fetcher:1.2.1")
     implementation("io.quarkus:quarkus-arc")
     testImplementation("io.quarkus:quarkus-junit5")
 }
