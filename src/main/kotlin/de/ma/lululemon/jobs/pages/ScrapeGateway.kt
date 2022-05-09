@@ -1,10 +1,13 @@
 package de.ma.lululemon.jobs.pages
 
+import de.ma.lululemon.jobs.lululemon.Page
 import it.skrape.fetcher.HttpFetcher
 import it.skrape.fetcher.response
 import it.skrape.fetcher.skrape
+import javax.enterprise.context.ApplicationScoped
 
-object ScrapeTask {
+@ApplicationScoped
+class ScrapeGateway {
 
     private val client = skrape(HttpFetcher) {
         request {
@@ -14,8 +17,9 @@ object ScrapeTask {
         }
     }
 
-    suspend fun <T> fetch(block: () -> Page<T>): T {
+     suspend fun <T> fetch(block: () -> Page<T>): T {
         val page = block.invoke()
+
         return client.apply {
             request {
                 url = page.url
@@ -25,8 +29,7 @@ object ScrapeTask {
         }
     }
 
-    suspend fun scrape(block: suspend ScrapeTask.() -> Unit) {
-        block.invoke(this)
+    suspend fun <T> scrape(block: suspend ScrapeGateway.() -> T): T {
+        return block.invoke(this)
     }
-
 }

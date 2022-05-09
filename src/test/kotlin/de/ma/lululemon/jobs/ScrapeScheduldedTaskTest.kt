@@ -7,10 +7,9 @@ import org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 
 @QuarkusTest
-class ScrapeScheduldedTaskTest {
-
-    @Inject
-    lateinit var scrapeScheduldedTask: ScrapeScheduldedTask
+class ScrapeScheduldedTaskTest(
+    private val scrapeScheduldedTask: ScrapeScheduldedTask
+) {
 
     @Test
     fun doSomething() {
