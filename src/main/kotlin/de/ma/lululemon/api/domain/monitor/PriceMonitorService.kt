@@ -1,21 +1,18 @@
 package de.ma.lululemon.api.domain.monitor
 
-import de.ma.lululemon.api.domain.product.ProductCreateDTO
-import de.ma.lululemon.api.domain.product.ProductService
 import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class PriceMonitorService(
-    private val priceMonitorOrderRepository: PriceMonitorOrderRepository,
-    private val productService: ProductService
+    private val priceMonitorOrderRepository: PriceMonitorOrderRepository
 ) {
 
-    fun createByOrder(productCreateDTO: ProductCreateDTO): PriceMonitorOrderEntity {
-        val productEntity = productService.create(productCreateDTO)
+    fun createByProduct(product: Product): PriceMonitorOrderEntity {
 
         val orderEntity = PriceMonitorOrderEntity(
-            product = productEntity
+            product = product
         )
+
         priceMonitorOrderRepository.persist(orderEntity)
         return orderEntity
     }
@@ -30,15 +27,14 @@ class PriceMonitorService(
         val prodSize = url.variable("size")
 
         //create product
-        val productCreateDTO = ProductCreateDTO(
-            prodId = prodId,
-            prodColor = prodColor,
-            prodSize = prodSize,
-            prodName = prodName
-        )
+        val product = Product()
 
+        product.prodName = prodName
+        product.prodId = prodId
+        product.prodColor = prodColor
+        product.prodSize = prodSize
         //create price monitor order
-        return createByOrder(productCreateDTO)
+        return createByProduct(product)
     }
 
     fun getAll(): List<PriceMonitorOrderEntity> {
@@ -71,5 +67,9 @@ class PriceMonitorService(
         return priceMonitorOrderRepository.findAll().list().map {
             it.toDTO()
         }
+    }
+
+    fun save(priceMonitorOrderEntity: PriceMonitorOrderEntity) {
+        priceMonitorOrderRepository.update(priceMonitorOrderEntity)
     }
 }

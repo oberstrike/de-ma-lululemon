@@ -1,17 +1,18 @@
-package de.ma.lululemon.jobs.lululemon.product
+package de.ma.lululemon.jobs.pages
 
 data class ProductPageModel(
-    val product: Product,
-)
-
-data class Product(
     val colorGroups: List<ColorGroup>,
     val sizes: List<Size>
 )
 
 data class ColorGroup(
-    val colors: List<String>,
+    val colors: List<Color>,
     val price: Float
+)
+
+data class Color(
+    val name: String,
+    val selected: Boolean
 )
 
 data class Size(

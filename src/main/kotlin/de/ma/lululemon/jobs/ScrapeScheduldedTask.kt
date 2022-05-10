@@ -1,27 +1,34 @@
 package de.ma.lululemon.jobs
 
-import de.ma.lululemon.jobs.lululemon.overview.scrapeProductOverviewByType
-import de.ma.lululemon.jobs.pages.ScrapeService
-import de.ma.lululemon.jobs.lululemon.product.scrapeProduct
+import de.ma.lululemon.api.domain.monitor.PriceMonitorService
+import de.ma.lululemon.jobs.pages.EntryService
+import io.quarkus.scheduler.Scheduled
 import kotlinx.coroutines.runBlocking
 import javax.enterprise.context.ApplicationScoped
 
 
 @ApplicationScoped
 class ScrapeScheduldedTask(
-    private val scrapeService: ScrapeService
+    private val entryService: EntryService,
+    private val priceMonitorService: PriceMonitorService
 ) {
 
-    fun getProducts() = runBlocking {}
+    @Scheduled(cron = "0 0 12 * * ?")
+    fun job(){
 
-    fun analyseProduct() = runBlocking {
+        val priceMonitorOrderEntities = priceMonitorService.getAll()
+
+        for(priceMonitorOrderEntity in priceMonitorOrderEntities){
+
+            val entry = entryService.createEntry(priceMonitorOrderEntity.product!!)
+
+            priceMonitorOrderEntity.product!!.addEntry(entry)
+            priceMonitorService.save(priceMonitorOrderEntity)
+
+        }
 
 
-    }
 
-    //@Scheduled(every = "1m", identity = "my-task")
-    fun doSomething() = runBlocking {
-        analyseProduct()
     }
 
 }
