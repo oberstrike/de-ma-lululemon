@@ -37,6 +37,10 @@ class ProductPage(private val document: Document) {
         }
     }
 
+    fun pageNotFound(): Boolean{
+        return document.select("h1[class=hero-title]").isNotEmpty()
+    }
+
     fun productPageModel(): ProductPageModel {
 
         return ProductPageModel(

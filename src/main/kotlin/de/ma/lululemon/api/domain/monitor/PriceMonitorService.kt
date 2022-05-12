@@ -1,5 +1,6 @@
 package de.ma.lululemon.api.domain.monitor
 
+import org.bson.types.ObjectId
 import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
@@ -7,7 +8,32 @@ class PriceMonitorService(
     private val priceMonitorOrderRepository: PriceMonitorOrderRepository
 ) {
 
-    fun createByProduct(product: Product): PriceMonitorOrderEntity {
+    fun createByProduct(productCreateDTO: ProductCreateDTO): PriceMonitorOrderEntity {
+        val product = productCreateDTO.toProduct()
+
+        val exists = priceMonitorOrderRepository.find(
+            "product.name = ?1 " +
+                    ", product.id = ?2 " +
+                    ", product.size = ?3 " +
+                    ", product.color = ?4",
+
+            product.name,
+            product.id,
+            product.size,
+            product.color
+        ).firstResult() != null
+
+        if (exists) {
+            throw IllegalArgumentException("Product already exists")
+        }
+
+        product.url = createUrl(
+            product.name,
+            product.id,
+            product.size,
+            product.color
+        )
+
 
         val orderEntity = PriceMonitorOrderEntity(
             product = product
@@ -23,16 +49,17 @@ class PriceMonitorService(
         //splitt url into parts
         val prodName = url.split("/")[5]
         val prodId = url.between("/", ".html")
-        val prodColor = url.variable("color")
-        val prodSize = url.variable("size")
+        val prodColor = url.variable("color")!!
+        val prodSize = url.variable("size") ?: "M"
 
         //create product
-        val product = Product()
+        val product = ProductCreateDTO(
+            prodId = prodId,
+            prodColor = prodColor,
+            prodSize = prodSize,
+            prodName = prodName
+        )
 
-        product.prodName = prodName
-        product.prodId = prodId
-        product.prodColor = prodColor
-        product.prodSize = prodSize
         //create price monitor order
         return createByProduct(product)
     }
@@ -42,9 +69,9 @@ class PriceMonitorService(
     }
 
 
-    fun String.variable(varName: String): String {
+    fun String.variable(varName: String): String? {
         if (!contains(varName)) {
-            return ""
+            return null
         }
 
         val index = indexOf(varName)
@@ -72,4 +99,19 @@ class PriceMonitorService(
     fun save(priceMonitorOrderEntity: PriceMonitorOrderEntity) {
         priceMonitorOrderRepository.update(priceMonitorOrderEntity)
     }
+
+    private val baseUrl: String = "https://www.lululemon.de/de-de/p/%s/%s.html?dwvar_%s_size=%s&_color=%s"
+
+    private fun createUrl(productName: String, productId: String, prodSize: String, productColor: String): String {
+        return baseUrl.format(productName, productId, productId, prodSize, productColor)
+    }
+
+    fun deleteById(id: String) {
+        val objectId = ObjectId(id)
+
+        priceMonitorOrderRepository.findById(objectId) ?: throw IllegalArgumentException("Order with id $id not found")
+
+        priceMonitorOrderRepository.deleteById(objectId)
+    }
+
 }

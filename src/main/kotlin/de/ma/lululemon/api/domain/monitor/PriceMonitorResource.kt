@@ -16,8 +16,13 @@ class PriceMonitorResource(
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    fun create(product: Product) = priceMonitorService.createByProduct(product)
+    fun create(productCreateDTO: ProductCreateDTO) = priceMonitorService.createByProduct(productCreateDTO)
 
+    @DELETE
+    @Path("/{id}")
+    fun deleteById(@PathParam("id") id: String) {
+        priceMonitorService.deleteById(id)
+    }
 
     @GET
     fun getAllOrders() = priceMonitorService.getAllOrders()

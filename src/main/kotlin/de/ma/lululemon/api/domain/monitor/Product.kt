@@ -1,17 +1,19 @@
 package de.ma.lululemon.api.domain.monitor
 
-import de.ma.lululemon.jobs.pages.Entry
+import de.ma.lululemon.api.domain.entry.Entry
 
 
 class Product{
 
-    lateinit var prodId: String
+    lateinit var id: String
 
-    lateinit var prodColor: String
+    lateinit var color: String
 
-    lateinit var prodSize: String
+    lateinit var size: String
 
-    lateinit var prodName: String
+    lateinit var name: String
+
+    lateinit var url: String
 
     var entries: MutableSet<Entry> = mutableSetOf()
 

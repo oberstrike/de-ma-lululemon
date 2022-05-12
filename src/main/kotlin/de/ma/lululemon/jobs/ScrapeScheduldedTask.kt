@@ -13,6 +13,8 @@ class ScrapeScheduldedTask(
     private val priceMonitorService: PriceMonitorService
 ) {
 
+    fun error() : Nothing = throw Exception("Error")
+
     @Scheduled(cron = "0 0 12 * * ?")
     fun job(){
 
@@ -20,7 +22,7 @@ class ScrapeScheduldedTask(
 
         for(priceMonitorOrderEntity in priceMonitorOrderEntities){
 
-            val entry = entryService.createEntry(priceMonitorOrderEntity.product!!)
+            val entry = entryService.createEntry(priceMonitorOrderEntity.product!!) ?: error()
 
             priceMonitorOrderEntity.product!!.addEntry(entry)
             priceMonitorService.save(priceMonitorOrderEntity)

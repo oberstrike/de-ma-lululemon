@@ -1,4 +1,4 @@
-package de.ma.lululemon.jobs.pages
+package de.ma.lululemon.api.domain.entry
 
 import java.time.LocalDateTime
 
