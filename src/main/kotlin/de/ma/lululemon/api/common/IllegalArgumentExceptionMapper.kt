@@ -9,6 +9,10 @@ import javax.ws.rs.ext.Provider
 class IllegalArgumentExceptionMapper : ExceptionMapper<IllegalArgumentException> {
 
     override fun toResponse(exception: IllegalArgumentException?): Response {
-        return Response.status(Response.Status.BAD_REQUEST).entity(exception.toString()).build()
+        return Response.status(Response.Status.BAD_REQUEST).entity(CustomException(
+            "IllegalArgumentException",
+            Response.Status.BAD_REQUEST.statusCode,
+            exception?.message
+        )).build()
     }
 }

@@ -6,5 +6,7 @@ class Entry{
     var price: Float = 0.0f
 
     var timestamp: LocalDateTime = LocalDateTime.now()
+
+    var available: Boolean = false
 }
 

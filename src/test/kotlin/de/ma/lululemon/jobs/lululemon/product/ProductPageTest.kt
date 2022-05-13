@@ -1,6 +1,6 @@
 package de.ma.lululemon.jobs.lululemon.product
 
-import de.ma.lululemon.jobs.pages.ProductPage
+import de.ma.lululemon.jobs.pages.lululemon.LululemonProductPage
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Test
 
@@ -11,9 +11,9 @@ class ProductPageTest {
         val document = Jsoup.connect("https://www.lululemon.de/de-de/p/always-in-motion-boxers-5er-pack/prod9660102.html?dwvar_prod9660102_color=54688")
             .get()
 
-        val productPage = ProductPage(document)
+        val lululemonProductPage = LululemonProductPage(document)
 
-        val productPageModel = productPage.productPageModel()
+        val productPageModel = lululemonProductPage.productPageModel()
 
         println(productPageModel)
 

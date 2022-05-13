@@ -9,5 +9,12 @@ import java.time.LocalDateTime
 data class PriceMonitorOrderEntity(
     var product: Product? = null,
     var searchCount: Long = 0,
-    var startDateTime: LocalDateTime = LocalDateTime.now()
-) : PanacheMongoEntity()
+    var startDateTime: LocalDateTime = LocalDateTime.now(),
+    var shopName: String = ""
+) : PanacheMongoEntity() {
+
+
+    fun increaseSearchCount() {
+        this.searchCount++
+    }
+}

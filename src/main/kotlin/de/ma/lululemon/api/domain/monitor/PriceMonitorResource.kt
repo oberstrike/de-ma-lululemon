@@ -11,12 +11,12 @@ class PriceMonitorResource(
     @Path("/url")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    fun createWithUrl(@FormParam("url") url: String) = priceMonitorService.createByUrl(url)
+    fun createWithUrl(@FormParam("url") url: String) = priceMonitorService.createByUrl(url).toDTO()
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    fun create(productCreateDTO: ProductCreateDTO) = priceMonitorService.createByProduct(productCreateDTO)
+    fun create(priceMonitorCreate: PriceMonitorCreate) = priceMonitorService.create(priceMonitorCreate).toDTO()
 
     @DELETE
     @Path("/{id}")

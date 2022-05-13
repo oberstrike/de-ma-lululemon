@@ -8,8 +8,9 @@ class PriceMonitorService(
     private val priceMonitorOrderRepository: PriceMonitorOrderRepository
 ) {
 
-    fun createByProduct(productCreateDTO: ProductCreateDTO): PriceMonitorOrderEntity {
-        val product = productCreateDTO.toProduct()
+    fun create(priceMonitorCreate: PriceMonitorCreate): PriceMonitorOrderEntity {
+
+        val product = priceMonitorCreate.product.toProduct()
 
         val exists = priceMonitorOrderRepository.find(
             "product.name = ?1 " +
@@ -27,16 +28,11 @@ class PriceMonitorService(
             throw IllegalArgumentException("Product already exists")
         }
 
-        product.url = createUrl(
-            product.name,
-            product.id,
-            product.size,
-            product.color
-        )
-
+        product.url = createUrl(product)
 
         val orderEntity = PriceMonitorOrderEntity(
-            product = product
+            product = product,
+            shopName = priceMonitorCreate.shopName
         )
 
         priceMonitorOrderRepository.persist(orderEntity)
@@ -49,19 +45,29 @@ class PriceMonitorService(
         //splitt url into parts
         val prodName = url.split("/")[5]
         val prodId = url.between("/", ".html")
-        val prodColor = url.variable("color")!!
-        val prodSize = url.variable("size") ?: "M"
+
+        val prodColor = url.variable("color") ?: throw IllegalArgumentException("No color found")
+        val prodSize = url.variable("size") ?: throw IllegalArgumentException("No size found")
+
+        val regex = Regex("^(?:https?:\\/\\/)?(?:[^@\\/\\n]+@)?(?:www\\.)?([^:\\/?\\n]+)")
+
+        val shopName = regex.find(url)?.groups?.last()?.value ?: throw IllegalArgumentException("Invalid URL")
 
         //create product
-        val product = ProductCreateDTO(
-            prodId = prodId,
-            prodColor = prodColor,
-            prodSize = prodSize,
-            prodName = prodName
+        val productCreate = ProductCreate(
+            id = prodId,
+            color = prodColor,
+            size = prodSize,
+            name = prodName
+        )
+
+        val priceMonitorCreate = PriceMonitorCreate(
+            product = productCreate,
+            shopName = shopName
         )
 
         //create price monitor order
-        return createByProduct(product)
+        return create(priceMonitorCreate)
     }
 
     fun getAll(): List<PriceMonitorOrderEntity> {
@@ -102,8 +108,8 @@ class PriceMonitorService(
 
     private val baseUrl: String = "https://www.lululemon.de/de-de/p/%s/%s.html?dwvar_%s_size=%s&_color=%s"
 
-    private fun createUrl(productName: String, productId: String, prodSize: String, productColor: String): String {
-        return baseUrl.format(productName, productId, productId, prodSize, productColor)
+    private fun createUrl(product: Product): String {
+        return baseUrl.format(product.name, product.id, product.id, product.size, product.color)
     }
 
     fun deleteById(id: String) {
