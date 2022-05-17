@@ -26,8 +26,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("io.quarkus:quarkus-arc")
 
-    //implementation("it.skrape:skrapeit:1.2.1")
-    //implementation("it.skrape:skrapeit-http-fetcher:1.2.1")
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("io.quarkus:quarkus-smallrye-openapi")
 

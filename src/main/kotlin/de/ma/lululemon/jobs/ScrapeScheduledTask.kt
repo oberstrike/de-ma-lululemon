@@ -1,37 +1,40 @@
 package de.ma.lululemon.jobs
 
+import de.ma.lululemon.jobs.pages.common.IShopService
 import de.ma.lululemon.api.domain.monitor.PriceMonitorService
-import de.ma.lululemon.api.domain.entry.EntryService
+import de.ma.lululemon.api.domain.monitor.product.toDTO
 import io.quarkus.scheduler.Scheduled
 import javax.enterprise.context.ApplicationScoped
+import javax.enterprise.inject.Instance
 
 
 @ApplicationScoped
 class ScrapeScheduledTask(
-    private val entryService: EntryService,
+    private val shopServices: Instance<IShopService>,
     private val priceMonitorService: PriceMonitorService
 ) {
-
-    fun error(): Nothing = throw Exception("Error")
 
     @Scheduled(cron = "0 0 12 * * ?")
     fun job() {
 
         val priceMonitorOrderEntities = priceMonitorService.getAll()
 
+        for (orderEntity in priceMonitorOrderEntities) {
 
+            val shopType = orderEntity.shopType
+            val shopService = shopServices.firstOrNull { it.isShop(shopType) }?:
+                throw IllegalArgumentException("Shop not found: $shopType")
 
-        for (priceMonitorOrderEntity in priceMonitorOrderEntities) {
+            val state = shopService.getCurrentStateOfProduct(
+                orderEntity.product.toDTO()
+            ) ?: throw IllegalArgumentException("There was an problem updating ${orderEntity.id.toString()}")
 
-            val entry = entryService.createEntry(
-                priceMonitorOrderEntity.product!!,
-                priceMonitorOrderEntity.shopName
-            ) ?: error()
+            orderEntity.apply {
+                this.product.addState(state)
+                this.increaseSearchCount()
+            }
 
-            priceMonitorOrderEntity.product!!.addEntry(entry)
-            priceMonitorOrderEntity.increaseSearchCount()
-
-            priceMonitorService.save(priceMonitorOrderEntity)
+            priceMonitorService.save(orderEntity)
 
         }
 

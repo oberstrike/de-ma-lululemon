@@ -12,8 +12,6 @@ class ScrapeScheduldedTaskTest(
 
     @Test
     fun job() {
-        priceMonitorService.createByUrl("https://www.lululemon.de/en-de/p/abc-jogger/prod8530240.html?dwvar_prod8530240_size=M&_color=32476")
-
         scrapeScheduledTask.job()
     }
 }

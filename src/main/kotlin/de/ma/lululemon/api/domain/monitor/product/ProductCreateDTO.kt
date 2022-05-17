@@ -1,13 +1,14 @@
-package de.ma.lululemon.api.domain.monitor
+package de.ma.lululemon.api.domain.monitor.product
 
-data class ProductCreate(
+data class ProductCreateDTO(
     val id: String,
     val color: String,
     val size: String,
     val name: String
 )
 
-fun ProductCreate.toProduct(): Product {
+
+fun ProductCreateDTO.toProduct(): Product {
     val product = Product()
     product.id = this.id
     product.color = this.color

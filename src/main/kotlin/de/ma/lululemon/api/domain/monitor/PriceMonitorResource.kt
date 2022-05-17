@@ -8,11 +8,6 @@ class PriceMonitorResource(
     val priceMonitorService: PriceMonitorService
 ) {
 
-    @Path("/url")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    fun createWithUrl(@FormParam("url") url: String) = priceMonitorService.createByUrl(url).toDTO()
-
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -23,6 +18,11 @@ class PriceMonitorResource(
     fun deleteById(@PathParam("id") id: String) {
         priceMonitorService.deleteById(id)
     }
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun getById(@PathParam("id") id: String) = priceMonitorService.getById(id).toDTO()
 
     @GET
     fun getAllOrders() = priceMonitorService.getAllOrders()

@@ -1,5 +1,6 @@
 package de.ma.lululemon.api.domain.monitor
 
+import de.ma.lululemon.api.domain.monitor.product.Product
 import java.time.LocalDateTime
 
 data class PriceMonitorOrderDTO(
@@ -12,7 +13,7 @@ data class PriceMonitorOrderDTO(
 fun PriceMonitorOrderEntity.toDTO(): PriceMonitorOrderDTO {
     return PriceMonitorOrderDTO(
         id = id!!.toHexString(),
-        product = product!!,
+        product = product,
         searchCount = this.searchCount,
         startDateTime = this.startDateTime
     )

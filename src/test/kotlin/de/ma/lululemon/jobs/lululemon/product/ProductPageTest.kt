@@ -8,14 +8,16 @@ class ProductPageTest {
 
     @Test
     fun colorGroups() {
-        val document = Jsoup.connect("https://www.lululemon.de/de-de/p/always-in-motion-boxers-5er-pack/prod9660102.html?dwvar_prod9660102_color=54688")
+        val document = Jsoup.connect("https://www.lululemon.de/de-de/p/always-in-motion-boxers-5er-pack/prod9660102.html?dwvar_prod9660102_color=56467")
             .get()
 
         val lululemonProductPage = LululemonProductPage(document)
 
-        val productPageModel = lululemonProductPage.productPageModel()
+        val price = lululemonProductPage.price()
+        val size = lululemonProductPage.size("M")
 
-        println(productPageModel)
+        println(price)
+        println(size)
 
     }
 }
