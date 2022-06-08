@@ -1,0 +1,25 @@
+[versions]
+kotlin = "1.6.0"
+jnanoid = "2.0.0"
+junitJupiterVersion = "5.4.2"
+kluentVersion = "1.68"
+kotlinFakerVersion = "1.9.0"
+mockkVersion = "1.12.1"
+kotlinCoroutinesVersion = "1.6.0"
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.18.0" }
+
+[libraries]
+kotlin-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+junit5Jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junitJupiterVersion" }
+junit5JupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junitJupiterVersion" }
+junit5JupiterParams = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junitJupiterVersion" }
+junit5JupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junitJupiterVersion" }
+kluent = { module = "org.amshove.kluent:kluent", version.ref = "kluentVersion" }
+jnanoid = {module = "com.aventrix.jnanoid:jnanoid", version.ref = "jnanoid"}
+kotlin-faker = {module = "io.github.serpro69:kotlin-faker", version.ref = "kotlinFakerVersion"}
+mockk = {module = "io.mockk:mockk", version.ref = "mockkVersion"}
+kotlinCoroutines = {module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinCoroutinesVersion"}
+kotlinCoroutinesTest = {module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinCoroutinesVersion"}

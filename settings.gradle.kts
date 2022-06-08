@@ -1,15 +1,19 @@
+rootProject.name = "pricetracker"
+
 pluginManagement {
     val quarkusPluginVersion: String by settings
     val quarkusPluginId: String by settings
-
     repositories {
-        mavenLocal()
         mavenCentral()
+        mavenLocal()
         gradlePluginPortal()
     }
-
     plugins {
         id(quarkusPluginId) version quarkusPluginVersion
+        id("org.kordamp.gradle.jandex") version "0.11.0"
     }
 }
-rootProject.name="de-ma-lululemon"
+
+include(":application", ":infrastructure", ":domain")
+
+enableFeaturePreview("VERSION_CATALOGS")
