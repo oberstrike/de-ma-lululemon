@@ -1,10 +1,12 @@
 package de.ma.tracker.domain.product.entity
 
 import de.ma.tracker.domain.base.IBaseEntity
-import de.ma.tracker.domain.product.vo.UrlVO
+import de.ma.tracker.domain.product.vo.ShopType
 
 
 interface Product : IBaseEntity {
+
+    var pId: String?
 
     var color: String
 
@@ -12,9 +14,14 @@ interface Product : IBaseEntity {
 
     var name: String
 
-    var url: UrlVO
+    var shop: ShopType
 
     var version: Long
 
-    val states: Set<State>
+    var states: MutableSet<State>
+
+    fun addState(state: State)
+
+    fun removeStates()
+
 }

@@ -1,6 +1,8 @@
 package de.ma.tracker.domain.product.entity
 
-interface TrackOrder {
+import de.ma.tracker.domain.base.IBaseEntity
+
+interface TrackOrder : IBaseEntity {
 
     var target: Product
 

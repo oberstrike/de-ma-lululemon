@@ -22,18 +22,10 @@ repositories {
 dependencies {
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
     implementation("io.quarkus:quarkus-kotlin")
-
-    implementation("com.vladmihalcea:hibernate-types-55:2.16.2")
-
-    implementation("io.quarkus:quarkus-liquibase")
-    implementation("io.quarkus:quarkus-jdbc-postgresql")
-    implementation("io.quarkus:quarkus-hibernate-validator")
-    implementation("io.quarkus:quarkus-hibernate-reactive-panache")
-    implementation("io.quarkus:quarkus-reactive-pg-client")
-    implementation("io.quarkus:quarkus-smallrye-reactive-messaging-kafka")
+    implementation("org.jetbrains.kotlin:kotlin-noarg:1.6.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("io.quarkus:quarkus-arc")
-    implementation("io.quarkus:quarkus-jackson")
+
+    api(project ("::domain"))
 
     testImplementation("io.quarkus:quarkus-junit5")
     testImplementation("io.rest-assured:rest-assured")
