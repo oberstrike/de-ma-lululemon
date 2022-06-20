@@ -1,6 +1,7 @@
 package de.ma.tracker.domain.base
 
-interface IBaseEntity {
+import java.util.UUID
 
-    var id: Long?
+interface IBaseEntity {
+    var id: UUID?
 }

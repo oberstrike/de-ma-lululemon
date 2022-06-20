@@ -14,6 +14,6 @@ pluginManagement {
     }
 }
 
-include(":application", ":infrastructure", ":domain")
+include(":api", ":app", ":domain", ":impl")
 
 enableFeaturePreview("VERSION_CATALOGS")
