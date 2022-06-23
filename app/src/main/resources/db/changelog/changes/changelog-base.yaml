@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - logicalFilePath: /changes/base
+  - changeSet:
+      id: base-migration
+      author: markus
+      changes:
+        - createTable:
+            tableName: product
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: pid
+                  type: varchar(255)
+              - column:
+                  name: color
+                  type: varchar(255)
+              - column:
+                  name: name
+                  type: varchar(255)
+              - column:
+                  name: size
+                  type: varchar(255)
+              - column:
+                  name: version
+                  type: bigint
+        - createTable:
+            tableName: state
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: price
+                  type: bigint
+              - column:
+                  name: product_id
+                  type: uuid
+                  constraints:
+                    foreignKeyName: state_product_id_fk
+                    references: product(id)
+                    deleteCascade: false

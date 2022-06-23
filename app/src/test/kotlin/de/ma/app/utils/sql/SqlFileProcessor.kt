@@ -13,42 +13,24 @@ object SqlFileProcessor {
     suspend fun processTargetFile(targetFile: String) = withContext(Dispatchers.IO) {
         println("Processing file: $targetFile")
 
-        val mutinySessionFactory = sessionFactory()
+        val sessionFactory = sessionFactory()
 
-        val inputStream =
-            this::class.java.getResource(targetFile)?.openStream() ?: throw FileNotFoundException(
-                "File not found: $targetFile"
-            )
+        val inputStream = this::class.java.getResource(targetFile)?.openStream() ?: throw FileNotFoundException(
+            "File not found: $targetFile"
+        )
 
-        val bufferedReader = BufferedReader(InputStreamReader(inputStream))
+        val bufferedReader = SQLReader(BufferedReader(InputStreamReader(inputStream)))
 
-        var nextCommand = ""
-        var isDo = false
+        val queries = bufferedReader.readQueries()
 
-        bufferedReader.forEachLineAsync { line ->
-            if (line.startsWith("--")) {
-                return@forEachLineAsync
-
-            }
-            nextCommand += line
-
-            if( isDo &&  !line.startsWith("END \$\$;")) {
-                return@forEachLineAsync
-            }
-
-            if(line.startsWith("DO")) {
-                isDo = true
-                return@forEachLineAsync
-            }
-
-            if (line.endsWith(";") || line.endsWith("END \$\$;")) {
-                mutinySessionFactory.openSession().use { session ->
-                    session.createNativeQuery(nextCommand).executeUpdate()
-                }
-                isDo = false
-                nextCommand = ""
+        queries.forEach {
+            sessionFactory.openSession().use { session ->
+                val transaction = session.beginTransaction()
+                session.createNativeQuery(it).executeUpdate()
+                transaction.commit()
             }
         }
+
         println("Processed file: $targetFile")
     }
 
@@ -60,12 +42,7 @@ object SqlFileProcessor {
         }
     }
 
-    private suspend fun BufferedReader.forEachLineAsync(action: suspend (String) -> Unit) {
-        forEachLine {
-            runBlocking {
-                action(it)
-            }
-        }
-    }
+
+
 
 }

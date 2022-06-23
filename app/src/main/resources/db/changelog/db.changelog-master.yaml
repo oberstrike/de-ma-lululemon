@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+  - property:
+      name: uuid_function
+      value: gen_random_uuid
+      dbms: postgresql
+  - include:
+      file: classpath:/db/changelog/changes/changelog-base.yaml

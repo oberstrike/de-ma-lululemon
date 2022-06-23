@@ -5,6 +5,7 @@ import de.ma.app.data.base.IEntityImpl
 import de.ma.app.data.state.StateEntity
 import de.ma.tracker.domain.product.Product
 import de.ma.tracker.domain.product.message.ProductShow
+import org.hibernate.Hibernate
 import javax.persistence.*
 
 @Entity(name = "product")
@@ -44,6 +45,18 @@ class ProductEntity : Product, IEntity by IEntityImpl() {
     fun removeStates() {
         this.states.clear()
     }
+
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
+        if (other is ProductEntity) {
+            return id == other.id
+        }
+        return false
+    }
+
+    override fun hashCode(): Int = id.hashCode()
 
 }
 

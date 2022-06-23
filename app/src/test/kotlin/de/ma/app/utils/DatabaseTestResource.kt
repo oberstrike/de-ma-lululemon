@@ -1,4 +1,4 @@
-package de.ma.app
+package de.ma.app.utils
 
 import com.github.dockerjava.api.model.ExposedPort
 import com.github.dockerjava.api.model.HostConfig
@@ -43,7 +43,7 @@ class DatabaseTestResource : QuarkusTestResourceLifecycleManager {
         return mapOf(
 
          //   "quarkus.datasource.jdbc.url" to db.jdbcUrl,
-            "quarkus.datasource.reactive.url" to db.jdbcUrl.replace("jdbc:", "vertx-reactive:"),
+            "quarkus.datasource.jdbc.url" to db.jdbcUrl,
             "quarkus.datasource.db-kind" to "postgresql",
             "quarkus.datasource.username" to username,
             "quarkus.datasource.password" to password,

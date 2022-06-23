@@ -40,7 +40,7 @@ dependencies {
     testImplementation("io.quarkiverse.mockk:quarkus-junit5-mockk:1.1.1")
     testImplementation("io.quarkus:quarkus-jdbc-h2")
     implementation("io.quarkus:quarkus-smallrye-openapi")
-
+    implementation("io.quarkus:quarkus-liquibase")
 
     testImplementation(libs.junit5Jupiter)
     testImplementation(libs.junit5JupiterApi)

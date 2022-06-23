@@ -9,6 +9,7 @@ import de.ma.tracker.domain.product.message.ProductShow
 import de.ma.tracker.domain.product.message.ProductUpdate
 import java.util.*
 
+
 class ProductManagementUseCaseImpl(
     private val productGateway: ProductGateway
 ) : ProductManagementUseCase {

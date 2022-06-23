@@ -6,11 +6,7 @@ import de.ma.app.data.product.ProductEntity
 import de.ma.tracker.domain.product.Product
 import de.ma.tracker.domain.state.State
 import java.util.*
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.FetchType
-import javax.persistence.ManyToOne
-import javax.persistence.Version
+import javax.persistence.*
 
 
 @Entity(name = "state")

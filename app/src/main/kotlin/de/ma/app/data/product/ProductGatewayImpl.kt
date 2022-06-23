@@ -11,7 +11,6 @@ import de.ma.tracker.domain.product.message.ProductCreate
 import de.ma.tracker.domain.product.message.ProductShow
 import de.ma.tracker.domain.product.message.ProductUpdate
 import de.ma.tracker.domain.state.StateCreate
-import io.quarkus.hibernate.orm.panache.PanacheEntity_.id
 import java.util.*
 import javax.enterprise.context.ApplicationScoped
 import javax.transaction.Transactional
@@ -30,20 +29,31 @@ class ProductGatewayImpl(
     }
 
     override fun deleteProductById(userId: UUID) {
-        productRepository.deleteById(userId)
+        val deleteById = productRepository.deleteById(userId)
+        if(!deleteById){
+            throw RuntimeException("Product ($userId) couldn't be deleted.")
+        }
     }
 
+    @Transactional
     override fun updateProduct(productUpdate: ProductUpdate, id: UUID): ProductShow {
-        val entity: ProductEntity = productUpdate.toEntity(id)
-        val states = stateRepository.findByUserId(id)
+        if(!existsById(id)){
+            throw RuntimeException("Product with id $id does not exist.")
+        }
+
+        val entity = productUpdate.toEntity(id)
+
+        val states = stateRepository.findByProductId(id)
+
         entity.addStates(states)
-        productRepository.persist(entity)
+        val entityManager = productRepository.entityManager
+        entityManager.merge(entity)
         return entity.toShow(states)
     }
 
     override fun getProductById(userId: UUID): ProductShow {
         val productEntity = productRepository.findById(userId)
-        val states = stateRepository.findByUserId(userId)
+        val states = stateRepository.findByProductId(userId)
         return productEntity.toShow(states)
     }
 

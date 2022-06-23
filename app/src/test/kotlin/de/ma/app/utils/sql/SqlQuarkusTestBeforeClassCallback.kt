@@ -1,6 +1,5 @@
 package de.ma.app.utils.sql
 
-import de.ma.app.utils.sql.Sql
 import io.quarkus.test.junit.callback.QuarkusTestBeforeClassCallback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking

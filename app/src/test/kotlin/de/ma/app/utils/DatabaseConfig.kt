@@ -1,4 +1,4 @@
-package de.ma.app
+package de.ma.app.utils
 
 
 object DatabaseConfig {
