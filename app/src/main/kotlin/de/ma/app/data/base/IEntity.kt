@@ -8,6 +8,11 @@ import javax.persistence.Id
 interface IEntity {
 
     @get:Id
+    @get:GeneratedValue(generator = "UUID")
+    @get:GenericGenerator(
+        name = "UUID",
+        strategy = "org.hibernate.id.UUIDGenerator"
+    )
     var id: UUID?
 
 }

@@ -1,16 +1,19 @@
 package de.ma.app.data.product
 
+import de.ma.app.data.base.`is not content of`
 import de.ma.app.data.base.toPanachePage
 import de.ma.app.data.base.toPanacheSort
 import de.ma.app.data.state.StateRepository
 import de.ma.app.data.state.toEntity
+import de.ma.app.data.state.toShow
 import de.ma.tracker.domain.base.paging.Page
 import de.ma.tracker.domain.base.paging.Sort
 import de.ma.tracker.domain.product.ProductGateway
 import de.ma.tracker.domain.product.message.ProductCreate
 import de.ma.tracker.domain.product.message.ProductShow
 import de.ma.tracker.domain.product.message.ProductUpdate
-import de.ma.tracker.domain.state.StateCreate
+import de.ma.tracker.domain.state.message.StateCreate
+import de.ma.tracker.domain.state.message.StateShow
 import java.util.*
 import javax.enterprise.context.ApplicationScoped
 import javax.transaction.Transactional
@@ -21,6 +24,11 @@ class ProductGatewayImpl(
     private val stateRepository: StateRepository
 ) : ProductGateway {
 
+    companion object {
+        private val ALLOWED_COLUMNS = listOf("id", "created_at")
+    }
+
+
     @Transactional
     override fun createProduct(productCreate: ProductCreate): ProductShow {
         val entity = productCreate.toEntity()
@@ -30,24 +38,24 @@ class ProductGatewayImpl(
 
     override fun deleteProductById(userId: UUID) {
         val deleteById = productRepository.deleteById(userId)
-        if(!deleteById){
+        if (!deleteById) {
             throw RuntimeException("Product ($userId) couldn't be deleted.")
         }
     }
 
     @Transactional
     override fun updateProduct(productUpdate: ProductUpdate, id: UUID): ProductShow {
-        if(!existsById(id)){
+        if (!existsById(id)) {
             throw RuntimeException("Product with id $id does not exist.")
         }
 
-        val entity = productUpdate.toEntity(id)
+        var entity = productUpdate.toEntity(id)
 
         val states = stateRepository.findByProductId(id)
 
         entity.addStates(states)
         val entityManager = productRepository.entityManager
-        entityManager.merge(entity)
+        entity = entityManager.merge(entity)
         return entity.toShow(states)
     }
 
@@ -58,8 +66,15 @@ class ProductGatewayImpl(
     }
 
     override fun getList(page: Page, sort: Sort): List<ProductShow> {
+        if (sort.column.`is not content of`(ALLOWED_COLUMNS)) {
+            throw IllegalArgumentException("The column ${sort.column} is not valid.")
+        }
+
         val query = productRepository.findAll(sort.toPanacheSort())
+
         val productEntities = query.page<ProductEntity>(page.toPanachePage()).list<ProductEntity>()
+
+
         return productEntities.mapNotNull { it.toShow(null) }
     }
 
@@ -71,9 +86,16 @@ class ProductGatewayImpl(
         return productRepository.findById(id) != null
     }
 
-    override fun addStateToProduct(productId: UUID, stateCreate: StateCreate) {
+    override fun addStateToProduct(productId: UUID, stateCreate: StateCreate): StateShow {
         val product = productRepository.findById(productId)
-        product.addState(stateCreate.toEntity())
+        val state = stateCreate.toEntity()
+        product.addState(state)
         productRepository.persist(product)
+        return state.toShow()
     }
+
+    override fun getStates(id: UUID): List<StateShow> {
+        return stateRepository.findByProductId(id).map { it.toShow() }
+    }
+
 }

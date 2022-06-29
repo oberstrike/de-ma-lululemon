@@ -27,6 +27,14 @@ databaseChangeLog:
               - column:
                   name: version
                   type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+              - column:
+                  name: updated_at
+                  type: timestamp
         - createTable:
             tableName: state
             columns:
@@ -36,6 +44,9 @@ databaseChangeLog:
                   constraints:
                     primaryKey: true
               - column:
+                  name: entry_date
+                  type: timestamp
+              - column:
                   name: price
                   type: bigint
               - column:
@@ -44,4 +55,3 @@ databaseChangeLog:
                   constraints:
                     foreignKeyName: state_product_id_fk
                     references: product(id)
-                    deleteCascade: false

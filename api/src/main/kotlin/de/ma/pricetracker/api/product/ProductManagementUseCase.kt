@@ -5,6 +5,7 @@ import de.ma.tracker.domain.base.paging.Sort
 import de.ma.tracker.domain.product.message.ProductCreate
 import de.ma.tracker.domain.product.message.ProductShow
 import de.ma.tracker.domain.product.message.ProductUpdate
+import de.ma.tracker.domain.state.message.StateShow
 import java.util.*
 
 interface ProductManagementUseCase {
@@ -20,5 +21,7 @@ interface ProductManagementUseCase {
     fun getList(page: Page, sort: Sort): Result<List<ProductShow>>
 
     fun getPageCount(page: Page): Result<Int>
+
+    fun getStates(id: UUID): Result<List<StateShow>>
 
 }

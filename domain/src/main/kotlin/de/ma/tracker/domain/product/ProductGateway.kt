@@ -5,7 +5,8 @@ import de.ma.tracker.domain.base.paging.Sort
 import de.ma.tracker.domain.product.message.ProductCreate
 import de.ma.tracker.domain.product.message.ProductShow
 import de.ma.tracker.domain.product.message.ProductUpdate
-import de.ma.tracker.domain.state.StateCreate
+import de.ma.tracker.domain.state.message.StateCreate
+import de.ma.tracker.domain.state.message.StateShow
 import java.util.*
 
 interface ProductGateway {
@@ -24,5 +25,7 @@ interface ProductGateway {
 
     fun existsById(id: UUID): Boolean
 
-     fun addStateToProduct(productId: UUID, stateCreate: StateCreate)
+    fun addStateToProduct(productId: UUID, stateCreate: StateCreate): StateShow
+
+    fun getStates(id: UUID): List<StateShow>
 }

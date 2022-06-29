@@ -7,7 +7,7 @@ import java.util.*
 fun ProductUpdate.toEntity(id: UUID): ProductEntity {
     val productEntity = ProductEntity()
     productEntity.id = id
-    productEntity.pId = pId
+    productEntity.pId = pId!!
     productEntity.name = name
     productEntity.color = color
     productEntity.size = size

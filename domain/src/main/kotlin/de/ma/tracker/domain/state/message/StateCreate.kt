@@ -1,10 +1,8 @@
 package de.ma.tracker.domain.state.message
 
 import java.time.LocalDateTime
-import java.util.*
 
-interface StateShow {
+interface StateCreate {
     val price: Long
-    val id: UUID
-    val entryDate: LocalDateTime
+    val entryDate: LocalDateTime?
 }

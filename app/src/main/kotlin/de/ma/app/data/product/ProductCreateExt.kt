@@ -7,7 +7,7 @@ fun ProductCreate.toEntity(): ProductEntity {
 
     productEntity.name = name
     productEntity.color = color
-    productEntity.pId = pId
+    productEntity.pId = pId!!
     productEntity.size = size
 
     return productEntity

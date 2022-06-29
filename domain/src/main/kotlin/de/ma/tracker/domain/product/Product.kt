@@ -2,6 +2,7 @@ package de.ma.tracker.domain.product
 
 import de.ma.tracker.domain.base.IBaseEntity
 import de.ma.tracker.domain.state.State
+import java.time.LocalDateTime
 
 
 interface Product : IBaseEntity {
@@ -17,5 +18,9 @@ interface Product : IBaseEntity {
     var version: Long
 
     val states: Set<State>
+
+    val createdAt: LocalDateTime
+
+    var updatedAt: LocalDateTime?
 
 }

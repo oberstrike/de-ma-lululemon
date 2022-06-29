@@ -2,7 +2,7 @@ package de.ma.tracker.domain.base.paging
 
 data class Page(
     val index: Int = 0,
-    val size: Int = 0
+    val size: Int = 10
 ) {
 
     init {

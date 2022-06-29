@@ -1,11 +1,15 @@
 package de.ma.app.data.product
 
+import de.ma.tracker.domain.product.Product
+
 import de.ma.app.data.base.IEntity
 import de.ma.app.data.base.IEntityImpl
 import de.ma.app.data.state.StateEntity
-import de.ma.tracker.domain.product.Product
 import de.ma.tracker.domain.product.message.ProductShow
 import org.hibernate.Hibernate
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
+import java.time.LocalDateTime
 import javax.persistence.*
 
 @Entity(name = "product")
@@ -22,11 +26,18 @@ class ProductEntity : Product, IEntity by IEntityImpl() {
     @get:Version
     override var version: Long = 0
 
+    @get:CreationTimestamp
+    @get:Column(name = "created_at")
+    override var createdAt: LocalDateTime = LocalDateTime.now()
+
+    @get:UpdateTimestamp
+    @get:Column(name = "updated_at")
+    override var updatedAt: LocalDateTime? = null
+
     @get:OneToMany(
         mappedBy = "product",
         cascade = [CascadeType.ALL],
-        fetch = FetchType.LAZY,
-        orphanRemoval = true
+        fetch = FetchType.LAZY
     )
     override var states: MutableSet<StateEntity> = mutableSetOf()
 

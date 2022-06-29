@@ -7,6 +7,7 @@ import de.ma.tracker.domain.product.ProductGateway
 import de.ma.tracker.domain.product.message.ProductCreate
 import de.ma.tracker.domain.product.message.ProductShow
 import de.ma.tracker.domain.product.message.ProductUpdate
+import de.ma.tracker.domain.state.message.StateShow
 import java.util.*
 
 
@@ -48,6 +49,12 @@ class ProductManagementUseCaseImpl(
     override fun getPageCount(page: Page): Result<Int> {
         return run {
             productGateway.pageCount(page)
+        }
+    }
+
+    override fun getStates(id: UUID): Result<List<StateShow>> {
+        return run {
+            productGateway.getStates(id)
         }
     }
 
