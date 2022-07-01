@@ -4,12 +4,15 @@ import de.ma.tracker.domain.product.Product
 
 import de.ma.app.data.base.IEntity
 import de.ma.app.data.base.IEntityImpl
+import de.ma.app.data.shop.ShopEntity
 import de.ma.app.data.state.StateEntity
 import de.ma.tracker.domain.product.message.ProductShow
+import de.ma.tracker.domain.shop.Shop
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
+import java.util.*
 import javax.persistence.*
 
 @Entity(name = "product")
@@ -40,6 +43,14 @@ class ProductEntity : Product, IEntity by IEntityImpl() {
         fetch = FetchType.LAZY
     )
     override var states: MutableSet<StateEntity> = mutableSetOf()
+
+    @get:ManyToOne
+    @get:JoinTable(
+        name = "shop_products",
+        joinColumns = [JoinColumn(name = "product_id")],
+        inverseJoinColumns = [JoinColumn(name = "shop_id")]
+    )
+    override var shop: ShopEntity? = null
 
     fun addStates(states: Collection<StateEntity>) {
         states.forEach {

@@ -10,5 +10,7 @@ import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
 class ProductRepository: PanacheRepositoryBase<ProductEntity, UUID> {
-
+    fun findByShopId(id: UUID): List<ProductEntity>{
+        return find("shop.id = ?1", id).list()
+    }
 }

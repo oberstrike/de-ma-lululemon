@@ -4,17 +4,19 @@ import java.util.*
 
 interface ProductShow {
 
-    var id: UUID
+    val id: UUID
 
-    var pId: String?
+    val pId: String?
 
-    var color: String
+    val color: String
 
-    var size: String
+    val size: String
 
-    var name: String
+    val name: String
 
-    var version: Long
+    val version: Long
 
-    var states: List<UUID>?
+    val states: List<UUID>?
+
+    val shopId: UUID
 }

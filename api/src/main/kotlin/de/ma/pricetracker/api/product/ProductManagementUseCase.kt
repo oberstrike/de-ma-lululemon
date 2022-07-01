@@ -10,8 +10,6 @@ import java.util.*
 
 interface ProductManagementUseCase {
 
-    fun createProduct(productCreate: ProductCreate): Result<ProductShow>
-
     fun deleteProductById(id: UUID)
 
     fun updateProduct(productUpdate: ProductUpdate, productId: UUID): Result<ProductShow>

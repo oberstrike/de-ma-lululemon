@@ -3,11 +3,13 @@ package de.ma.app.data.product
 import de.ma.app.data.base.`is not content of`
 import de.ma.app.data.base.toPanachePage
 import de.ma.app.data.base.toPanacheSort
+import de.ma.app.data.shop.ShopEntity
 import de.ma.app.data.state.StateRepository
 import de.ma.app.data.state.toEntity
 import de.ma.app.data.state.toShow
 import de.ma.tracker.domain.base.paging.Page
 import de.ma.tracker.domain.base.paging.Sort
+import de.ma.tracker.domain.product.Product
 import de.ma.tracker.domain.product.ProductGateway
 import de.ma.tracker.domain.product.message.ProductCreate
 import de.ma.tracker.domain.product.message.ProductShow
@@ -30,11 +32,21 @@ class ProductGatewayImpl(
 
 
     @Transactional
-    override fun createProduct(productCreate: ProductCreate): ProductShow {
+    override fun createProduct(productCreate: ProductCreate, shopId: UUID): ProductShow {
         val entity = productCreate.toEntity()
+
+        entity.shop = ShopEntity().apply {
+            id = shopId
+        }
+
         productRepository.persist(entity)
         return entity.toShow(null)
     }
+
+    override fun getProductsByShopId(shopId: UUID): List<Product> {
+        return productRepository.findByShopId(shopId)
+    }
+
 
     override fun deleteProductById(userId: UUID) {
         val deleteById = productRepository.deleteById(userId)

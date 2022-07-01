@@ -12,5 +12,6 @@ data class ProductShowImpl(
     override var size: String,
     override var name: String,
     override var version: Long,
-    override var states: List<UUID>?
+    override var states: List<UUID>,
+    override val shopId: UUID
 ): ProductShow

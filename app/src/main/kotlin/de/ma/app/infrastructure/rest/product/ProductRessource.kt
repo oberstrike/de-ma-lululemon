@@ -17,13 +17,6 @@ class ProductRessource(
     private val productManagementUseCase: ProductManagementUseCase
 ) {
 
-    @POST
-    fun createProduct(productCreate: ProductCreateDTO): ProductShow {
-        return execute {
-            productManagementUseCase.createProduct(productCreate)
-        }
-    }
-
     @DELETE
     @Path("/{id}")
     fun deleteProductById(@PathParam("id") id: UUID) {

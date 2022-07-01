@@ -55,3 +55,30 @@ databaseChangeLog:
                   constraints:
                     foreignKeyName: state_product_id_fk
                     references: product(id)
+        - createTable:
+            tableName: shop
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: varchar(255)
+
+        - createTable:
+            tableName: shop_products
+            columns:
+              - column:
+                  name: shop_id
+                  type: uuid
+                  constraints:
+                    foreignKeyName: shop_products_shop_id_fk
+                    references: shop(id)
+              - column:
+                  name: product_id
+                  type: uuid
+                  constraints:
+                    foreignKeyName: shop_products_product_id_fk
+                    references: product(id)

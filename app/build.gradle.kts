@@ -26,6 +26,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("io.quarkus:quarkus-arc")
 
+    //quartz
+    implementation("io.quarkus:quarkus-quartz")
+
     //web
     implementation("io.quarkus:quarkus-jackson")
     implementation("io.quarkus:quarkus-resteasy-jackson")

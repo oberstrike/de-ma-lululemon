@@ -11,7 +11,7 @@ import java.util.*
 
 interface ProductGateway {
 
-    fun createProduct(productCreate: ProductCreate): ProductShow
+    fun createProduct(productCreate: ProductCreate, shopId: UUID): ProductShow
 
     fun deleteProductById(userId: UUID)
 
@@ -28,4 +28,5 @@ interface ProductGateway {
     fun addStateToProduct(productId: UUID, stateCreate: StateCreate): StateShow
 
     fun getStates(id: UUID): List<StateShow>
+    fun getProductsByShopId(shopId: UUID): List<Product>
 }
