@@ -4,10 +4,9 @@ import de.ma.tracker.domain.product.Product
 
 import de.ma.app.data.base.IEntity
 import de.ma.app.data.base.IEntityImpl
-import de.ma.app.data.shop.ShopEntity
 import de.ma.app.data.state.StateEntity
+import de.ma.tracker.domain.product.message.ProductOverview
 import de.ma.tracker.domain.product.message.ProductShow
-import de.ma.tracker.domain.shop.Shop
 import org.hibernate.Hibernate
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -29,6 +28,8 @@ class ProductEntity : Product, IEntity by IEntityImpl() {
     @get:Version
     override var version: Long = 0
 
+    override var id: UUID? = null
+
     @get:CreationTimestamp
     @get:Column(name = "created_at")
     override var createdAt: LocalDateTime = LocalDateTime.now()
@@ -37,6 +38,9 @@ class ProductEntity : Product, IEntity by IEntityImpl() {
     @get:Column(name = "updated_at")
     override var updatedAt: LocalDateTime? = null
 
+    @Embedded
+    override val trackState: TrackStateVO = TrackStateVO(false, UUID.randomUUID())
+
     @get:OneToMany(
         mappedBy = "product",
         cascade = [CascadeType.ALL],
@@ -44,23 +48,11 @@ class ProductEntity : Product, IEntity by IEntityImpl() {
     )
     override var states: MutableSet<StateEntity> = mutableSetOf()
 
-    @get:ManyToOne
-    @get:JoinTable(
-        name = "shop_products",
-        joinColumns = [JoinColumn(name = "product_id")],
-        inverseJoinColumns = [JoinColumn(name = "shop_id")]
-    )
-    override var shop: ShopEntity? = null
-
     fun addStates(states: Collection<StateEntity>) {
-        states.forEach {
-            it.product = this
-        }
         this.states.addAll(states)
     }
 
     fun addState(state: StateEntity) {
-        state.product = this
         this.states.add(state)
     }
 
@@ -82,7 +74,7 @@ class ProductEntity : Product, IEntity by IEntityImpl() {
 
 }
 
-fun Product.toShow(states: List<StateEntity>?): ProductShow {
+fun Product.toShow(states: List<StateEntity>): ProductShow {
     return ProductShowImpl(
         this.id!!,
         this.pId,
@@ -90,6 +82,18 @@ fun Product.toShow(states: List<StateEntity>?): ProductShow {
         this.size,
         this.name,
         this.version,
-        states?.map { it.id ?: throw IllegalStateException("State has no id") }
+        states.map { it.id ?: throw IllegalStateException("State has no id") }
+    )
+}
+
+fun Product.toOverview(): ProductOverview {
+    return ProductOverviewImpl(
+        this.id!!,
+        this.name,
+        this.color,
+        this.trackState.shopId,
+        this.size,
+        this.pId,
+        this.version
     )
 }

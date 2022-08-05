@@ -11,7 +11,7 @@ class AddStateToProductUseCaseImpl(
 ) : AddStateToProductUseCase {
 
 
-    override fun execute(productId: UUID, stateCreate: StateCreate): StateShow {
+    override operator fun invoke(productId: UUID, stateCreate: StateCreate): StateShow {
         val existsById = productGateway.existsById(productId)
         if (!existsById) {
             throw IllegalArgumentException("Product with id $productId does not exist")

@@ -1,38 +1,25 @@
 package de.ma.app.infrastructure.rest.shop
 
-import de.ma.pricetracker.api.shop.AddProductToShopUseCase
-import de.ma.pricetracker.api.shop.GetProductsByShopIdUseCase
-import de.ma.pricetracker.api.shop.GetShopsUseCase
-import de.ma.tracker.domain.product.Product
-import de.ma.tracker.domain.product.message.ProductCreate
-import de.ma.tracker.domain.product.message.ProductShow
+import de.ma.app.infrastructure.rest.product.data.ProductCreateDTO
+import de.ma.pricetracker.api.product.ProductManagementUseCase
+import de.ma.tracker.domain.product.message.ProductOverview
 import de.ma.tracker.domain.shop.Shop
+import de.ma.tracker.domain.shop.ShopServiceGateway
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody
 import java.util.*
 import javax.ws.rs.GET
 import javax.ws.rs.POST
 import javax.ws.rs.Path
+import javax.ws.rs.PathParam
 
 @Path("/shop")
 class ShopRessource(
-    private val getProductsByShopIdUseCase: GetProductsByShopIdUseCase,
-    private val getShopsUseCase: GetShopsUseCase,
-    private val addProductToShopsUseCase: AddProductToShopUseCase
+    private val shopServiceGateway: ShopServiceGateway
 ) {
-    @Path("/{id}/product")
-    @GET
-    fun getProductsByShopId(id: UUID): List<Product> {
-        return getProductsByShopIdUseCase.execute(id)
-    }
-
-    @Path("/{id}/products")
-    @POST
-    fun addProductToShop(productCreate: ProductCreate, id: UUID): ProductShow {
-        return addProductToShopsUseCase.execute(productCreate, id)
-    }
 
     @GET
     fun getShops(): List<Shop> {
-        return getShopsUseCase.execute()
+        return shopServiceGateway.getAllShops().map { it.shop }
     }
 
 

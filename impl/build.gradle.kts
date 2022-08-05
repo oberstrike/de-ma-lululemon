@@ -3,10 +3,6 @@ plugins {
 }
 
 
-val quarkusPlatformGroupId: String by project
-val quarkusPlatformArtifactId: String by project
-val quarkusPlatformVersion: String by project
-
 sourceSets {
     getByName("main").java.srcDirs("src/main/kotlin")
     getByName("test").java.srcDirs("src/test/kotlin")
@@ -31,3 +27,9 @@ dependencies {
     testImplementation(libs.mockk)
 }
 
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
+}

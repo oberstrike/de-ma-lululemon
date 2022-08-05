@@ -5,5 +5,5 @@ import java.time.LocalDateTime
 
 data class StateUpdateDTO(
     override val entryDate: LocalDateTime,
-    override val price: Long
+    override val price: Float
 ): StateUpdate

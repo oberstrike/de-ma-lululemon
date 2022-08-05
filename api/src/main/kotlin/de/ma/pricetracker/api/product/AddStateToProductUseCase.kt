@@ -6,6 +6,6 @@ import java.util.*
 
 interface AddStateToProductUseCase {
 
-    fun execute(productId: UUID, stateCreate: StateCreate): StateShow
+    operator fun invoke(productId: UUID, stateCreate: StateCreate): StateShow
 
 }

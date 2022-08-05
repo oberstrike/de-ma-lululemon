@@ -14,6 +14,6 @@ pluginManagement {
     }
 }
 
-include(":api", ":app", ":domain", ":impl")
+include(":api", ":app", ":domain", ":impl", ":app:lululemon")
 
 enableFeaturePreview("VERSION_CATALOGS")

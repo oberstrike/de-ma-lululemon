@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class StateShowDTO(
-    override val price: Long,
+    override val price: Float,
     override val id: UUID,
     override val entryDate: LocalDateTime
 ) : StateShow

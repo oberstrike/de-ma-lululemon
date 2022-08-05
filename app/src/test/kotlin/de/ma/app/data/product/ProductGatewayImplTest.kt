@@ -1,11 +1,8 @@
 package de.ma.app.data.product
 
 import de.ma.app.utils.AbstractDatabaseTest
-import de.ma.app.utils.DatabaseTestResource
-import de.ma.app.utils.TransactionalQuarkusTest
 import de.ma.app.utils.sql.Sql
 import io.quarkus.test.TestTransaction
-import io.quarkus.test.common.QuarkusTestResource
 import io.quarkus.test.junit.QuarkusTest
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.shouldBe
@@ -14,7 +11,6 @@ import org.junit.jupiter.api.assertThrows
 import java.util.*
 
 import javax.inject.Inject
-import javax.transaction.Transactional
 
 @QuarkusTest
 class ProductGatewayImplTest : AbstractDatabaseTest() {
@@ -33,7 +29,8 @@ class ProductGatewayImplTest : AbstractDatabaseTest() {
                 pId = "Test123",
                 name = "Test123",
                 size = "L"
-            )
+            ),
+            UUID.randomUUID()
         )
 
         "Black" `should be equal to` productShow.color

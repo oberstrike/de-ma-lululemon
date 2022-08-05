@@ -4,8 +4,7 @@ import de.ma.tracker.domain.base.IBaseEntity
 import de.ma.tracker.domain.product.Product
 import java.time.LocalDateTime
 
-interface State : IBaseEntity {
-    var price: Long
-    val product: Product?
+interface State: IBaseEntity {
+    var price: Float
     var entryDate: LocalDateTime
 }

@@ -1,9 +1,8 @@
 package de.ma.tracker.domain.shop
 
-import de.ma.tracker.domain.base.IBaseEntity
-import de.ma.tracker.domain.product.Product
+import java.util.*
 
-interface Shop : IBaseEntity{
-    var name: String
-    val products: Set<Product>
+interface Shop {
+    val name: String
+    val id: UUID
 }

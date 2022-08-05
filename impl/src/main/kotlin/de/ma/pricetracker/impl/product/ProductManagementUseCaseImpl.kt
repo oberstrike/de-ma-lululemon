@@ -4,7 +4,7 @@ import de.ma.pricetracker.api.product.ProductManagementUseCase
 import de.ma.tracker.domain.base.paging.Page
 import de.ma.tracker.domain.base.paging.Sort
 import de.ma.tracker.domain.product.ProductGateway
-import de.ma.tracker.domain.product.message.ProductCreate
+import de.ma.tracker.domain.product.message.ProductOverview
 import de.ma.tracker.domain.product.message.ProductShow
 import de.ma.tracker.domain.product.message.ProductUpdate
 import de.ma.tracker.domain.state.message.StateShow
@@ -35,7 +35,7 @@ class ProductManagementUseCaseImpl(
         }
     }
 
-    override fun getList(page: Page, sort: Sort): Result<List<ProductShow>> {
+    override fun getList(page: Page, sort: Sort): Result<List<ProductOverview>> {
         return run {
             productGateway.getList(page, sort)
         }

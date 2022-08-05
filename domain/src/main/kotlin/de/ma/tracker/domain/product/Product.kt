@@ -1,8 +1,8 @@
 package de.ma.tracker.domain.product
 
 import de.ma.tracker.domain.base.IBaseEntity
-import de.ma.tracker.domain.shop.Shop
 import de.ma.tracker.domain.state.State
+import de.ma.tracker.domain.tracking.TrackState
 import java.time.LocalDateTime
 
 
@@ -18,12 +18,12 @@ interface Product : IBaseEntity {
 
     var version: Long
 
-    val shop: Shop?
-
     val states: Set<State>
 
     val createdAt: LocalDateTime
 
     var updatedAt: LocalDateTime?
+
+    val trackState: TrackState
 
 }

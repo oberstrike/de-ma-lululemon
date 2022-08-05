@@ -13,12 +13,12 @@ import javax.persistence.*
 @Entity(name = "state")
 class StateEntity : State, IEntity by IEntityImpl() {
 
-    @get:ManyToOne(fetch = FetchType.LAZY, optional = false)
-    override var product: ProductEntity? = null
-
     @get:Column(name = "price")
-    override var price: Long = 0
+    override var price: Float = 0.0f
 
     @get:Column(name = "entry_date")
     override var entryDate: LocalDateTime = LocalDateTime.now()
+
+    @get:ManyToOne(fetch = FetchType.LAZY, optional = false)
+    var product: ProductEntity? = null
 }

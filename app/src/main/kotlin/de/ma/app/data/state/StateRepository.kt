@@ -1,5 +1,6 @@
 package de.ma.app.data.state
 
+import de.ma.tracker.domain.product.message.ProductOverview
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase
 import java.util.*
 import javax.enterprise.context.ApplicationScoped
@@ -19,4 +20,6 @@ class StateRepository : PanacheRepositoryBase<StateEntity, UUID> {
             id
         ).firstResult()
     }
+
+
 }

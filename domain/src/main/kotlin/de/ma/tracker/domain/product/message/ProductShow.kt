@@ -18,5 +18,4 @@ interface ProductShow {
 
     val states: List<UUID>?
 
-    val shopId: UUID
 }

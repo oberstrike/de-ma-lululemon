@@ -1,16 +1,18 @@
 package de.ma.app.data.product
 
-import de.ma.app.data.state.StateEntity
-import de.ma.tracker.domain.product.Product
-import de.ma.tracker.domain.state.message.StateShow
-import io.quarkus.hibernate.orm.panache.PanacheRepository
+import de.ma.tracker.domain.product.message.ProductOverview
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase
 import java.util.*
 import javax.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
-class ProductRepository: PanacheRepositoryBase<ProductEntity, UUID> {
-    fun findByShopId(id: UUID): List<ProductEntity>{
-        return find("shop.id = ?1", id).list()
+class ProductRepository : PanacheRepositoryBase<ProductEntity, UUID> {
+    fun findByTracked(isTracked: Boolean): List<ProductOverview> {
+        return find(
+            "select p from product p where p.is_tracked = ?1 ",
+            isTracked
+        ).list<ProductEntity>()
+            .mapNotNull { it.toOverview() }
     }
+
 }

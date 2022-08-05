@@ -21,6 +21,7 @@ repositories {
 }
 
 dependencies {
+    implementation("io.quarkus:quarkus-cache")
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
     implementation("io.quarkus:quarkus-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -59,6 +60,7 @@ dependencies {
     api(project ("::api"))
     api(project ("::domain"))
     api(project ("::impl"))
+    implementation(project("lululemon"))
 
 }
 
@@ -72,7 +74,8 @@ allOpen {
 }
 
 configure<org.jetbrains.kotlin.noarg.gradle.NoArgExtension> {
+    invokeInitializers = true
     annotation("javax.persistence.Entity")
     annotation("javax.persistence.MappedSuperclass")
-
+    annotation("javax.persistence.Embeddable")
 }

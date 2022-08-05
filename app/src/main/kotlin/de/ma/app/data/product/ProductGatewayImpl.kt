@@ -3,19 +3,19 @@ package de.ma.app.data.product
 import de.ma.app.data.base.`is not content of`
 import de.ma.app.data.base.toPanachePage
 import de.ma.app.data.base.toPanacheSort
-import de.ma.app.data.shop.ShopEntity
 import de.ma.app.data.state.StateRepository
 import de.ma.app.data.state.toEntity
 import de.ma.app.data.state.toShow
 import de.ma.tracker.domain.base.paging.Page
 import de.ma.tracker.domain.base.paging.Sort
-import de.ma.tracker.domain.product.Product
 import de.ma.tracker.domain.product.ProductGateway
 import de.ma.tracker.domain.product.message.ProductCreate
+import de.ma.tracker.domain.product.message.ProductOverview
 import de.ma.tracker.domain.product.message.ProductShow
 import de.ma.tracker.domain.product.message.ProductUpdate
 import de.ma.tracker.domain.state.message.StateCreate
 import de.ma.tracker.domain.state.message.StateShow
+import liquibase.pro.packaged.it
 import java.util.*
 import javax.enterprise.context.ApplicationScoped
 import javax.transaction.Transactional
@@ -32,19 +32,11 @@ class ProductGatewayImpl(
 
 
     @Transactional
-    override fun createProduct(productCreate: ProductCreate, shopId: UUID): ProductShow {
+    override fun createProduct(productCreate: ProductCreate, shopId: UUID): ProductOverview {
         val entity = productCreate.toEntity()
 
-        entity.shop = ShopEntity().apply {
-            id = shopId
-        }
-
         productRepository.persist(entity)
-        return entity.toShow(null)
-    }
-
-    override fun getProductsByShopId(shopId: UUID): List<Product> {
-        return productRepository.findByShopId(shopId)
+        return entity.toOverview()
     }
 
 
@@ -77,7 +69,7 @@ class ProductGatewayImpl(
         return productEntity.toShow(states)
     }
 
-    override fun getList(page: Page, sort: Sort): List<ProductShow> {
+    override fun getList(page: Page, sort: Sort): List<ProductOverview> {
         if (sort.column.`is not content of`(ALLOWED_COLUMNS)) {
             throw IllegalArgumentException("The column ${sort.column} is not valid.")
         }
@@ -87,7 +79,7 @@ class ProductGatewayImpl(
         val productEntities = query.page<ProductEntity>(page.toPanachePage()).list<ProductEntity>()
 
 
-        return productEntities.mapNotNull { it.toShow(null) }
+        return productEntities.mapNotNull { it.toOverview() }
     }
 
     override fun pageCount(page: Page): Int {
@@ -106,8 +98,12 @@ class ProductGatewayImpl(
         return state.toShow()
     }
 
-    override fun getStates(id: UUID): List<StateShow> {
-        return stateRepository.findByProductId(id).map { it.toShow() }
+    override fun getStates(productId: UUID): List<StateShow> {
+        return stateRepository.findByProductId(productId).map { it.toShow() }
+    }
+
+    override fun getTrackedProducts(): List<ProductOverview> {
+        return productRepository.findByTracked(true)
     }
 
 }

@@ -6,6 +6,7 @@ import de.ma.app.infrastructure.utils.PageRequest
 import de.ma.app.infrastructure.utils.toSort
 import de.ma.pricetracker.api.product.ProductManagementUseCase
 import de.ma.tracker.domain.base.paging.Page
+import de.ma.tracker.domain.product.message.ProductOverview
 import de.ma.tracker.domain.product.message.ProductShow
 import de.ma.tracker.domain.state.message.StateShow
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody
@@ -44,7 +45,7 @@ class ProductRessource(
     fun getList(
         @BeanParam pageRequest: PageRequest, @QueryParam("sort") @DefaultValue("+created_at")
         sort: String = "+created_at"
-    ): List<ProductShow> {
+    ): List<ProductOverview> {
         return execute {
             productManagementUseCase.getList(Page(pageRequest.index, pageRequest.size), sort.toSort())
         }

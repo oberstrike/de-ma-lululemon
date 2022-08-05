@@ -1,10 +1,10 @@
 [versions]
 kotlin = "1.6.0"
 jnanoid = "2.0.0"
-junitJupiterVersion = "5.4.2"
+junitJupiterVersion = "5.8.2"
 kluentVersion = "1.68"
 kotlinFakerVersion = "1.9.0"
-mockkVersion = "1.12.1"
+mockkVersion = "1.12.4"
 kotlinCoroutinesVersion = "1.6.0"
 
 [plugins]

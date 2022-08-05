@@ -1,5 +1,9 @@
 package de.ma.tracker.domain.shop
 
+import java.util.*
+
 interface ShopServiceGateway {
-    fun getShopServiceByName(name: String): ShopService
+    fun getShopServiceById(id: UUID): ShopService
+
+    fun getAllShops(): List<ShopService>
 }

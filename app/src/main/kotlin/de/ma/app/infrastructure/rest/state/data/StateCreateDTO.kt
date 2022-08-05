@@ -4,6 +4,6 @@ import de.ma.tracker.domain.state.message.StateCreate
 import java.time.LocalDateTime
 
 data class StateCreateDTO(
-    override val price: Long,
+    override val price: Float,
     override val entryDate: LocalDateTime = LocalDateTime.now()
 ) : StateCreate
