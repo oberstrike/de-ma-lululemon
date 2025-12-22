@@ -10,6 +10,7 @@ import com.mediaserver.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,16 @@ public class MegaScanService {
     private final MovieRepository movieRepository;
 
     private static final Pattern FILE_PATTERN = Pattern.compile("^(.+?)\\s+(\\d+(?:\\.\\d+)?[KMGT]?B?)\\s+(.+)$");
+
+    @Scheduled(cron = "${media.mega.scan-cron:0 0 * * * *}")
+    public void scheduledScan() {
+        if (!properties.getMega().isScanEnabled()) {
+            log.debug("Scheduled scan is disabled");
+            return;
+        }
+        log.info("Starting scheduled Mega folder scan");
+        scanFolder(null);
+    }
 
     @Async
     public CompletableFuture<ScanResultDto> scanFolderAsync(String folderPath) {

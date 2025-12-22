@@ -25,6 +25,8 @@ public class MediaProperties {
         private String password;
         private String rootFolder = "/";
         private String[] videoExtensions = {".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm"};
+        private String scanCron = "0 0 * * * *"; // Default: every hour
+        private boolean scanEnabled = true;
     }
 
     @Data
