@@ -7,7 +7,7 @@ on:
     branches: [main, master, develop]
 
 jobs:
-  backend:
+  backend-test:
     name: Backend Tests
     runs-on: ubuntu-latest
 
@@ -26,8 +26,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build and test
-        run: mvn -B verify --file pom.xml
+      - name: Run tests
+        run: mvn -B test --file pom.xml
+
+      - name: Build package
+        run: mvn -B package -DskipTests --file pom.xml
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -36,7 +39,15 @@ jobs:
           name: backend-test-results
           path: backend/target/surefire-reports/
 
-  frontend:
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Backend Test Results
+          path: backend/target/surefire-reports/*.xml
+          reporter: java-junit
+
+  frontend-test:
     name: Frontend Tests
     runs-on: ubuntu-latest
 
@@ -61,13 +72,23 @@ jobs:
       - name: Lint
         run: npm run lint --if-present
 
+      - name: Run tests
+        run: npm run test:ci
+
       - name: Build
         run: npm run build
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-test-results
+          path: frontend/coverage/
 
   docker:
     name: Docker Build
     runs-on: ubuntu-latest
-    needs: [backend, frontend]
+    needs: [backend-test, frontend-test]
     if: github.event_name == 'push'
 
     steps:
