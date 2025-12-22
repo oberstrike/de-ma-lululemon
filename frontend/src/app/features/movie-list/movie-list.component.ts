@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MoviesStore } from '../../store/movies.store';
 import { WebSocketService } from '../../services/websocket.service';
+import { Movie } from '../../services/api.service';
 import { InputTextModule } from 'primeng/inputtext';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
@@ -56,7 +57,7 @@ import { Message } from 'primeng/message';
 
       <div class="movies-grid">
         @for (movie of store.filteredMovies(); track movie.id) {
-          <p-card styleClass="movie-card" [routerLink]="['/movie', movie.id]">
+          <p-card styleClass="movie-card" [class.cached]="movie.cached" [routerLink]="['/movie', movie.id]">
             <ng-template pTemplate="header">
               <div class="thumbnail">
                 @if (movie.thumbnailUrl) {
@@ -66,8 +67,13 @@ import { Message } from 'primeng/message';
                     <i class="pi pi-video" style="font-size: 3rem"></i>
                   </div>
                 }
+                @if (movie.cached) {
+                  <div class="cached-badge" title="Downloaded to server">
+                    <i class="pi pi-download"></i>
+                  </div>
+                }
                 <p-tag
-                  [value]="movie.status"
+                  [value]="getStatusLabel(movie)"
                   [severity]="getStatusSeverity(movie.status)"
                   class="status-tag"
                 />
@@ -81,6 +87,9 @@ import { Message } from 'primeng/message';
                 }
                 @if (movie.duration) {
                   <span><i class="pi pi-clock"></i> {{ movie.duration }}</span>
+                }
+                @if (movie.cached && movie.fileSize) {
+                  <span class="file-size"><i class="pi pi-database"></i> {{ formatFileSize(movie.fileSize) }}</span>
                 }
               </div>
             </div>
@@ -166,6 +175,30 @@ import { Message } from 'primeng/message';
       right: 8px;
     }
 
+    .cached-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: var(--p-primary-color);
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    :host ::ng-deep .movie-card.cached {
+      border: 2px solid var(--p-primary-color);
+    }
+
+    .file-size {
+      color: var(--p-primary-color);
+    }
+
     .info {
       h3 {
         font-size: 1rem;
@@ -239,5 +272,26 @@ export class MovieListComponent implements OnInit {
       case 'ERROR': return 'danger';
       default: return 'secondary';
     }
+  }
+
+  getStatusLabel(movie: Movie): string {
+    if (movie.cached) {
+      return 'On Server';
+    }
+    switch (movie.status) {
+      case 'READY': return 'Ready';
+      case 'DOWNLOADING': return 'Downloading';
+      case 'PENDING': return 'On Mega';
+      case 'ERROR': return 'Error';
+      default: return movie.status;
+    }
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   }
 }

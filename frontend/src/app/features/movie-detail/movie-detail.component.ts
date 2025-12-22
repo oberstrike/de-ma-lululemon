@@ -69,9 +69,12 @@ import { Chip } from 'primeng/chip';
 
             <div class="status">
               <p-tag
-                [value]="m.status"
+                [value]="getStatusLabel(m)"
                 [severity]="getStatusSeverity(m.status)"
               />
+              @if (m.cached) {
+                <p-chip label="Cached on Server" icon="pi pi-download" styleClass="cached-chip" />
+              }
               @if (m.fileSize) {
                 <span class="file-size">
                   <i class="pi pi-database"></i>
@@ -96,34 +99,42 @@ import { Chip } from 'primeng/chip';
             }
 
             <div class="actions">
-              @switch (m.status) {
-                @case ('READY') {
-                  <p-button
-                    icon="pi pi-play"
-                    label="Play"
-                    [routerLink]="['/play', m.id]"
-                  />
-                }
-                @case ('PENDING') {
-                  <p-button
-                    icon="pi pi-download"
-                    label="Download"
-                    (click)="startDownload()"
-                  />
-                }
-                @case ('DOWNLOADING') {
-                  <p-button
-                    icon="pi pi-spin pi-spinner"
-                    label="Downloading..."
-                    [disabled]="true"
-                  />
-                }
-                @case ('ERROR') {
-                  <p-button
-                    icon="pi pi-refresh"
-                    label="Retry Download"
-                    (click)="startDownload()"
-                  />
+              @if (m.cached) {
+                <p-button
+                  icon="pi pi-play"
+                  label="Play"
+                  [routerLink]="['/play', m.id]"
+                />
+                <p-button
+                  icon="pi pi-times"
+                  label="Clear Cache"
+                  severity="secondary"
+                  [outlined]="true"
+                  (click)="confirmClearCache()"
+                />
+              } @else {
+                @switch (m.status) {
+                  @case ('PENDING') {
+                    <p-button
+                      icon="pi pi-download"
+                      label="Download to Server"
+                      (click)="startDownload()"
+                    />
+                  }
+                  @case ('DOWNLOADING') {
+                    <p-button
+                      icon="pi pi-spin pi-spinner"
+                      label="Downloading..."
+                      [disabled]="true"
+                    />
+                  }
+                  @case ('ERROR') {
+                    <p-button
+                      icon="pi pi-refresh"
+                      label="Retry Download"
+                      (click)="startDownload()"
+                    />
+                  }
                 }
               }
 
@@ -209,6 +220,7 @@ import { Chip } from 'primeng/chip';
     .status {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 1rem;
       margin-bottom: 1.5rem;
 
@@ -218,6 +230,11 @@ import { Chip } from 'primeng/chip';
         align-items: center;
         gap: 0.5rem;
       }
+    }
+
+    :host ::ng-deep .cached-chip {
+      background: var(--p-primary-color);
+      color: white;
     }
 
     .progress-section {
@@ -323,6 +340,35 @@ export class MovieDetailComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
+  confirmClearCache() {
+    this.confirmationService.confirm({
+      message: 'Remove this movie from server storage? The movie will still be available on Mega.nz for re-download.',
+      header: 'Clear Cache',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => this.clearCache()
+    });
+  }
+
+  clearCache() {
+    const currentMovie = this.movie();
+    if (!currentMovie) return;
+
+    this.api.clearMovieCache(currentMovie.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.movie.set({
+            ...currentMovie,
+            status: 'PENDING',
+            cached: false,
+            fileSize: undefined
+          });
+          this.moviesStore.updateMovieStatus(currentMovie.id, 'PENDING', false);
+        },
+        error: (err) => console.error('Failed to clear cache:', err)
+      });
+  }
+
   getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
     switch (status) {
       case 'READY': return 'success';
@@ -330,6 +376,19 @@ export class MovieDetailComponent implements OnInit {
       case 'PENDING': return 'warn';
       case 'ERROR': return 'danger';
       default: return 'secondary';
+    }
+  }
+
+  getStatusLabel(movie: Movie): string {
+    if (movie.cached) {
+      return 'On Server';
+    }
+    switch (movie.status) {
+      case 'READY': return 'Ready';
+      case 'DOWNLOADING': return 'Downloading';
+      case 'PENDING': return 'On Mega';
+      case 'ERROR': return 'Error';
+      default: return movie.status;
     }
   }
 

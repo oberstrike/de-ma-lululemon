@@ -119,4 +119,16 @@ export class ApiService {
   getCacheStats(): Observable<CacheStats> {
     return this.http.get<CacheStats>(`${this.baseUrl}/movies/cache/stats`);
   }
+
+  getCachedMovies(): Observable<Movie[]> {
+    return this.http.get<Movie[]>(`${this.baseUrl}/movies/cached`);
+  }
+
+  clearMovieCache(movieId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/movies/${movieId}/cache`);
+  }
+
+  clearAllCache(): Observable<number> {
+    return this.http.delete<number>(`${this.baseUrl}/movies/cache`);
+  }
 }
