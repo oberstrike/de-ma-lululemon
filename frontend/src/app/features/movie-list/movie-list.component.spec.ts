@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -9,11 +10,16 @@ import { of } from 'rxjs';
 describe('MovieListComponent', () => {
   let component: MovieListComponent;
   let fixture: ComponentFixture<MovieListComponent>;
-  let mockWebSocketService: jasmine.SpyObj<WebSocketService>;
+  let mockWebSocketService: {
+    connect: ReturnType<typeof vi.fn>;
+    getDownloadProgress: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
-    mockWebSocketService = jasmine.createSpyObj('WebSocketService', ['connect', 'getDownloadProgress']);
-    mockWebSocketService.getDownloadProgress.and.returnValue(of());
+    mockWebSocketService = {
+      connect: vi.fn(),
+      getDownloadProgress: vi.fn().mockReturnValue(of())
+    };
 
     await TestBed.configureTestingModule({
       imports: [
@@ -55,5 +61,19 @@ describe('MovieListComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const searchInput = compiled.querySelector('input[type="text"]');
     expect(searchInput).toBeTruthy();
+  });
+
+  it('should update filter when search input changes', () => {
+    fixture.detectChanges();
+    const setFilterSpy = vi.spyOn(component.store, 'setFilter');
+
+    component.store.setFilter('test search');
+
+    expect(setFilterSpy).toHaveBeenCalledWith('test search');
+  });
+
+  it('should subscribe to download progress updates', () => {
+    fixture.detectChanges();
+    expect(mockWebSocketService.getDownloadProgress).toHaveBeenCalled();
   });
 });
