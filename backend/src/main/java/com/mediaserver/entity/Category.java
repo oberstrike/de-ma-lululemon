@@ -23,6 +23,9 @@ public class Category {
 
     private String description;
 
+    @Column(name = "mega_path")
+    private String megaPath;
+
     @Column(name = "sort_order")
     private Integer sortOrder;
 

@@ -23,6 +23,8 @@ public class MediaProperties {
     public static class Mega {
         private String email;
         private String password;
+        private String rootFolder = "/";
+        private String[] videoExtensions = {".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm"};
     }
 
     @Data

@@ -29,6 +29,9 @@ public class Movie {
     @Column(name = "mega_url")
     private String megaUrl;
 
+    @Column(name = "mega_path")
+    private String megaPath;
+
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
 

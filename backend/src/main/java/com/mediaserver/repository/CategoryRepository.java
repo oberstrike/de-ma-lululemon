@@ -12,5 +12,7 @@ public interface CategoryRepository extends JpaRepository<Category, String> {
 
     Optional<Category> findByName(String name);
 
+    Optional<Category> findByMegaPath(String megaPath);
+
     List<Category> findAllByOrderBySortOrderAsc();
 }
