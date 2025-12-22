@@ -75,4 +75,21 @@ public class MovieController {
     public ResponseEntity<CacheStatsDto> getCacheStats() {
         return ResponseEntity.ok(movieService.getCacheStats());
     }
+
+    @GetMapping("/cached")
+    public ResponseEntity<List<MovieDto>> getCachedMovies() {
+        return ResponseEntity.ok(movieService.getCachedMovies());
+    }
+
+    @DeleteMapping("/{id}/cache")
+    public ResponseEntity<Void> clearMovieCache(@PathVariable String id) {
+        movieService.clearCache(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/cache")
+    public ResponseEntity<Integer> clearAllCache() {
+        int cleared = movieService.clearAllCache();
+        return ResponseEntity.ok(cleared);
+    }
 }

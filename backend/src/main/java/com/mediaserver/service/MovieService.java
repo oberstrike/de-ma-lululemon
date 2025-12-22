@@ -1,5 +1,6 @@
 package com.mediaserver.service;
 
+import com.mediaserver.config.MediaProperties;
 import com.mediaserver.dto.CacheStatsDto;
 import com.mediaserver.dto.MovieCreateRequest;
 import com.mediaserver.dto.MovieDto;
@@ -31,6 +32,7 @@ public class MovieService {
     private final CategoryRepository categoryRepository;
     private final MegaDownloadService downloadService;
     private final MovieMapper movieMapper;
+    private final MediaProperties properties;
 
     public List<MovieDto> getAllMovies() {
         return movieRepository.findAll().stream().map(movieMapper::toDto).toList();
@@ -126,13 +128,66 @@ public class MovieService {
 
     public CacheStatsDto getCacheStats() {
         long totalSize = movieRepository.getTotalCacheSize();
-        long maxSize = 100L * 1024 * 1024 * 1024;
+        long maxSize = (long) properties.getStorage().getMaxCacheSizeGb() * 1024 * 1024 * 1024;
 
         return CacheStatsDto.builder()
                 .totalSizeBytes(totalSize)
                 .maxSizeBytes(maxSize)
-                .usagePercent((int) ((totalSize * 100) / maxSize))
+                .usagePercent(maxSize > 0 ? (int) ((totalSize * 100) / maxSize) : 0)
                 .movieCount(movieRepository.countByLocalPathIsNotNull())
                 .build();
+    }
+
+    public List<MovieDto> getCachedMovies() {
+        return movieRepository.findCachedMovies().stream().map(movieMapper::toDto).toList();
+    }
+
+    public void clearCache(String movieId) {
+        Movie movie = movieRepository.findById(movieId)
+                .orElseThrow(() -> new MovieNotFoundException(movieId));
+
+        if (movie.getLocalPath() == null) {
+            log.info("Movie {} has no cached file", movieId);
+            return;
+        }
+
+        try {
+            Path localFile = Path.of(movie.getLocalPath());
+            if (Files.deleteIfExists(localFile)) {
+                log.info("Deleted cached file: {}", localFile);
+            }
+        } catch (IOException e) {
+            log.error("Failed to delete cached file for movie {}: {}", movieId, e.getMessage());
+            throw new RuntimeException("Failed to delete cached file", e);
+        }
+
+        movie.setLocalPath(null);
+        movie.setFileSize(null);
+        movie.setStatus(MovieStatus.PENDING);
+        movieRepository.save(movie);
+        log.info("Cleared cache for movie: {} ({})", movie.getTitle(), movieId);
+    }
+
+    public int clearAllCache() {
+        List<Movie> cachedMovies = movieRepository.findCachedMovies();
+        int cleared = 0;
+
+        for (Movie movie : cachedMovies) {
+            try {
+                if (movie.getLocalPath() != null) {
+                    Files.deleteIfExists(Path.of(movie.getLocalPath()));
+                    movie.setLocalPath(null);
+                    movie.setFileSize(null);
+                    movie.setStatus(MovieStatus.PENDING);
+                    movieRepository.save(movie);
+                    cleared++;
+                }
+            } catch (IOException e) {
+                log.warn("Failed to delete cached file for movie {}: {}", movie.getId(), e.getMessage());
+            }
+        }
+
+        log.info("Cleared cache for {} movies", cleared);
+        return cleared;
     }
 }

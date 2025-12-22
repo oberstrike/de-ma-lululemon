@@ -30,5 +30,8 @@ public interface MovieRepository extends JpaRepository<Movie, String> {
     @Query("SELECT COALESCE(SUM(m.fileSize), 0) FROM Movie m WHERE m.localPath IS NOT NULL")
     Long getTotalCacheSize();
 
+    @Query("SELECT m FROM Movie m WHERE m.localPath IS NOT NULL ORDER BY m.updatedAt DESC")
+    List<Movie> findCachedMovies();
+
     long countByLocalPathIsNotNull();
 }
