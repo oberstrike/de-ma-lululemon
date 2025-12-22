@@ -30,8 +30,6 @@ public class MegaScanService {
     private final CategoryRepository categoryRepository;
     private final MovieRepository movieRepository;
 
-    private static final Pattern FILE_PATTERN = Pattern.compile("^(.+?)\\s+(\\d+(?:\\.\\d+)?[KMGT]?B?)\\s+(.+)$");
-
     @Scheduled(cron = "${media.mega.scan-cron:0 0 * * * *}")
     public void scheduledScan() {
         if (!properties.getMega().isScanEnabled()) {

@@ -1,0 +1,187 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-categories-table
+      author: mediaserver
+      changes:
+        - createTable:
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: description
+                  type: text
+              - column:
+                  name: mega_path
+                  type: varchar(1024)
+              - column:
+                  name: sort_order
+                  type: int
+
+  - changeSet:
+      id: 001-create-movies-table
+      author: mediaserver
+      changes:
+        - createTable:
+            tableName: movies
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+              - column:
+                  name: year
+                  type: int
+              - column:
+                  name: duration
+                  type: varchar(50)
+              - column:
+                  name: mega_url
+                  type: varchar(2048)
+              - column:
+                  name: mega_path
+                  type: varchar(1024)
+              - column:
+                  name: thumbnail_url
+                  type: varchar(2048)
+              - column:
+                  name: local_path
+                  type: varchar(1024)
+              - column:
+                  name: file_size
+                  type: bigint
+              - column:
+                  name: content_type
+                  type: varchar(100)
+              - column:
+                  name: status
+                  type: varchar(20)
+                  defaultValue: PENDING
+              - column:
+                  name: category_id
+                  type: varchar(36)
+              - column:
+                  name: created_at
+                  type: timestamp
+              - column:
+                  name: updated_at
+                  type: timestamp
+        - addForeignKeyConstraint:
+            baseTableName: movies
+            baseColumnNames: category_id
+            referencedTableName: categories
+            referencedColumnNames: id
+            constraintName: fk_movies_category
+            onDelete: SET NULL
+
+  - changeSet:
+      id: 001-create-download-tasks-table
+      author: mediaserver
+      changes:
+        - createTable:
+            tableName: download_tasks
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: movie_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(20)
+                  defaultValue: QUEUED
+              - column:
+                  name: bytes_downloaded
+                  type: bigint
+                  defaultValueNumeric: 0
+              - column:
+                  name: total_bytes
+                  type: bigint
+                  defaultValueNumeric: 0
+              - column:
+                  name: progress
+                  type: int
+                  defaultValueNumeric: 0
+              - column:
+                  name: error_message
+                  type: text
+              - column:
+                  name: started_at
+                  type: timestamp
+              - column:
+                  name: completed_at
+                  type: timestamp
+        - addForeignKeyConstraint:
+            baseTableName: download_tasks
+            baseColumnNames: movie_id
+            referencedTableName: movies
+            referencedColumnNames: id
+            constraintName: fk_download_tasks_movie
+            onDelete: CASCADE
+
+  - changeSet:
+      id: 001-create-indexes
+      author: mediaserver
+      changes:
+        - createIndex:
+            tableName: movies
+            indexName: idx_movies_status
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            tableName: movies
+            indexName: idx_movies_category_id
+            columns:
+              - column:
+                  name: category_id
+        - createIndex:
+            tableName: movies
+            indexName: idx_movies_mega_path
+            columns:
+              - column:
+                  name: mega_path
+        - createIndex:
+            tableName: categories
+            indexName: idx_categories_mega_path
+            columns:
+              - column:
+                  name: mega_path
+        - createIndex:
+            tableName: download_tasks
+            indexName: idx_download_tasks_status
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            tableName: download_tasks
+            indexName: idx_download_tasks_movie_id
+            columns:
+              - column:
+                  name: movie_id

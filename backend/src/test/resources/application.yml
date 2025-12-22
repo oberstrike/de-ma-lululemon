@@ -13,6 +13,9 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
     show-sql: false
 
+  liquibase:
+    enabled: false
+
 media:
   storage:
     path: /tmp/media-test/videos
