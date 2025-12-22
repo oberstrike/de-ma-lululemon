@@ -1,7 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MoviesStore } from '../../store/movies.store';
 import { WebSocketService } from '../../services/websocket.service';
 import { InputTextModule } from 'primeng/inputtext';
@@ -15,8 +15,8 @@ import { Message } from 'primeng/message';
 @Component({
   selector: 'app-movie-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     RouterLink,
     FormsModule,
     InputTextModule,
@@ -60,7 +60,7 @@ import { Message } from 'primeng/message';
             <ng-template pTemplate="header">
               <div class="thumbnail">
                 @if (movie.thumbnailUrl) {
-                  <img [src]="movie.thumbnailUrl" [alt]="movie.title" />
+                  <img [src]="movie.thumbnailUrl" [alt]="movie.title" loading="lazy" />
                 } @else {
                   <div class="placeholder">
                     <i class="pi pi-video" style="font-size: 3rem"></i>
@@ -86,10 +86,12 @@ import { Message } from 'primeng/message';
             </div>
           </p-card>
         } @empty {
-          <div class="empty">
-            <i class="pi pi-inbox" style="font-size: 3rem"></i>
-            <p>No movies found</p>
-          </div>
+          @if (!store.loading()) {
+            <div class="empty">
+              <i class="pi pi-inbox" style="font-size: 3rem"></i>
+              <p>No movies found</p>
+            </div>
+          }
         }
       </div>
     </div>
@@ -211,19 +213,22 @@ import { Message } from 'primeng/message';
 })
 export class MovieListComponent implements OnInit {
   readonly store = inject(MoviesStore);
-  private ws = inject(WebSocketService);
+  private readonly ws = inject(WebSocketService);
+  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit() {
     this.store.loadMovies();
     this.ws.connect();
 
-    this.ws.getDownloadProgress().subscribe(progress => {
-      if (progress.status === 'COMPLETED') {
-        this.store.updateMovieStatus(progress.movieId, 'READY', true);
-      } else if (progress.status === 'FAILED') {
-        this.store.updateMovieStatus(progress.movieId, 'ERROR', false);
-      }
-    });
+    this.ws.getDownloadProgress()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(progress => {
+        if (progress.status === 'COMPLETED') {
+          this.store.updateMovieStatus(progress.movieId, 'READY', true);
+        } else if (progress.status === 'FAILED') {
+          this.store.updateMovieStatus(progress.movieId, 'ERROR', false);
+        }
+      });
   }
 
   getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {

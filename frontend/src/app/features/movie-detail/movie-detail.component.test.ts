@@ -5,6 +5,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { provideRouter } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { MovieDetailComponent } from './movie-detail.component';
 import { MoviesStore } from '../../store/movies.store';
@@ -32,6 +33,7 @@ describe('MovieDetailComponent', () => {
         NoopAnimationsModule
       ],
       providers: [
+        provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
@@ -72,8 +74,8 @@ describe('MovieDetailComponent', () => {
       cached: true
     });
 
-    expect(component.movie).toBeTruthy();
-    expect(component.movie?.title).toBe('Test Movie');
+    expect(component.movie()).toBeTruthy();
+    expect(component.movie()?.title).toBe('Test Movie');
   });
 
   it('should connect to websocket on init', () => {
@@ -108,7 +110,7 @@ describe('MovieDetailComponent', () => {
       status: 'DOWNLOADING'
     });
 
-    expect(component.downloadProgress?.progress).toBe(50);
+    expect(component.downloadProgress()?.progress).toBe(50);
   });
 
   it('should return correct severity for status', () => {

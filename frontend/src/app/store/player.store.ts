@@ -1,5 +1,6 @@
 import { computed, inject } from '@angular/core';
 import { signalStore, withState, withComputed, withMethods, patchState } from '@ngrx/signals';
+import { firstValueFrom } from 'rxjs';
 import { ApiService, StreamInfo } from '../services/api.service';
 
 interface PlayerState {
@@ -57,8 +58,8 @@ export const PlayerStore = signalStore(
       patchState(store, { loading: true, error: null, currentMovieId: movieId });
 
       try {
-        const streamInfo = await api.getStreamInfo(movieId).toPromise();
-        patchState(store, { streamInfo: streamInfo!, loading: false });
+        const streamInfo = await firstValueFrom(api.getStreamInfo(movieId));
+        patchState(store, { streamInfo, loading: false });
       } catch (error) {
         patchState(store, {
           error: error instanceof Error ? error.message : 'Failed to load stream',

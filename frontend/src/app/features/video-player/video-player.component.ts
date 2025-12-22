@@ -1,6 +1,5 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject, effect, signal, ChangeDetectionStrategy } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { PlayerStore } from '../../store/player.store';
 import { ButtonModule } from 'primeng/button';
 import { Slider } from 'primeng/slider';
@@ -10,7 +9,8 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-video-player',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonModule, Slider, ProgressSpinner, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink, ButtonModule, Slider, ProgressSpinner, FormsModule],
   template: `
     <div
       class="player-wrapper"
@@ -44,12 +44,12 @@ import { FormsModule } from '@angular/forms';
         (ended)="onEnded()"
         (play)="player.play()"
         (pause)="player.pause()"
-        (waiting)="isBuffering = true"
-        (canplay)="isBuffering = false"
+        (waiting)="isBuffering.set(true)"
+        (canplay)="isBuffering.set(false)"
         playsinline
       ></video>
 
-      @if (isBuffering && player.isPlaying()) {
+      @if (isBuffering() && player.isPlaying()) {
         <div class="buffering-indicator">
           <p-progressspinner strokeWidth="4" />
         </div>
@@ -75,14 +75,12 @@ import { FormsModule } from '@angular/forms';
               [rounded]="true"
               [text]="true"
               (click)="seekRelative(-10)"
-              pTooltip="-10s"
             />
             <p-button
               icon="pi pi-step-forward"
               [rounded]="true"
               [text]="true"
               (click)="seekRelative(10)"
-              pTooltip="+10s"
             />
 
             <div class="volume-control">
@@ -274,13 +272,13 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
   @ViewChild('videoElement') videoRef!: ElementRef<HTMLVideoElement>;
 
   readonly player = inject(PlayerStore);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
-  isBuffering = false;
+  readonly isBuffering = signal(false);
   volumeValue = 100;
   private controlsTimer: ReturnType<typeof setTimeout> | null = null;
-  private syncEffect = effect(() => {
+
+  private readonly syncEffect = effect(() => {
     const video = this.videoRef?.nativeElement;
     if (!video) return;
 

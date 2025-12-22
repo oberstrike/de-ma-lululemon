@@ -1,6 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal, computed, OnInit, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService, Movie, DownloadProgress } from '../../services/api.service';
 import { MoviesStore } from '../../store/movies.store';
 import { WebSocketService } from '../../services/websocket.service';
@@ -15,8 +15,8 @@ import { Chip } from 'primeng/chip';
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     RouterLink,
     ButtonModule,
     TagModule,
@@ -36,11 +36,11 @@ import { Chip } from 'primeng/chip';
         styleClass="back-btn"
       />
 
-      @if (movie) {
+      @if (movie(); as m) {
         <div class="content">
           <div class="poster">
-            @if (movie.thumbnailUrl) {
-              <img [src]="movie.thumbnailUrl" [alt]="movie.title" />
+            @if (m.thumbnailUrl) {
+              <img [src]="m.thumbnailUrl" [alt]="m.title" />
             } @else {
               <div class="placeholder">
                 <i class="pi pi-video" style="font-size: 5rem"></i>
@@ -49,75 +49,82 @@ import { Chip } from 'primeng/chip';
           </div>
 
           <div class="info">
-            <h1>{{ movie.title }}</h1>
+            <h1>{{ m.title }}</h1>
 
             <div class="meta">
-              @if (movie.year) {
-                <p-chip [label]="movie.year.toString()" icon="pi pi-calendar" />
+              @if (m.year) {
+                <p-chip [label]="m.year.toString()" icon="pi pi-calendar" />
               }
-              @if (movie.duration) {
-                <p-chip [label]="movie.duration" icon="pi pi-clock" />
+              @if (m.duration) {
+                <p-chip [label]="m.duration" icon="pi pi-clock" />
               }
-              @if (movie.categoryName) {
-                <p-chip [label]="movie.categoryName" icon="pi pi-tag" />
+              @if (m.categoryName) {
+                <p-chip [label]="m.categoryName" icon="pi pi-tag" />
               }
             </div>
 
-            @if (movie.description) {
-              <p class="description">{{ movie.description }}</p>
+            @if (m.description) {
+              <p class="description">{{ m.description }}</p>
             }
 
             <div class="status">
               <p-tag
-                [value]="movie.status"
-                [severity]="getStatusSeverity(movie.status)"
+                [value]="m.status"
+                [severity]="getStatusSeverity(m.status)"
               />
-              @if (movie.fileSize) {
+              @if (m.fileSize) {
                 <span class="file-size">
                   <i class="pi pi-database"></i>
-                  {{ formatSize(movie.fileSize) }}
+                  {{ formatSize(m.fileSize) }}
                 </span>
               }
             </div>
 
-            @if (downloadProgress && movie.status === 'DOWNLOADING') {
-              <div class="progress-section">
-                <p-progressbar
-                  [value]="downloadProgress.progress"
-                  [showValue]="true"
-                />
-                <span class="progress-info">
-                  {{ formatSize(downloadProgress.bytesDownloaded || 0) }} /
-                  {{ formatSize(downloadProgress.totalBytes || 0) }}
-                </span>
-              </div>
+            @if (downloadProgress(); as progress) {
+              @if (m.status === 'DOWNLOADING') {
+                <div class="progress-section">
+                  <p-progressbar
+                    [value]="progress.progress"
+                    [showValue]="true"
+                  />
+                  <span class="progress-info">
+                    {{ formatSize(progress.bytesDownloaded || 0) }} /
+                    {{ formatSize(progress.totalBytes || 0) }}
+                  </span>
+                </div>
+              }
             }
 
             <div class="actions">
-              @if (movie.status === 'READY') {
-                <p-button
-                  icon="pi pi-play"
-                  label="Play"
-                  [routerLink]="['/play', movie.id]"
-                />
-              } @else if (movie.status === 'PENDING') {
-                <p-button
-                  icon="pi pi-download"
-                  label="Download"
-                  (click)="startDownload()"
-                />
-              } @else if (movie.status === 'DOWNLOADING') {
-                <p-button
-                  icon="pi pi-spin pi-spinner"
-                  label="Downloading..."
-                  [disabled]="true"
-                />
-              } @else if (movie.status === 'ERROR') {
-                <p-button
-                  icon="pi pi-refresh"
-                  label="Retry Download"
-                  (click)="startDownload()"
-                />
+              @switch (m.status) {
+                @case ('READY') {
+                  <p-button
+                    icon="pi pi-play"
+                    label="Play"
+                    [routerLink]="['/play', m.id]"
+                  />
+                }
+                @case ('PENDING') {
+                  <p-button
+                    icon="pi pi-download"
+                    label="Download"
+                    (click)="startDownload()"
+                  />
+                }
+                @case ('DOWNLOADING') {
+                  <p-button
+                    icon="pi pi-spin pi-spinner"
+                    label="Downloading..."
+                    [disabled]="true"
+                  />
+                }
+                @case ('ERROR') {
+                  <p-button
+                    icon="pi pi-refresh"
+                    label="Retry Download"
+                    (click)="startDownload()"
+                  />
+                }
               }
 
               <p-button
@@ -253,40 +260,50 @@ import { Chip } from 'primeng/chip';
   `]
 })
 export class MovieDetailComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private api = inject(ApiService);
-  private moviesStore = inject(MoviesStore);
-  private ws = inject(WebSocketService);
-  private confirmationService = inject(ConfirmationService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly api = inject(ApiService);
+  private readonly moviesStore = inject(MoviesStore);
+  private readonly ws = inject(WebSocketService);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  movie: Movie | null = null;
-  downloadProgress: DownloadProgress | null = null;
+  readonly movie = signal<Movie | null>(null);
+  readonly downloadProgress = signal<DownloadProgress | null>(null);
+
+  readonly isDownloading = computed(() => this.movie()?.status === 'DOWNLOADING');
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
-    this.api.getMovie(id).subscribe({
-      next: movie => this.movie = movie,
-      error: () => this.router.navigate(['/'])
-    });
+
+    this.api.getMovie(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: movie => this.movie.set(movie),
+        error: () => this.router.navigate(['/'])
+      });
 
     this.ws.connect();
-    this.ws.getDownloadProgress().subscribe(progress => {
-      if (this.movie && progress.movieId === this.movie.id) {
-        this.downloadProgress = progress;
-        if (progress.status === 'COMPLETED') {
-          this.movie = { ...this.movie, status: 'READY', cached: true };
-        } else if (progress.status === 'FAILED') {
-          this.movie = { ...this.movie, status: 'ERROR' };
+    this.ws.getDownloadProgress()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(progress => {
+        const currentMovie = this.movie();
+        if (currentMovie && progress.movieId === currentMovie.id) {
+          this.downloadProgress.set(progress);
+          if (progress.status === 'COMPLETED') {
+            this.movie.set({ ...currentMovie, status: 'READY', cached: true });
+          } else if (progress.status === 'FAILED') {
+            this.movie.set({ ...currentMovie, status: 'ERROR' });
+          }
         }
-      }
-    });
+      });
   }
 
   startDownload() {
-    if (!this.movie) return;
-    this.movie = { ...this.movie, status: 'DOWNLOADING' };
-    this.moviesStore.startDownload(this.movie.id);
+    const currentMovie = this.movie();
+    if (!currentMovie) return;
+    this.movie.set({ ...currentMovie, status: 'DOWNLOADING' });
+    this.moviesStore.startDownload(currentMovie.id);
   }
 
   confirmDelete() {
@@ -300,8 +317,9 @@ export class MovieDetailComponent implements OnInit {
   }
 
   deleteMovie() {
-    if (!this.movie) return;
-    this.moviesStore.deleteMovie(this.movie.id);
+    const currentMovie = this.movie();
+    if (!currentMovie) return;
+    this.moviesStore.deleteMovie(currentMovie.id);
     this.router.navigate(['/']);
   }
 

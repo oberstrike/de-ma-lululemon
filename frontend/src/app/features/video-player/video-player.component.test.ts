@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { VideoPlayerComponent } from './video-player.component';
 import { PlayerStore } from '../../store/player.store';
 
@@ -19,6 +20,7 @@ describe('VideoPlayerComponent', () => {
         NoopAnimationsModule
       ],
       providers: [
+        provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
@@ -123,6 +125,10 @@ describe('VideoPlayerComponent', () => {
     expect(component.player.duration()).toBe(0);
     expect(component.player.currentTime()).toBe(0);
     expect(component.player.isPlaying()).toBe(false);
+  });
+
+  it('should initialize with isBuffering signal as false', () => {
+    expect(component.isBuffering()).toBe(false);
   });
 
   it('should initialize volume value', () => {

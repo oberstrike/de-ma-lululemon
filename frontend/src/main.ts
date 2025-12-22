@@ -1,7 +1,8 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideRouter, withViewTransitions } from '@angular/router';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 import { definePreset } from '@primeng/themes';
@@ -28,8 +29,9 @@ const MediaPreset = definePreset(Aura, {
 
 bootstrapApplication(AppComponent, {
   providers: [
-    provideRouter(routes),
-    provideHttpClient(),
+    provideZonelessChangeDetection(),
+    provideRouter(routes, withViewTransitions()),
+    provideHttpClient(withFetch()),
     provideAnimationsAsync(),
     providePrimeNG({
       theme: {

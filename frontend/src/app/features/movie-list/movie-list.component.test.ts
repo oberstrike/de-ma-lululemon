@@ -4,6 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { MovieListComponent } from './movie-list.component';
 import { MoviesStore } from '../../store/movies.store';
 import { WebSocketService } from '../../services/websocket.service';
@@ -29,6 +30,7 @@ describe('MovieListComponent', () => {
         NoopAnimationsModule
       ],
       providers: [
+        provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
