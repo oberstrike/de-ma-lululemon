@@ -1,53 +1,104 @@
 # Media Server
 
-Spring Boot backend for streaming videos with Mega.nz integration.
+Full-stack media streaming application with Angular frontend and Spring Boot backend.
+
+## Architecture
+
+```
+┌─────────────────┐         ┌─────────────────┐         ┌─────────────┐
+│  Angular App    │  HTTP   │  Spring Boot    │  SDK    │  Mega.nz    │
+│  (Frontend)     │ ◄─────► │  (Backend)      │ ◄─────► │  Cloud      │
+└─────────────────┘         └────────┬────────┘         └─────────────┘
+                                     │
+                                     ▼
+                            ┌─────────────────┐
+                            │  PostgreSQL     │
+                            │  + File Storage │
+                            └─────────────────┘
+```
+
+## Project Structure
+
+```
+├── frontend/          # Angular 18 app
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── features/      # Movie list, detail, video player
+│   │   │   ├── services/      # API, WebSocket
+│   │   │   └── store/         # NgRx signals stores
+│   │   └── environments/
+│   └── Dockerfile
+├── backend/           # Spring Boot 3 app
+│   ├── src/main/java/com/mediaserver/
+│   │   ├── controller/        # REST endpoints
+│   │   ├── service/           # Business logic
+│   │   ├── entity/            # JPA entities
+│   │   └── repository/        # Data access
+│   └── Dockerfile
+└── docker-compose.yml
+```
 
 ## Features
 
 - Video streaming with HTTP range requests (seeking support)
 - Mega.nz downloads (server-side, no CORS issues)
+- Real-time download progress via WebSocket
 - PostgreSQL database for movie metadata
-- WebSocket for real-time download progress
 - Centralized video cache
 
-## API Endpoints
-
-### Movies
-- `GET /api/movies` - List all movies
-- `GET /api/movies/{id}` - Get movie by ID
-- `POST /api/movies` - Create movie
-- `PUT /api/movies/{id}` - Update movie
-- `DELETE /api/movies/{id}` - Delete movie
-- `POST /api/movies/{id}/download` - Start download
-
-### Streaming
-- `GET /api/stream/{movieId}` - Stream video
-- `GET /api/stream/{movieId}/info` - Get stream info
-
-### Downloads
-- `GET /api/downloads` - Get active downloads
-- `GET /api/downloads/{movieId}` - Get download progress
-
-### Categories
-- `GET /api/categories` - List categories
-- `POST /api/categories` - Create category
-
-## Running
+## Quick Start
 
 ```bash
+# Run everything with Docker
+docker-compose up
+
+# Access the app at http://localhost
+```
+
+## Development
+
+### Backend
+
+```bash
+cd backend
+
 # Start PostgreSQL
 docker-compose up -d db
 
-# Run application
+# Run Spring Boot
 ./mvnw spring-boot:run
-
-# Or with Docker
-docker-compose up
 ```
+
+### Frontend
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start dev server (proxies to backend at :8080)
+npm start
+
+# Access at http://localhost:4200
+```
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/movies | List all movies |
+| POST | /api/movies | Create movie |
+| GET | /api/movies/{id} | Get movie details |
+| DELETE | /api/movies/{id} | Delete movie |
+| POST | /api/movies/{id}/download | Start Mega download |
+| GET | /api/stream/{id} | Stream video |
+| GET | /api/downloads | Active downloads |
+| GET | /api/categories | List categories |
 
 ## Configuration
 
-Set environment variables:
+Environment variables:
 - `DB_USERNAME` / `DB_PASSWORD` - Database credentials
 - `MEDIA_STORAGE_PATH` - Video storage path
 - `MEGA_EMAIL` / `MEGA_PASSWORD` - Mega.nz credentials (optional)

@@ -1,17 +1,24 @@
-target/
-!.mvn/wrapper/maven-wrapper.jar
+# Backend
+backend/target/
 *.class
-*.log
 *.jar
 *.war
-*.ear
-*.zip
-*.tar.gz
-*.rar
-*.iml
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# IDE
 .idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
 *.swp
 *~
-.DS_Store
+
+# Environment
 .env
-application-local.yml
+*.local
