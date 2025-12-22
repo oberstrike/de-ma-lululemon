@@ -4,58 +4,92 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MoviesStore } from '../../store/movies.store';
 import { WebSocketService } from '../../services/websocket.service';
+import { InputTextModule } from 'primeng/inputtext';
+import { CardModule } from 'primeng/card';
+import { TagModule } from 'primeng/tag';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { Message } from 'primeng/message';
 
 @Component({
   selector: 'app-movie-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    InputTextModule,
+    CardModule,
+    TagModule,
+    ProgressSpinner,
+    IconField,
+    InputIcon,
+    Message
+  ],
   template: `
     <div class="movie-list-page">
       <header class="header">
         <h1>Media Server</h1>
-        <div class="search-box">
+        <p-iconfield>
+          <p-inputicon styleClass="pi pi-search" />
           <input
             type="text"
+            pInputText
             placeholder="Search movies..."
             [ngModel]="store.filter()"
             (ngModelChange)="store.setFilter($event)"
           />
-        </div>
+        </p-iconfield>
       </header>
 
       @if (store.loading()) {
-        <div class="loading">Loading movies...</div>
+        <div class="loading">
+          <p-progressspinner strokeWidth="4" />
+          <p>Loading movies...</p>
+        </div>
       }
 
       @if (store.error()) {
-        <div class="error">{{ store.error() }}</div>
+        <p-message severity="error" [text]="store.error()!" />
       }
 
       <div class="movies-grid">
         @for (movie of store.filteredMovies(); track movie.id) {
-          <div class="movie-card" [routerLink]="['/movie', movie.id]">
-            <div class="thumbnail">
-              @if (movie.thumbnailUrl) {
-                <img [src]="movie.thumbnailUrl" [alt]="movie.title" />
-              } @else {
-                <div class="placeholder">{{ movie.title.charAt(0) }}</div>
-              }
-              <div class="status-badge" [class]="movie.status.toLowerCase()">
-                {{ movie.status }}
+          <p-card styleClass="movie-card" [routerLink]="['/movie', movie.id]">
+            <ng-template pTemplate="header">
+              <div class="thumbnail">
+                @if (movie.thumbnailUrl) {
+                  <img [src]="movie.thumbnailUrl" [alt]="movie.title" />
+                } @else {
+                  <div class="placeholder">
+                    <i class="pi pi-video" style="font-size: 3rem"></i>
+                  </div>
+                }
+                <p-tag
+                  [value]="movie.status"
+                  [severity]="getStatusSeverity(movie.status)"
+                  class="status-tag"
+                />
               </div>
-            </div>
+            </ng-template>
             <div class="info">
               <h3>{{ movie.title }}</h3>
-              @if (movie.year) {
-                <span class="year">{{ movie.year }}</span>
-              }
-              @if (movie.duration) {
-                <span class="duration">{{ movie.duration }}</span>
-              }
+              <div class="meta">
+                @if (movie.year) {
+                  <span><i class="pi pi-calendar"></i> {{ movie.year }}</span>
+                }
+                @if (movie.duration) {
+                  <span><i class="pi pi-clock"></i> {{ movie.duration }}</span>
+                }
+              </div>
             </div>
-          </div>
+          </p-card>
         } @empty {
-          <div class="empty">No movies found</div>
+          <div class="empty">
+            <i class="pi pi-inbox" style="font-size: 3rem"></i>
+            <p>No movies found</p>
+          </div>
         }
       </div>
     </div>
@@ -72,36 +106,19 @@ import { WebSocketService } from '../../services/websocket.service';
       margin-bottom: 2rem;
 
       h1 {
-        color: var(--primary);
+        color: var(--p-primary-color);
         font-size: 2rem;
-      }
-    }
-
-    .search-box input {
-      padding: 0.75rem 1rem;
-      border-radius: 4px;
-      border: 1px solid #333;
-      background: var(--bg-card);
-      color: #fff;
-      width: 300px;
-      font-size: 1rem;
-
-      &:focus {
-        outline: none;
-        border-color: var(--primary);
+        margin: 0;
       }
     }
 
     .movies-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 1.5rem;
     }
 
-    .movie-card {
-      background: var(--bg-card);
-      border-radius: 8px;
-      overflow: hidden;
+    :host ::ng-deep .movie-card {
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
 
@@ -109,12 +126,21 @@ import { WebSocketService } from '../../services/websocket.service';
         transform: translateY(-4px);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
       }
+
+      .p-card-body {
+        padding: 0;
+      }
+
+      .p-card-content {
+        padding: 1rem;
+      }
     }
 
     .thumbnail {
       position: relative;
       aspect-ratio: 16/9;
-      background: #222;
+      background: var(--p-surface-800);
+      overflow: hidden;
 
       img {
         width: 100%;
@@ -128,53 +154,58 @@ import { WebSocketService } from '../../services/websocket.service';
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 3rem;
-        color: #555;
+        color: var(--p-text-muted-color);
       }
     }
 
-    .status-badge {
+    .status-tag {
       position: absolute;
       top: 8px;
       right: 8px;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-
-      &.ready { background: #22c55e; }
-      &.downloading { background: #3b82f6; }
-      &.pending { background: #f59e0b; }
-      &.error { background: #ef4444; }
     }
 
     .info {
-      padding: 1rem;
-
       h3 {
         font-size: 1rem;
-        margin-bottom: 0.5rem;
+        margin: 0 0 0.5rem 0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
-      .year, .duration {
+      .meta {
+        display: flex;
+        gap: 1rem;
         font-size: 0.875rem;
-        color: var(--text-secondary);
-        margin-right: 0.5rem;
+        color: var(--p-text-muted-color);
+
+        span {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+        }
       }
     }
 
-    .loading, .error, .empty {
-      text-align: center;
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       padding: 3rem;
-      color: var(--text-secondary);
+      gap: 1rem;
+      color: var(--p-text-muted-color);
     }
 
-    .error {
-      color: #ef4444;
+    .empty {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      gap: 1rem;
+      color: var(--p-text-muted-color);
     }
   `]
 })
@@ -193,5 +224,15 @@ export class MovieListComponent implements OnInit {
         this.store.updateMovieStatus(progress.movieId, 'ERROR', false);
       }
     });
+  }
+
+  getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+    switch (status) {
+      case 'READY': return 'success';
+      case 'DOWNLOADING': return 'info';
+      case 'PENDING': return 'warn';
+      case 'ERROR': return 'danger';
+      default: return 'secondary';
+    }
   }
 }

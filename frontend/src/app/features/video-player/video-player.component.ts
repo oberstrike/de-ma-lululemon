@@ -2,11 +2,15 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject, effect } f
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PlayerStore } from '../../store/player.store';
+import { ButtonModule } from 'primeng/button';
+import { Slider } from 'primeng/slider';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-video-player',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ButtonModule, Slider, ProgressSpinner, FormsModule],
   template: `
     <div
       class="player-wrapper"
@@ -16,16 +20,19 @@ import { PlayerStore } from '../../store/player.store';
     >
       @if (player.loading()) {
         <div class="loading-overlay">
-          <div class="spinner"></div>
+          <p-progressspinner strokeWidth="4" />
           <p>Loading video...</p>
         </div>
       }
 
       @if (player.error()) {
-        <div class="error-overlay">
+        <div class="error-overlay" (click)="$event.stopPropagation()">
+          <i class="pi pi-exclamation-triangle" style="font-size: 3rem; color: var(--p-red-500)"></i>
           <p>{{ player.error() }}</p>
-          <button (click)="retry($event)">Retry</button>
-          <a routerLink="/" (click)="$event.stopPropagation()">Back to Movies</a>
+          <div class="error-actions">
+            <p-button icon="pi pi-refresh" label="Retry" (click)="retry($event)" />
+            <p-button icon="pi pi-home" label="Back to Movies" routerLink="/" [outlined]="true" />
+          </div>
         </div>
       }
 
@@ -44,7 +51,7 @@ import { PlayerStore } from '../../store/player.store';
 
       @if (isBuffering && player.isPlaying()) {
         <div class="buffering-indicator">
-          <div class="spinner"></div>
+          <p-progressspinner strokeWidth="4" />
         </div>
       }
 
@@ -57,23 +64,40 @@ import { PlayerStore } from '../../store/player.store';
 
         <div class="controls-row">
           <div class="left">
-            <button class="control-btn" (click)="togglePlay()">
-              {{ player.isPlaying() ? '⏸' : '▶' }}
-            </button>
-            <button class="control-btn" (click)="seekRelative(-10)">⏪</button>
-            <button class="control-btn" (click)="seekRelative(10)">⏩</button>
+            <p-button
+              [icon]="player.isPlaying() ? 'pi pi-pause' : 'pi pi-play'"
+              [rounded]="true"
+              [text]="true"
+              (click)="togglePlay()"
+            />
+            <p-button
+              icon="pi pi-step-backward"
+              [rounded]="true"
+              [text]="true"
+              (click)="seekRelative(-10)"
+              pTooltip="-10s"
+            />
+            <p-button
+              icon="pi pi-step-forward"
+              [rounded]="true"
+              [text]="true"
+              (click)="seekRelative(10)"
+              pTooltip="+10s"
+            />
 
             <div class="volume-control">
-              <button class="control-btn" (click)="player.toggleMute()">
-                {{ player.muted() || player.volume() === 0 ? '🔇' : '🔊' }}
-              </button>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                [value]="player.muted() ? 0 : player.volume()"
-                (input)="onVolumeChange($event)"
+              <p-button
+                [icon]="player.muted() || player.volume() === 0 ? 'pi pi-volume-off' : 'pi pi-volume-up'"
+                [rounded]="true"
+                [text]="true"
+                (click)="player.toggleMute()"
+              />
+              <p-slider
+                [(ngModel)]="volumeValue"
+                [min]="0"
+                [max]="100"
+                (onChange)="onVolumeSliderChange($event)"
+                styleClass="volume-slider"
               />
             </div>
 
@@ -83,8 +107,18 @@ import { PlayerStore } from '../../store/player.store';
           </div>
 
           <div class="right">
-            <a class="control-btn" routerLink="/">✕</a>
-            <button class="control-btn" (click)="toggleFullscreen()">⛶</button>
+            <p-button
+              icon="pi pi-times"
+              [rounded]="true"
+              [text]="true"
+              routerLink="/"
+            />
+            <p-button
+              [icon]="player.isFullscreen() ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
+              [rounded]="true"
+              [text]="true"
+              (click)="toggleFullscreen()"
+            />
           </div>
         </div>
       </div>
@@ -120,31 +154,21 @@ import { PlayerStore } from '../../store/player.store';
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.8);
       z-index: 10;
-    }
-
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #333;
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+      gap: 1rem;
     }
 
     .error-overlay {
-      p { margin-bottom: 1rem; }
-      button, a {
-        padding: 0.5rem 1rem;
-        background: var(--primary);
-        border-radius: 4px;
-        margin: 0.5rem;
+      p {
+        margin: 1rem 0;
+        font-size: 1.25rem;
       }
+    }
+
+    .error-actions {
+      display: flex;
+      gap: 1rem;
     }
 
     .controls {
@@ -152,7 +176,7 @@ import { PlayerStore } from '../../store/player.store';
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 1rem;
+      padding: 1rem 1.5rem;
       background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
       opacity: 0;
       transition: opacity 0.3s;
@@ -189,7 +213,7 @@ import { PlayerStore } from '../../store/player.store';
     .progress {
       position: absolute;
       height: 100%;
-      background: var(--primary);
+      background: var(--p-primary-color);
       border-radius: 3px;
     }
 
@@ -213,38 +237,36 @@ import { PlayerStore } from '../../store/player.store';
     .left, .right {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-    }
-
-    .control-btn {
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-      border-radius: 4px;
-      transition: background 0.2s;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
+      gap: 0.25rem;
     }
 
     .volume-control {
       display: flex;
       align-items: center;
+      gap: 0.5rem;
 
-      input[type="range"] {
+      :host ::ng-deep .volume-slider {
         width: 80px;
-        accent-color: var(--primary);
+
+        .p-slider-handle {
+          width: 12px;
+          height: 12px;
+        }
       }
     }
 
     .time {
       font-size: 0.875rem;
-      color: var(--text-secondary);
+      color: var(--p-text-muted-color);
       margin-left: 1rem;
+    }
+
+    :host ::ng-deep .p-button {
+      color: white;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
     }
   `]
 })
@@ -256,6 +278,7 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
   private router = inject(Router);
 
   isBuffering = false;
+  volumeValue = 100;
   private controlsTimer: ReturnType<typeof setTimeout> | null = null;
   private syncEffect = effect(() => {
     const video = this.videoRef?.nativeElement;
@@ -272,6 +295,7 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     const movieId = this.route.snapshot.paramMap.get('id')!;
     await this.player.loadMovie(movieId);
     this.startControlsTimer();
+    this.volumeValue = this.player.volume() * 100;
   }
 
   ngOnDestroy() {
@@ -328,8 +352,8 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     this.videoRef.nativeElement.currentTime = Math.max(0, Math.min(this.player.duration(), newTime));
   }
 
-  onVolumeChange(event: Event) {
-    const value = parseFloat((event.target as HTMLInputElement).value);
+  onVolumeSliderChange(event: { value: number }) {
+    const value = event.value / 100;
     this.player.setVolume(value);
     this.videoRef.nativeElement.volume = value;
   }

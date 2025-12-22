@@ -4,14 +4,37 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService, Movie, DownloadProgress } from '../../services/api.service';
 import { MoviesStore } from '../../store/movies.store';
 import { WebSocketService } from '../../services/websocket.service';
+import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
+import { ProgressBar } from 'primeng/progressbar';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
+import { Chip } from 'primeng/chip';
 
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [
+    CommonModule,
+    RouterLink,
+    ButtonModule,
+    TagModule,
+    ProgressBar,
+    ProgressSpinner,
+    ConfirmDialog,
+    Chip
+  ],
+  providers: [ConfirmationService],
   template: `
     <div class="movie-detail">
-      <a routerLink="/" class="back-btn">&larr; Back</a>
+      <p-button
+        icon="pi pi-arrow-left"
+        label="Back"
+        [text]="true"
+        routerLink="/"
+        styleClass="back-btn"
+      />
 
       @if (movie) {
         <div class="content">
@@ -19,7 +42,9 @@ import { WebSocketService } from '../../services/websocket.service';
             @if (movie.thumbnailUrl) {
               <img [src]="movie.thumbnailUrl" [alt]="movie.title" />
             } @else {
-              <div class="placeholder">{{ movie.title.charAt(0) }}</div>
+              <div class="placeholder">
+                <i class="pi pi-video" style="font-size: 5rem"></i>
+              </div>
             }
           </div>
 
@@ -27,9 +52,15 @@ import { WebSocketService } from '../../services/websocket.service';
             <h1>{{ movie.title }}</h1>
 
             <div class="meta">
-              @if (movie.year) { <span>{{ movie.year }}</span> }
-              @if (movie.duration) { <span>{{ movie.duration }}</span> }
-              @if (movie.categoryName) { <span>{{ movie.categoryName }}</span> }
+              @if (movie.year) {
+                <p-chip [label]="movie.year.toString()" icon="pi pi-calendar" />
+              }
+              @if (movie.duration) {
+                <p-chip [label]="movie.duration" icon="pi pi-clock" />
+              }
+              @if (movie.categoryName) {
+                <p-chip [label]="movie.categoryName" icon="pi pi-tag" />
+              }
             </div>
 
             @if (movie.description) {
@@ -37,47 +68,76 @@ import { WebSocketService } from '../../services/websocket.service';
             }
 
             <div class="status">
-              <span class="badge" [class]="movie.status.toLowerCase()">
-                {{ movie.status }}
-              </span>
+              <p-tag
+                [value]="movie.status"
+                [severity]="getStatusSeverity(movie.status)"
+              />
               @if (movie.fileSize) {
-                <span class="file-size">{{ formatSize(movie.fileSize) }}</span>
+                <span class="file-size">
+                  <i class="pi pi-database"></i>
+                  {{ formatSize(movie.fileSize) }}
+                </span>
               }
             </div>
 
             @if (downloadProgress && movie.status === 'DOWNLOADING') {
-              <div class="progress-bar">
-                <div class="progress" [style.width.%]="downloadProgress.progress"></div>
-                <span>{{ downloadProgress.progress }}%</span>
+              <div class="progress-section">
+                <p-progressbar
+                  [value]="downloadProgress.progress"
+                  [showValue]="true"
+                />
+                <span class="progress-info">
+                  {{ formatSize(downloadProgress.bytesDownloaded || 0) }} /
+                  {{ formatSize(downloadProgress.totalBytes || 0) }}
+                </span>
               </div>
             }
 
             <div class="actions">
               @if (movie.status === 'READY') {
-                <button class="btn primary" [routerLink]="['/play', movie.id]">
-                  ▶ Play
-                </button>
+                <p-button
+                  icon="pi pi-play"
+                  label="Play"
+                  [routerLink]="['/play', movie.id]"
+                />
               } @else if (movie.status === 'PENDING') {
-                <button class="btn primary" (click)="startDownload()">
-                  ⬇ Download
-                </button>
+                <p-button
+                  icon="pi pi-download"
+                  label="Download"
+                  (click)="startDownload()"
+                />
               } @else if (movie.status === 'DOWNLOADING') {
-                <button class="btn" disabled>Downloading...</button>
+                <p-button
+                  icon="pi pi-spin pi-spinner"
+                  label="Downloading..."
+                  [disabled]="true"
+                />
               } @else if (movie.status === 'ERROR') {
-                <button class="btn primary" (click)="startDownload()">
-                  ↻ Retry Download
-                </button>
+                <p-button
+                  icon="pi pi-refresh"
+                  label="Retry Download"
+                  (click)="startDownload()"
+                />
               }
 
-              <button class="btn danger" (click)="deleteMovie()">
-                🗑 Delete
-              </button>
+              <p-button
+                icon="pi pi-trash"
+                label="Delete"
+                severity="danger"
+                [outlined]="true"
+                (click)="confirmDelete()"
+              />
             </div>
           </div>
         </div>
       } @else {
-        <div class="loading">Loading...</div>
+        <div class="loading">
+          <p-progressspinner strokeWidth="4" />
+          <p>Loading movie details...</p>
+        </div>
       }
+
+      <p-confirmdialog />
     </div>
   `,
   styles: [`
@@ -87,12 +147,8 @@ import { WebSocketService } from '../../services/websocket.service';
       margin: 0 auto;
     }
 
-    .back-btn {
-      display: inline-block;
-      color: var(--text-secondary);
+    :host ::ng-deep .back-btn {
       margin-bottom: 1.5rem;
-
-      &:hover { color: #fff; }
     }
 
     .content {
@@ -103,8 +159,8 @@ import { WebSocketService } from '../../services/websocket.service';
 
     .poster {
       aspect-ratio: 2/3;
-      background: var(--bg-card);
-      border-radius: 8px;
+      background: var(--p-surface-card);
+      border-radius: var(--p-border-radius);
       overflow: hidden;
 
       img {
@@ -119,27 +175,26 @@ import { WebSocketService } from '../../services/websocket.service';
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 5rem;
-        color: #555;
+        color: var(--p-text-muted-color);
       }
     }
 
     .info {
       h1 {
         font-size: 2rem;
-        margin-bottom: 1rem;
+        margin: 0 0 1rem 0;
       }
     }
 
     .meta {
       display: flex;
-      gap: 1rem;
-      color: var(--text-secondary);
-      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
     }
 
     .description {
-      color: var(--text-secondary);
+      color: var(--p-text-muted-color);
       line-height: 1.6;
       margin-bottom: 1.5rem;
     }
@@ -149,44 +204,24 @@ import { WebSocketService } from '../../services/websocket.service';
       align-items: center;
       gap: 1rem;
       margin-bottom: 1.5rem;
-    }
 
-    .badge {
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-size: 0.875rem;
-      font-weight: 600;
-
-      &.ready { background: #22c55e; }
-      &.downloading { background: #3b82f6; }
-      &.pending { background: #f59e0b; }
-      &.error { background: #ef4444; }
-    }
-
-    .file-size {
-      color: var(--text-secondary);
-    }
-
-    .progress-bar {
-      height: 24px;
-      background: #333;
-      border-radius: 4px;
-      margin-bottom: 1.5rem;
-      position: relative;
-      overflow: hidden;
-
-      .progress {
-        height: 100%;
-        background: var(--primary);
-        transition: width 0.3s;
+      .file-size {
+        color: var(--p-text-muted-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
       }
+    }
 
-      span {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+    .progress-section {
+      margin-bottom: 1.5rem;
+
+      .progress-info {
+        display: block;
+        text-align: center;
+        margin-top: 0.5rem;
         font-size: 0.875rem;
+        color: var(--p-text-muted-color);
       }
     }
 
@@ -195,32 +230,14 @@ import { WebSocketService } from '../../services/websocket.service';
       gap: 1rem;
     }
 
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border-radius: 4px;
-      font-weight: 600;
-      transition: background 0.2s;
-
-      &.primary {
-        background: var(--primary);
-        &:hover { background: var(--primary-hover); }
-      }
-
-      &.danger {
-        background: #333;
-        &:hover { background: #ef4444; }
-      }
-
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-    }
-
     .loading {
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       padding: 3rem;
-      color: var(--text-secondary);
+      gap: 1rem;
+      color: var(--p-text-muted-color);
     }
 
     @media (max-width: 768px) {
@@ -230,6 +247,7 @@ import { WebSocketService } from '../../services/websocket.service';
 
       .poster {
         max-width: 250px;
+        margin: 0 auto;
       }
     }
   `]
@@ -240,6 +258,7 @@ export class MovieDetailComponent implements OnInit {
   private api = inject(ApiService);
   private moviesStore = inject(MoviesStore);
   private ws = inject(WebSocketService);
+  private confirmationService = inject(ConfirmationService);
 
   movie: Movie | null = null;
   downloadProgress: DownloadProgress | null = null;
@@ -270,10 +289,30 @@ export class MovieDetailComponent implements OnInit {
     this.moviesStore.startDownload(this.movie.id);
   }
 
+  confirmDelete() {
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to delete this movie?',
+      header: 'Delete Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => this.deleteMovie()
+    });
+  }
+
   deleteMovie() {
-    if (!this.movie || !confirm('Delete this movie?')) return;
+    if (!this.movie) return;
     this.moviesStore.deleteMovie(this.movie.id);
     this.router.navigate(['/']);
+  }
+
+  getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+    switch (status) {
+      case 'READY': return 'success';
+      case 'DOWNLOADING': return 'info';
+      case 'PENDING': return 'warn';
+      case 'ERROR': return 'danger';
+      default: return 'secondary';
+    }
   }
 
   formatSize(bytes: number): string {

@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MovieListComponent } from './movie-list.component';
 import { MoviesStore } from '../../store/movies.store';
 import { WebSocketService } from '../../services/websocket.service';
@@ -24,10 +26,12 @@ describe('MovieListComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         MovieListComponent,
-        HttpClientTestingModule,
-        RouterTestingModule
+        NoopAnimationsModule
       ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
         MoviesStore,
         { provide: WebSocketService, useValue: mockWebSocketService }
       ]
@@ -75,5 +79,13 @@ describe('MovieListComponent', () => {
   it('should subscribe to download progress updates', () => {
     fixture.detectChanges();
     expect(mockWebSocketService.getDownloadProgress).toHaveBeenCalled();
+  });
+
+  it('should return correct severity for status', () => {
+    expect(component.getStatusSeverity('READY')).toBe('success');
+    expect(component.getStatusSeverity('DOWNLOADING')).toBe('info');
+    expect(component.getStatusSeverity('PENDING')).toBe('warn');
+    expect(component.getStatusSeverity('ERROR')).toBe('danger');
+    expect(component.getStatusSeverity('UNKNOWN')).toBe('secondary');
   });
 });

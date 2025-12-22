@@ -1,8 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { ActivatedRoute, Router } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ConfirmationService } from 'primeng/api';
 import { MovieDetailComponent } from './movie-detail.component';
 import { MoviesStore } from '../../store/movies.store';
 import { WebSocketService } from '../../services/websocket.service';
@@ -26,11 +29,14 @@ describe('MovieDetailComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         MovieDetailComponent,
-        HttpClientTestingModule,
-        RouterTestingModule
+        NoopAnimationsModule
       ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
         MoviesStore,
+        ConfirmationService,
         { provide: WebSocketService, useValue: mockWebSocketService },
         {
           provide: ActivatedRoute,
@@ -103,5 +109,13 @@ describe('MovieDetailComponent', () => {
     });
 
     expect(component.downloadProgress?.progress).toBe(50);
+  });
+
+  it('should return correct severity for status', () => {
+    expect(component.getStatusSeverity('READY')).toBe('success');
+    expect(component.getStatusSeverity('DOWNLOADING')).toBe('info');
+    expect(component.getStatusSeverity('PENDING')).toBe('warn');
+    expect(component.getStatusSeverity('ERROR')).toBe('danger');
+    expect(component.getStatusSeverity('UNKNOWN')).toBe('secondary');
   });
 });

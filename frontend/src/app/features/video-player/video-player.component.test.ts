@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { VideoPlayerComponent } from './video-player.component';
 import { PlayerStore } from '../../store/player.store';
 
@@ -14,10 +16,12 @@ describe('VideoPlayerComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         VideoPlayerComponent,
-        HttpClientTestingModule,
-        RouterTestingModule
+        NoopAnimationsModule
       ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
         PlayerStore,
         {
           provide: ActivatedRoute,
@@ -119,5 +123,9 @@ describe('VideoPlayerComponent', () => {
     expect(component.player.duration()).toBe(0);
     expect(component.player.currentTime()).toBe(0);
     expect(component.player.isPlaying()).toBe(false);
+  });
+
+  it('should initialize volume value', () => {
+    expect(component.volumeValue).toBe(100);
   });
 });
