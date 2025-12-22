@@ -1,54 +1,53 @@
-# de-ma-lululemon Project
+# Media Server
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Spring Boot backend for streaming videos with Mega.nz integration.
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+## Features
 
-## Running the application in dev mode
+- Video streaming with HTTP range requests (seeking support)
+- Mega.nz downloads (server-side, no CORS issues)
+- PostgreSQL database for movie metadata
+- WebSocket for real-time download progress
+- Centralized video cache
 
-You can run your application in dev mode that enables live coding using:
-```shell script
-./gradlew quarkusDev
+## API Endpoints
+
+### Movies
+- `GET /api/movies` - List all movies
+- `GET /api/movies/{id}` - Get movie by ID
+- `POST /api/movies` - Create movie
+- `PUT /api/movies/{id}` - Update movie
+- `DELETE /api/movies/{id}` - Delete movie
+- `POST /api/movies/{id}/download` - Start download
+
+### Streaming
+- `GET /api/stream/{movieId}` - Stream video
+- `GET /api/stream/{movieId}/info` - Get stream info
+
+### Downloads
+- `GET /api/downloads` - Get active downloads
+- `GET /api/downloads/{movieId}` - Get download progress
+
+### Categories
+- `GET /api/categories` - List categories
+- `POST /api/categories` - Create category
+
+## Running
+
+```bash
+# Start PostgreSQL
+docker-compose up -d db
+
+# Run application
+./mvnw spring-boot:run
+
+# Or with Docker
+docker-compose up
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at http://localhost:8080/q/dev/.
+## Configuration
 
-## Packaging and running the application
-
-The application can be packaged using:
-```shell script
-./gradlew build
-```
-It produces the `quarkus-run.jar` file in the `build/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar build/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-```shell script
-./gradlew build -Dquarkus.package.type=uber-jar
-```
-
-The application, packaged as an _über-jar_, is now runnable using `java -jar build/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using: 
-```shell script
-./gradlew build -Dquarkus.package.type=native
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using: 
-```shell script
-./gradlew build -Dquarkus.package.type=native -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./build/de-ma-lululemon-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult https://quarkus.io/guides/gradle-tooling.
-
-## Related Guides
-
-- Quartz ([guide](https://quarkus.io/guides/quartz)): Schedule clustered tasks with Quartz
-- Kotlin ([guide](https://quarkus.io/guides/kotlin)): Write your services in Kotlin
-- MongoDB with Panache for Kotlin ([guide](https://quarkus.io/guides/mongodb-panache-kotlin)): Simplify your persistence code for MongoDB via the active record or the repository pattern
+Set environment variables:
+- `DB_USERNAME` / `DB_PASSWORD` - Database credentials
+- `MEDIA_STORAGE_PATH` - Video storage path
+- `MEGA_EMAIL` / `MEGA_PASSWORD` - Mega.nz credentials (optional)

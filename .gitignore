@@ -1,36 +1,17 @@
-# Gradle
-.gradle/
-build/
-
-# Eclipse
-.project
-.classpath
-.settings/
-bin/
-
-# IntelliJ
-.idea
-*.ipr
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.class
+*.log
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
 *.iml
-*.iws
-
-# NetBeans
-nb-configuration.xml
-
-# Visual Studio Code
-.vscode
-.factorypath
-
-# OSX
-.DS_Store
-
-# Vim
+.idea/
 *.swp
-*.swo
-
-# patch
-*.orig
-*.rej
-
-# Local environment
+*~
+.DS_Store
 .env
+application-local.yml
