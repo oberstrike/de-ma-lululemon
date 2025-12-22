@@ -42,6 +42,60 @@ export const MoviesStore = signalStore(
     downloadingMovies: computed(() =>
       state.movies().filter(m => m.status === 'DOWNLOADING')
     ),
+
+    cachedMovies: computed(() =>
+      state.movies().filter(m => m.cached)
+    ),
+
+    moviesByCategory: computed(() => {
+      const movies = state.movies();
+      const filter = state.filter().toLowerCase();
+      const filtered = filter
+        ? movies.filter(m => m.title.toLowerCase().includes(filter))
+        : movies;
+
+      const groups: { name: string; movies: Movie[] }[] = [];
+      const categorized = new Map<string, Movie[]>();
+      const uncategorized: Movie[] = [];
+
+      for (const movie of filtered) {
+        if (movie.categoryName) {
+          const existing = categorized.get(movie.categoryName) || [];
+          existing.push(movie);
+          categorized.set(movie.categoryName, existing);
+        } else {
+          uncategorized.push(movie);
+        }
+      }
+
+      // Add cached movies row first
+      const cached = filtered.filter(m => m.cached);
+      if (cached.length > 0) {
+        groups.push({ name: 'Downloaded on Server', movies: cached });
+      }
+
+      // Add category rows
+      for (const [name, categoryMovies] of categorized) {
+        groups.push({ name, movies: categoryMovies });
+      }
+
+      // Add uncategorized at the end
+      if (uncategorized.length > 0) {
+        groups.push({ name: 'Other Movies', movies: uncategorized });
+      }
+
+      return groups;
+    }),
+
+    featuredMovie: computed(() => {
+      const movies = state.movies();
+      // Pick a random cached movie as featured, or first movie
+      const cached = movies.filter(m => m.cached);
+      if (cached.length > 0) {
+        return cached[Math.floor(Math.random() * cached.length)];
+      }
+      return movies[0] ?? null;
+    }),
   })),
 
   withMethods((store, api = inject(ApiService)) => ({
