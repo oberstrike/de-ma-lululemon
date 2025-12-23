@@ -70,14 +70,13 @@ public class VideoStreamingService {
         return new HttpRange(start, end, end - start + 1);
     }
 
+    @SuppressWarnings("deprecation")
     private InputStream createRangeInputStream(Path path, HttpRange range) {
         try {
             RandomAccessFile file = new RandomAccessFile(path.toFile(), "r");
             file.seek(range.start);
-            return BoundedInputStream.builder()
-                    .setInputStream(Channels.newInputStream(file.getChannel()))
-                    .setMaxCount(range.length)
-                    .get();
+            InputStream channelStream = Channels.newInputStream(file.getChannel());
+            return new BoundedInputStream(channelStream, range.length);
         } catch (IOException e) {
             throw new RuntimeException("Failed to create range input stream", e);
         }
