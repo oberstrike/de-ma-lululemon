@@ -1,8 +1,6 @@
 package com.mediaserver.controller;
 
-import com.mediaserver.entity.Movie;
-import com.mediaserver.exception.MovieNotFoundException;
-import com.mediaserver.repository.MovieRepository;
+import com.mediaserver.config.MediaProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.CacheControl;
@@ -22,57 +20,33 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ThumbnailController {
 
-    private final MovieRepository movieRepository;
+    private final MediaProperties properties;
 
-    @GetMapping("/{movieId}")
-    public ResponseEntity<byte[]> getThumbnail(@PathVariable String movieId) {
-        Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new MovieNotFoundException(movieId));
-
-        String thumbnailPath = movie.getThumbnailUrl();
-        if (thumbnailPath == null || thumbnailPath.isBlank()) {
-            return ResponseEntity.notFound().build();
-        }
-
+    @GetMapping("/file/{fileName}")
+    public ResponseEntity<byte[]> getThumbnail(@PathVariable String fileName) {
         try {
-            // Create temp file for thumbnail
-            Path tempFile = Files.createTempFile("thumb_" + movieId, getExtension(thumbnailPath));
+            Path thumbnailPath = Path.of(properties.getStorage().getPath(), "thumbnails", fileName);
 
-            // Download from Mega
-            ProcessBuilder pb = new ProcessBuilder("mega-get", thumbnailPath, tempFile.toString());
-            pb.redirectErrorStream(true);
-            Process process = pb.start();
-            int exitCode = process.waitFor();
-
-            if (exitCode != 0) {
-                log.error("Failed to download thumbnail from Mega: {}", thumbnailPath);
-                Files.deleteIfExists(tempFile);
+            if (!Files.exists(thumbnailPath)) {
                 return ResponseEntity.notFound().build();
             }
 
-            byte[] imageBytes = Files.readAllBytes(tempFile);
-            Files.deleteIfExists(tempFile);
-
-            MediaType mediaType = getMediaType(thumbnailPath);
+            byte[] imageBytes = Files.readAllBytes(thumbnailPath);
+            MediaType mediaType = getMediaType(fileName);
 
             return ResponseEntity.ok()
                     .contentType(mediaType)
-                    .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS))
+                    .cacheControl(CacheControl.maxAge(7, TimeUnit.DAYS))
                     .body(imageBytes);
 
-        } catch (IOException | InterruptedException e) {
-            log.error("Error fetching thumbnail for movie {}: {}", movieId, e.getMessage());
+        } catch (IOException e) {
+            log.error("Error serving thumbnail {}: {}", fileName, e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
 
-    private String getExtension(String path) {
-        int lastDot = path.lastIndexOf('.');
-        return lastDot > 0 ? path.substring(lastDot) : ".png";
-    }
-
-    private MediaType getMediaType(String path) {
-        String lower = path.toLowerCase();
+    private MediaType getMediaType(String fileName) {
+        String lower = fileName.toLowerCase();
         if (lower.endsWith(".png")) return MediaType.IMAGE_PNG;
         if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return MediaType.IMAGE_JPEG;
         if (lower.endsWith(".gif")) return MediaType.IMAGE_GIF;

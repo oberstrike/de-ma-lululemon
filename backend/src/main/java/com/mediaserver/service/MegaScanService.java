@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
@@ -314,21 +316,63 @@ public class MegaScanService {
                                 .build()));
     }
 
-    private Movie createMovieFromEntry(MegaEntry entry, String megaPath, Category category, String thumbnailPath) {
+    private Movie createMovieFromEntry(MegaEntry entry, String megaPath, Category category, String megaThumbnailPath) {
         String title = extractTitleFromFileName(entry.name());
         Integer year = extractYearFromFileName(entry.name());
+        String localThumbnailUrl = null;
+
+        // Download thumbnail if available
+        if (megaThumbnailPath != null) {
+            localThumbnailUrl = downloadThumbnail(megaThumbnailPath, title);
+        }
 
         return Movie.builder()
                 .title(title)
                 .megaPath(megaPath)
-                .megaUrl(megaPath) // Will be resolved to actual URL when downloading
-                .thumbnailUrl(thumbnailPath) // Mega path to thumbnail image
+                .megaUrl(megaPath)
+                .thumbnailUrl(localThumbnailUrl)
                 .fileSize(entry.size())
                 .category(category)
                 .status(MovieStatus.PENDING)
                 .year(year)
                 .contentType(detectContentType(entry.name()))
                 .build();
+    }
+
+    private String downloadThumbnail(String megaPath, String movieTitle) {
+        try {
+            // Create thumbnails directory
+            Path thumbnailsDir = Path.of(properties.getStorage().getPath(), "thumbnails");
+            Files.createDirectories(thumbnailsDir);
+
+            // Generate safe filename
+            String safeTitle = movieTitle.replaceAll("[^a-zA-Z0-9.-]", "_");
+            String extension = getExtension(megaPath);
+            String fileName = safeTitle + "_" + System.currentTimeMillis() + extension;
+            Path localPath = thumbnailsDir.resolve(fileName);
+
+            // Download from Mega
+            ProcessBuilder pb = new ProcessBuilder("mega-get", megaPath, localPath.toString());
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+            int exitCode = process.waitFor();
+
+            if (exitCode == 0 && Files.exists(localPath)) {
+                log.debug("Downloaded thumbnail: {}", localPath);
+                return "/api/thumbnails/file/" + fileName;
+            } else {
+                log.warn("Failed to download thumbnail from: {}", megaPath);
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("Error downloading thumbnail: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    private String getExtension(String path) {
+        int lastDot = path.lastIndexOf('.');
+        return lastDot > 0 ? path.substring(lastDot) : ".png";
     }
 
     private String extractTitleFromFileName(String fileName) {
