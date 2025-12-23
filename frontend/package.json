@@ -9,7 +9,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "vitest",
     "test:ci": "vitest run --coverage",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch",
+    "lint": "ng lint"
   },
   "private": true,
   "dependencies": {
@@ -35,9 +36,16 @@
     "@angular/cli": "^21.0.0",
     "@angular/compiler-cli": "^21.0.0",
     "@analogjs/vitest-angular": "^1.10.0",
+    "@angular-eslint/builder": "^19.0.0",
+    "@angular-eslint/eslint-plugin": "^19.0.0",
+    "@angular-eslint/eslint-plugin-template": "^19.0.0",
+    "@angular-eslint/template-parser": "^19.0.0",
     "@testing-library/angular": "^17.0.0",
     "@types/sockjs-client": "^1.5.4",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
     "@vitest/coverage-v8": "^2.0.0",
+    "eslint": "^9.0.0",
     "jsdom": "^25.0.0",
     "typescript": "~5.7.0",
     "vite": "^6.0.0",
