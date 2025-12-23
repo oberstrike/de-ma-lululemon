@@ -82,42 +82,99 @@ public class MegaScanService {
                     // Scan movies in category folder
                     try {
                         List<MegaEntry> movieEntries = listFolder(categoryPath);
+
+                        // Separate video and image files
+                        List<MegaEntry> videoFiles = new ArrayList<>();
+                        Map<String, String> imageFiles = new HashMap<>(); // baseName -> full path
+
                         for (MegaEntry movieEntry : movieEntries) {
-                            if (!movieEntry.isDirectory() && isVideoFile(movieEntry.name())) {
-                                String moviePath = categoryPath + "/" + movieEntry.name();
+                            if (movieEntry.isDirectory()) continue;
 
-                                if (movieRepository.existsByMegaPath(moviePath)) {
-                                    moviesSkipped++;
-                                    continue;
-                                }
+                            String fileName = movieEntry.name();
+                            String baseName = getBaseName(fileName);
 
-                                Movie movie = createMovieFromEntry(movieEntry, moviePath, category);
-                                movieRepository.save(movie);
-                                moviesDiscovered++;
-                                log.debug("Discovered movie: {} in category: {}", movie.getTitle(), category.getName());
+                            if (isVideoFile(fileName)) {
+                                videoFiles.add(movieEntry);
+                            } else if (isImageFile(fileName)) {
+                                String imagePath = categoryPath + "/" + fileName;
+                                imageFiles.put(baseName.toLowerCase(), imagePath);
                             }
+                        }
+
+                        // Process video files and match with thumbnails
+                        for (MegaEntry videoEntry : videoFiles) {
+                            String moviePath = categoryPath + "/" + videoEntry.name();
+
+                            if (movieRepository.existsByMegaPath(moviePath)) {
+                                moviesSkipped++;
+                                continue;
+                            }
+
+                            // Find matching thumbnail
+                            String videoBaseName = getBaseName(videoEntry.name()).toLowerCase();
+                            String thumbnailPath = imageFiles.get(videoBaseName);
+
+                            // If no exact match, try to find any image in the folder
+                            if (thumbnailPath == null && !imageFiles.isEmpty()) {
+                                thumbnailPath = imageFiles.values().iterator().next();
+                            }
+
+                            Movie movie = createMovieFromEntry(videoEntry, moviePath, category, thumbnailPath);
+                            movieRepository.save(movie);
+                            moviesDiscovered++;
+                            log.debug("Discovered movie: {} in category: {} with thumbnail: {}",
+                                movie.getTitle(), category.getName(), thumbnailPath);
                         }
                     } catch (Exception e) {
                         String error = "Error scanning category " + entry.name() + ": " + e.getMessage();
                         errors.add(error);
                         log.error(error, e);
                     }
-                } else if (isVideoFile(entry.name())) {
-                    // Video in root folder (uncategorized)
-                    String moviePath = rootPath.endsWith("/")
-                            ? rootPath + entry.name()
-                            : rootPath + "/" + entry.name();
-
-                    if (movieRepository.existsByMegaPath(moviePath)) {
-                        moviesSkipped++;
-                        continue;
-                    }
-
-                    Movie movie = createMovieFromEntry(entry, moviePath, null);
-                    movieRepository.save(movie);
-                    moviesDiscovered++;
-                    log.debug("Discovered uncategorized movie: {}", movie.getTitle());
                 }
+            }
+
+            // Also process videos in root folder (uncategorized)
+            List<MegaEntry> rootVideoFiles = new ArrayList<>();
+            Map<String, String> rootImageFiles = new HashMap<>();
+
+            for (MegaEntry entry : entries) {
+                if (entry.isDirectory()) continue;
+
+                String fileName = entry.name();
+                String baseName = getBaseName(fileName);
+
+                if (isVideoFile(fileName)) {
+                    rootVideoFiles.add(entry);
+                } else if (isImageFile(fileName)) {
+                    String imagePath = rootPath.endsWith("/")
+                            ? rootPath + fileName
+                            : rootPath + "/" + fileName;
+                    rootImageFiles.put(baseName.toLowerCase(), imagePath);
+                }
+            }
+
+            for (MegaEntry videoEntry : rootVideoFiles) {
+                String moviePath = rootPath.endsWith("/")
+                        ? rootPath + videoEntry.name()
+                        : rootPath + "/" + videoEntry.name();
+
+                if (movieRepository.existsByMegaPath(moviePath)) {
+                    moviesSkipped++;
+                    continue;
+                }
+
+                String videoBaseName = getBaseName(videoEntry.name()).toLowerCase();
+                String thumbnailPath = rootImageFiles.get(videoBaseName);
+
+                if (thumbnailPath == null && !rootImageFiles.isEmpty()) {
+                    thumbnailPath = rootImageFiles.values().iterator().next();
+                }
+
+                Movie movie = createMovieFromEntry(videoEntry, moviePath, null, thumbnailPath);
+                movieRepository.save(movie);
+                moviesDiscovered++;
+                log.debug("Discovered uncategorized movie: {} with thumbnail: {}",
+                    movie.getTitle(), thumbnailPath);
             }
 
         } catch (Exception e) {
@@ -229,6 +286,20 @@ public class MegaScanService {
         return false;
     }
 
+    private boolean isImageFile(String fileName) {
+        String lowerName = fileName.toLowerCase();
+        return lowerName.endsWith(".png") ||
+               lowerName.endsWith(".jpg") ||
+               lowerName.endsWith(".jpeg") ||
+               lowerName.endsWith(".webp") ||
+               lowerName.endsWith(".gif");
+    }
+
+    private String getBaseName(String fileName) {
+        int lastDot = fileName.lastIndexOf('.');
+        return lastDot > 0 ? fileName.substring(0, lastDot) : fileName;
+    }
+
     private Category getOrCreateCategory(String name, String megaPath) {
         return categoryRepository.findByMegaPath(megaPath)
                 .orElseGet(() -> categoryRepository.findByName(name)
@@ -243,7 +314,7 @@ public class MegaScanService {
                                 .build()));
     }
 
-    private Movie createMovieFromEntry(MegaEntry entry, String megaPath, Category category) {
+    private Movie createMovieFromEntry(MegaEntry entry, String megaPath, Category category, String thumbnailPath) {
         String title = extractTitleFromFileName(entry.name());
         Integer year = extractYearFromFileName(entry.name());
 
@@ -251,6 +322,7 @@ public class MegaScanService {
                 .title(title)
                 .megaPath(megaPath)
                 .megaUrl(megaPath) // Will be resolved to actual URL when downloading
+                .thumbnailUrl(thumbnailPath) // Mega path to thumbnail image
                 .fileSize(entry.size())
                 .category(category)
                 .status(MovieStatus.PENDING)

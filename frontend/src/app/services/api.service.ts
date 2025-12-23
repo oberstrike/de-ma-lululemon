@@ -110,6 +110,10 @@ export class ApiService {
     return `${this.baseUrl}/stream/${movieId}`;
   }
 
+  getThumbnailUrl(movieId: string): string {
+    return `${this.baseUrl}/thumbnails/${movieId}`;
+  }
+
   // Categories
   getCategories(): Observable<Category[]> {
     return this.http.get<Category[]>(`${this.baseUrl}/categories`);
