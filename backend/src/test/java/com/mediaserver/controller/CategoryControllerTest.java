@@ -21,6 +21,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -100,6 +101,7 @@ class CategoryControllerTest {
         when(categoryService.createCategory(any(CategoryCreateRequest.class))).thenReturn(created);
 
         mockMvc.perform(post("/api/categories")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -114,6 +116,7 @@ class CategoryControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/categories")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -132,6 +135,7 @@ class CategoryControllerTest {
                 .thenReturn(testCategoryDto);
 
         mockMvc.perform(put("/api/categories/cat-1")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -142,7 +146,8 @@ class CategoryControllerTest {
     void deleteCategory_shouldReturn204() throws Exception {
         doNothing().when(categoryService).deleteCategory("cat-1");
 
-        mockMvc.perform(delete("/api/categories/cat-1"))
+        mockMvc.perform(delete("/api/categories/cat-1")
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         verify(categoryService).deleteCategory("cat-1");

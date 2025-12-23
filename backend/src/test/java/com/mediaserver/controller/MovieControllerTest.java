@@ -24,6 +24,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -120,6 +121,7 @@ class MovieControllerTest {
         when(movieService.createMovie(any(MovieCreateRequest.class))).thenReturn(testMovieDto);
 
         mockMvc.perform(post("/api/movies")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -133,6 +135,7 @@ class MovieControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/movies")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -145,6 +148,7 @@ class MovieControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/movies")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -162,6 +166,7 @@ class MovieControllerTest {
                 .thenReturn(testMovieDto);
 
         mockMvc.perform(put("/api/movies/movie-1")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -172,7 +177,8 @@ class MovieControllerTest {
     void deleteMovie_shouldReturn204() throws Exception {
         doNothing().when(movieService).deleteMovie("movie-1");
 
-        mockMvc.perform(delete("/api/movies/movie-1"))
+        mockMvc.perform(delete("/api/movies/movie-1")
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         verify(movieService).deleteMovie("movie-1");
@@ -182,7 +188,8 @@ class MovieControllerTest {
     void startDownload_shouldReturn202() throws Exception {
         doNothing().when(movieService).startDownload("movie-1");
 
-        mockMvc.perform(post("/api/movies/movie-1/download"))
+        mockMvc.perform(post("/api/movies/movie-1/download")
+                        .with(csrf()))
                 .andExpect(status().isAccepted());
 
         verify(movieService).startDownload("movie-1");
