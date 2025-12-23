@@ -21,7 +21,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,10 +56,12 @@ class VideoStreamingServiceTest {
                 .fileSize(1024L * 1024)
                 .contentType("video/mp4")
                 .build();
+    }
 
+    private void stubStreamingProperties(int chunkSize) {
         MediaProperties.Streaming streaming = new MediaProperties.Streaming();
-        streaming.setChunkSize(1048576);
-        lenient().when(properties.getStreaming()).thenReturn(streaming);
+        streaming.setChunkSize(chunkSize);
+        when(properties.getStreaming()).thenReturn(streaming);
     }
 
     @Test
@@ -84,6 +85,7 @@ class VideoStreamingServiceTest {
 
     @Test
     void streamVideo_shouldReturnFullContent_whenNoRangeHeader() throws IOException {
+        stubStreamingProperties(1048576);
         when(movieRepository.findById("movie-1")).thenReturn(Optional.of(testMovie));
 
         VideoStreamingService.StreamingResponse response =
@@ -97,6 +99,7 @@ class VideoStreamingServiceTest {
 
     @Test
     void streamVideo_shouldReturnPartialContent_withRangeHeader() throws IOException {
+        stubStreamingProperties(1048576);
         when(movieRepository.findById("movie-1")).thenReturn(Optional.of(testMovie));
 
         VideoStreamingService.StreamingResponse response =
@@ -110,6 +113,7 @@ class VideoStreamingServiceTest {
 
     @Test
     void streamVideo_shouldHandleOpenEndedRange() throws IOException {
+        stubStreamingProperties(1048576);
         when(movieRepository.findById("movie-1")).thenReturn(Optional.of(testMovie));
 
         VideoStreamingService.StreamingResponse response =
@@ -121,10 +125,7 @@ class VideoStreamingServiceTest {
 
     @Test
     void streamVideo_shouldLimitChunkSize() throws IOException {
-        // Set a small chunk size for testing
-        MediaProperties.Streaming streaming = new MediaProperties.Streaming();
-        streaming.setChunkSize(100);
-        when(properties.getStreaming()).thenReturn(streaming);
+        stubStreamingProperties(100);
         when(movieRepository.findById("movie-1")).thenReturn(Optional.of(testMovie));
 
         VideoStreamingService.StreamingResponse response =
