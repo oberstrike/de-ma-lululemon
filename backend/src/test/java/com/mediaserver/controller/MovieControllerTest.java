@@ -5,6 +5,7 @@ import com.mediaserver.dto.CacheStatsDto;
 import com.mediaserver.dto.MovieCreateRequest;
 import com.mediaserver.dto.MovieDto;
 import com.mediaserver.entity.MovieStatus;
+import com.mediaserver.exception.GlobalExceptionHandler;
 import com.mediaserver.exception.MovieNotFoundException;
 import com.mediaserver.service.MovieService;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -25,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(MovieController.class)
+@Import(GlobalExceptionHandler.class)
 class MovieControllerTest {
 
     @Autowired
