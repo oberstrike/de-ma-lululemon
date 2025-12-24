@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Service
@@ -98,7 +99,13 @@ public class MegaDownloadService {
             }
         }
 
-        int exitCode = process.waitFor();
+        int timeoutMinutes = properties.getDownload().getProcessTimeoutMinutes();
+        boolean completed = process.waitFor(timeoutMinutes, TimeUnit.MINUTES);
+        if (!completed) {
+            process.destroyForcibly();
+            throw new DownloadException("mega-get timed out after " + timeoutMinutes + " minutes");
+        }
+        int exitCode = process.exitValue();
         if (exitCode != 0) throw new DownloadException("mega-get failed with exit code: " + exitCode);
     }
 
@@ -135,7 +142,8 @@ public class MegaDownloadService {
     }
 
     private String sanitizeFileName(String name) {
-        return name.replaceAll("[^a-zA-Z0-9.-]", "_").substring(0, Math.min(name.length(), 50));
+        String sanitized = name.replaceAll("[^a-zA-Z0-9.-]", "_");
+        return sanitized.substring(0, Math.min(sanitized.length(), 50));
     }
 
     private String detectContentType(Path path) throws IOException {

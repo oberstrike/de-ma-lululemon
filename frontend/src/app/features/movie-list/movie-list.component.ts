@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, DestroyRef, ChangeDetectionStrategy, ElementRef, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';

@@ -17,6 +17,9 @@ import { FormsModule } from '@angular/forms';
       [class.fullscreen]="player.isFullscreen()"
       (mousemove)="onMouseMove()"
       (click)="player.togglePlay()"
+      (keyup.space)="player.togglePlay()"
+      tabindex="0"
+      role="application"
     >
       @if (player.loading()) {
         <div class="loading-overlay">
@@ -26,7 +29,7 @@ import { FormsModule } from '@angular/forms';
       }
 
       @if (player.error()) {
-        <div class="error-overlay" (click)="$event.stopPropagation()">
+        <div class="error-overlay" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" tabindex="-1" role="dialog">
           <i class="pi pi-exclamation-triangle" style="font-size: 3rem; color: var(--p-red-500)"></i>
           <p>{{ player.error() }}</p>
           <div class="error-actions">
@@ -55,8 +58,8 @@ import { FormsModule } from '@angular/forms';
         </div>
       }
 
-      <div class="controls" [class.visible]="player.controlsVisible()" (click)="$event.stopPropagation()">
-        <div class="progress-container" (click)="seekTo($event)">
+      <div class="controls" [class.visible]="player.controlsVisible()" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" role="toolbar" tabindex="-1">
+        <div class="progress-container" (click)="seekTo($event)" (keydown.arrowRight)="seekRelative(5)" (keydown.arrowLeft)="seekRelative(-5)" tabindex="0" role="slider" [attr.aria-valuenow]="player.progress()" aria-valuemin="0" aria-valuemax="100">
           <div class="buffered" [style.width.%]="player.bufferedPercent()"></div>
           <div class="progress" [style.width.%]="player.progress()"></div>
           <div class="scrubber" [style.left.%]="player.progress()"></div>
@@ -350,8 +353,8 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     this.videoRef.nativeElement.currentTime = Math.max(0, Math.min(this.player.duration(), newTime));
   }
 
-  onVolumeSliderChange(event: { value: number }) {
-    const value = event.value / 100;
+  onVolumeSliderChange(event: { value?: number }) {
+    const value = (event.value ?? 0) / 100;
     this.player.setVolume(value);
     this.videoRef.nativeElement.volume = value;
   }

@@ -1,8 +1,10 @@
 package com.mediaserver.repository;
 
+import com.mediaserver.entity.DownloadStatus;
 import com.mediaserver.entity.DownloadTask;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,6 +15,10 @@ public interface DownloadTaskRepository extends JpaRepository<DownloadTask, Stri
 
     Optional<DownloadTask> findByMovieId(String movieId);
 
-    @Query("SELECT t FROM DownloadTask t WHERE t.status = 'IN_PROGRESS'")
-    List<DownloadTask> findActiveDownloads();
+    @Query("SELECT t FROM DownloadTask t WHERE t.status = :status")
+    List<DownloadTask> findByStatus(@Param("status") DownloadStatus status);
+
+    default List<DownloadTask> findActiveDownloads() {
+        return findByStatus(DownloadStatus.IN_PROGRESS);
+    }
 }
