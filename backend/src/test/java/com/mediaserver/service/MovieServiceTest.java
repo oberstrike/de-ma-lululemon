@@ -1,5 +1,6 @@
 package com.mediaserver.service;
 
+import com.mediaserver.config.MediaProperties;
 import com.mediaserver.dto.MovieCreateRequest;
 import com.mediaserver.dto.MovieDto;
 import com.mediaserver.dto.MovieMapper;
@@ -40,6 +41,9 @@ class MovieServiceTest {
 
     @Mock
     private MovieMapper movieMapper;
+
+    @Mock
+    private MediaProperties properties;
 
     @InjectMocks
     private MovieService movieService;
