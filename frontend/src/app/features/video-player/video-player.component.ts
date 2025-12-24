@@ -350,8 +350,8 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     this.videoRef.nativeElement.currentTime = Math.max(0, Math.min(this.player.duration(), newTime));
   }
 
-  onVolumeSliderChange(event: { value: number }) {
-    const value = event.value / 100;
+  onVolumeSliderChange(event: { value?: number }) {
+    const value = (event.value ?? 0) / 100;
     this.player.setVolume(value);
     this.videoRef.nativeElement.volume = value;
   }
