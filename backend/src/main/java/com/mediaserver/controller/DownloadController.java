@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/downloads")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 public class DownloadController {
 
     private final DownloadTaskRepository taskRepository;

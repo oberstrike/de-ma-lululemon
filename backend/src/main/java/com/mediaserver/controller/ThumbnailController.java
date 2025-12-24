@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/api/thumbnails")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 @Slf4j
 public class ThumbnailController {
 

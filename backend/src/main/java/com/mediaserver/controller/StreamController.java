@@ -21,7 +21,7 @@ import java.io.InputStream;
 @RequestMapping("/api/stream")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 public class StreamController {
 
     private final VideoStreamingService streamingService;

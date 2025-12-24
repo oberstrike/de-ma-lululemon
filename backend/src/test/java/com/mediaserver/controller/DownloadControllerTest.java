@@ -4,6 +4,8 @@ import com.mediaserver.dto.DownloadProgressDto;
 import com.mediaserver.entity.DownloadStatus;
 import com.mediaserver.entity.DownloadTask;
 import com.mediaserver.entity.Movie;
+import com.mediaserver.config.MediaProperties;
+import com.mediaserver.config.WebConfig;
 import com.mediaserver.exception.GlobalExceptionHandler;
 import com.mediaserver.repository.DownloadTaskRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(DownloadController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, MediaProperties.class, WebConfig.class})
 @WithMockUser(username = "admin", roles = "ADMIN")
 class DownloadControllerTest {
 

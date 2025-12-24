@@ -49,7 +49,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Testcontainers for integration testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-testcontainers</artifactId>

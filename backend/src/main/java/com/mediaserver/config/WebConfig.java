@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Arrays;
+
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
@@ -13,11 +15,20 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins(properties.getCors().getAllowedOrigins())
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        String[] allowedOrigins = properties.getCors().getAllowedOrigins();
+        boolean allowAll = allowedOrigins != null && Arrays.asList(allowedOrigins).contains("*");
+        var registration = registry.addMapping("/api/**");
+
+        if (allowAll) {
+            registration.allowedOriginPatterns(allowedOrigins).allowCredentials(false);
+        } else if (allowedOrigins != null && allowedOrigins.length > 0) {
+            registration.allowedOrigins(allowedOrigins).allowCredentials(true);
+        } else {
+            registration.allowedOrigins().allowCredentials(true);
+        }
+
+        registration.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true)
                 .maxAge(3600);
     }
 }

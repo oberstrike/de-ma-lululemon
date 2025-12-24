@@ -1,9 +1,9 @@
 package com.mediaserver.repository;
 
-import com.mediaserver.config.TestcontainersConfiguration;
 import com.mediaserver.entity.Category;
 import com.mediaserver.entity.Movie;
 import com.mediaserver.entity.MovieStatus;
+import com.mediaserver.config.TestcontainersConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,9 +131,9 @@ class MovieRepositoryTest {
     @Test
     void getTotalCacheSize_shouldSumFileSizes() {
         Movie movie1 = createMovie("Movie 1", MovieStatus.READY, "/path/1.mp4");
-        movie1.setFileSize(1024L * 1024 * 500); // 500MB
+        movie1.setFileSize(1024L * 1024 * 500);
         Movie movie2 = createMovie("Movie 2", MovieStatus.READY, "/path/2.mp4");
-        movie2.setFileSize(1024L * 1024 * 300); // 300MB
+        movie2.setFileSize(1024L * 1024 * 300);
         Movie movieNoPath = createMovie("Movie 3", MovieStatus.PENDING, null);
         movieNoPath.setFileSize(null);
 
@@ -144,7 +144,7 @@ class MovieRepositoryTest {
 
         Long totalSize = movieRepository.getTotalCacheSize();
 
-        assertThat(totalSize).isEqualTo(1024L * 1024 * 800); // 800MB
+        assertThat(totalSize).isEqualTo(1024L * 1024 * 800);
     }
 
     @Test

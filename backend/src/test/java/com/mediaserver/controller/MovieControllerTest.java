@@ -1,6 +1,8 @@
 package com.mediaserver.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mediaserver.config.MediaProperties;
+import com.mediaserver.config.WebConfig;
 import com.mediaserver.dto.CacheStatsDto;
 import com.mediaserver.dto.MovieCreateRequest;
 import com.mediaserver.dto.MovieDto;
@@ -29,7 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(MovieController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, MediaProperties.class, WebConfig.class})
 @WithMockUser(username = "admin", roles = "ADMIN")
 class MovieControllerTest {
 
