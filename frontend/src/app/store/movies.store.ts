@@ -137,7 +137,7 @@ export const MoviesStore = signalStore(
               patchState(store, { movies });
             }),
             tapResponse({
-              next: () => {},
+              next: () => { /* Success - no action needed */ },
               error: (error: Error) => patchState(store, { error: error.message }),
             })
           )
@@ -169,7 +169,7 @@ export const MoviesStore = signalStore(
               selectedMovieId: store.selectedMovieId() === id ? null : store.selectedMovieId(),
             })),
             tapResponse({
-              next: () => {},
+              next: () => { /* Success - no action needed */ },
               error: (error: Error) => patchState(store, { error: error.message }),
             })
           )
