@@ -1,6 +1,6 @@
 package com.mediaserver.controller;
 
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mediaserver.config.MediaProperties;
 import com.mediaserver.config.WebConfig;
 import com.mediaserver.dto.CacheStatsDto;
