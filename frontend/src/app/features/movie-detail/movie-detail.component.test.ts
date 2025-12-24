@@ -10,7 +10,7 @@ import { ConfirmationService } from 'primeng/api';
 import { MovieDetailComponent } from './movie-detail.component';
 import { MoviesStore } from '../../store/movies.store';
 import { WebSocketService } from '../../services/websocket.service';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 
 describe('MovieDetailComponent', () => {
   let component: MovieDetailComponent;
@@ -93,14 +93,7 @@ describe('MovieDetailComponent', () => {
   });
 
   it('should handle download progress updates', () => {
-    const progressSubject = of({
-      movieId: 'movie-1',
-      progress: 50,
-      status: 'IN_PROGRESS' as const,
-      bytesDownloaded: 500,
-      totalBytes: 1000,
-      movieTitle: 'Test'
-    });
+    const progressSubject = new Subject();
     mockWebSocketService.getDownloadProgress.mockReturnValue(progressSubject);
 
     fixture.detectChanges();
@@ -108,6 +101,16 @@ describe('MovieDetailComponent', () => {
       id: 'movie-1',
       title: 'Test Movie',
       status: 'DOWNLOADING'
+    });
+
+    // Emit progress after movie is loaded
+    progressSubject.next({
+      movieId: 'movie-1',
+      progress: 50,
+      status: 'IN_PROGRESS' as const,
+      bytesDownloaded: 500,
+      totalBytes: 1000,
+      movieTitle: 'Test'
     });
 
     expect(component.downloadProgress()?.progress).toBe(50);
