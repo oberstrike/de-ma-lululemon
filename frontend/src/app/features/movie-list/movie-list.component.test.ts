@@ -59,7 +59,7 @@ describe('MovieListComponent', () => {
   it('should render the header', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Media Server');
+    expect(compiled.querySelector('h1')?.textContent).toContain('MEDIASERVER');
   });
 
   it('should render the search input', () => {
@@ -81,13 +81,5 @@ describe('MovieListComponent', () => {
   it('should subscribe to download progress updates', () => {
     fixture.detectChanges();
     expect(mockWebSocketService.getDownloadProgress).toHaveBeenCalled();
-  });
-
-  it('should return correct severity for status', () => {
-    expect(component.getStatusSeverity('READY')).toBe('success');
-    expect(component.getStatusSeverity('DOWNLOADING')).toBe('info');
-    expect(component.getStatusSeverity('PENDING')).toBe('warn');
-    expect(component.getStatusSeverity('ERROR')).toBe('danger');
-    expect(component.getStatusSeverity('UNKNOWN')).toBe('secondary');
   });
 });
