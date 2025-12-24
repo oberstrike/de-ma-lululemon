@@ -4,22 +4,21 @@ import com.mediaserver.entity.Category;
 import com.mediaserver.entity.Movie;
 import com.mediaserver.entity.MovieStatus;
 import com.mediaserver.config.TestcontainersConfiguration;
-import com.mediaserver.test.DockerAvailableCondition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit.jupiter.EnabledIf;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@ExtendWith(DockerAvailableCondition.class)
+@EnabledIf(expression = "#{T(com.mediaserver.test.DockerAvailability).isDockerAvailable()}", loadContext = false)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(TestcontainersConfiguration.class)
 class MovieRepositoryTest {
