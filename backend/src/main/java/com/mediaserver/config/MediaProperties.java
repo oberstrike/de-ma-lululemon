@@ -11,6 +11,8 @@ public class MediaProperties {
     private Storage storage = new Storage();
     private Mega mega = new Mega();
     private Streaming streaming = new Streaming();
+    private Cors cors = new Cors();
+    private Download download = new Download();
 
     @Data
     public static class Storage {
@@ -32,5 +34,15 @@ public class MediaProperties {
     @Data
     public static class Streaming {
         private int chunkSize = 1048576; // 1MB
+    }
+
+    @Data
+    public static class Cors {
+        private String[] allowedOrigins = {"http://localhost:4200"};
+    }
+
+    @Data
+    public static class Download {
+        private int processTimeoutMinutes = 60; // Default: 1 hour timeout for mega-get
     }
 }

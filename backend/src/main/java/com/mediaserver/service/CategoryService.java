@@ -65,7 +65,7 @@ public class CategoryService {
                 .name(category.getName())
                 .description(category.getDescription())
                 .sortOrder(category.getSortOrder())
-                .movieCount(category.getMovies() != null ? category.getMovies().size() : 0)
+                .movieCount((int) categoryRepository.countMoviesByCategoryId(category.getId()))
                 .build();
     }
 }

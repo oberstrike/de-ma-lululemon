@@ -24,8 +24,12 @@ public interface MovieRepository extends JpaRepository<Movie, String> {
     @Query("SELECT m FROM Movie m WHERE LOWER(m.title) LIKE LOWER(CONCAT('%', :query, '%'))")
     List<Movie> search(@Param("query") String query);
 
-    @Query("SELECT m FROM Movie m WHERE m.status = 'READY' ORDER BY m.createdAt DESC")
-    List<Movie> findReadyMovies();
+    @Query("SELECT m FROM Movie m WHERE m.status = :status ORDER BY m.createdAt DESC")
+    List<Movie> findByStatusOrderByCreatedAtDesc(@Param("status") MovieStatus status);
+
+    default List<Movie> findReadyMovies() {
+        return findByStatusOrderByCreatedAtDesc(MovieStatus.READY);
+    }
 
     @Query("SELECT COALESCE(SUM(m.fileSize), 0) FROM Movie m WHERE m.localPath IS NOT NULL")
     Long getTotalCacheSize();
