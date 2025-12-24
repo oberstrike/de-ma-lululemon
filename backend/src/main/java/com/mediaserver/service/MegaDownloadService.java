@@ -135,7 +135,8 @@ public class MegaDownloadService {
     }
 
     private String sanitizeFileName(String name) {
-        return name.replaceAll("[^a-zA-Z0-9.-]", "_").substring(0, Math.min(name.length(), 50));
+        String sanitized = name.replaceAll("[^a-zA-Z0-9.-]", "_");
+        return sanitized.substring(0, Math.min(sanitized.length(), 50));
     }
 
     private String detectContentType(Path path) throws IOException {

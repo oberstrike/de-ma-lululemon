@@ -76,7 +76,26 @@ public class VideoStreamingService {
             RandomAccessFile file = new RandomAccessFile(path.toFile(), "r");
             file.seek(range.start);
             InputStream channelStream = Channels.newInputStream(file.getChannel());
-            return new BoundedInputStream(channelStream, range.length);
+            InputStream boundedStream = new BoundedInputStream(channelStream, range.length);
+            // Wrap to ensure RandomAccessFile is closed when stream is closed
+            return new InputStream() {
+                @Override
+                public int read() throws IOException {
+                    return boundedStream.read();
+                }
+                @Override
+                public int read(byte[] b, int off, int len) throws IOException {
+                    return boundedStream.read(b, off, len);
+                }
+                @Override
+                public void close() throws IOException {
+                    try {
+                        boundedStream.close();
+                    } finally {
+                        file.close();
+                    }
+                }
+            };
         } catch (IOException e) {
             throw new RuntimeException("Failed to create range input stream", e);
         }
