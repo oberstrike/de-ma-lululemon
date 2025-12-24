@@ -43,9 +43,8 @@ class VideoStreamingServiceTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        // Create a test video file
         testVideoPath = tempDir.resolve("test-video.mp4");
-        byte[] testContent = new byte[1024 * 1024]; // 1MB of test data
+        byte[] testContent = new byte[1024 * 1024];
         Files.write(testVideoPath, testContent);
 
         testMovie = Movie.builder()
@@ -85,7 +84,6 @@ class VideoStreamingServiceTest {
 
     @Test
     void streamVideo_shouldReturnFullContent_whenNoRangeHeader() throws IOException {
-        stubStreamingProperties(1048576);
         when(movieRepository.findById("movie-1")).thenReturn(Optional.of(testMovie));
 
         VideoStreamingService.StreamingResponse response =
@@ -131,7 +129,6 @@ class VideoStreamingServiceTest {
         VideoStreamingService.StreamingResponse response =
                 videoStreamingService.streamVideo("movie-1", "bytes=0-999999");
 
-        // Should be limited to chunk size
         assertThat(response.getContentLength()).isEqualTo(100);
         assertThat(response.getRangeEnd()).isEqualTo(99);
     }

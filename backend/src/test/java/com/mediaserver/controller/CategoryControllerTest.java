@@ -1,6 +1,8 @@
 package com.mediaserver.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mediaserver.config.MediaProperties;
+import com.mediaserver.config.WebConfig;
 import com.mediaserver.dto.CategoryCreateRequest;
 import com.mediaserver.dto.CategoryDto;
 import com.mediaserver.exception.CategoryNotFoundException;
@@ -26,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CategoryController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, MediaProperties.class, WebConfig.class})
 @WithMockUser(username = "admin", roles = "ADMIN")
 class CategoryControllerTest {
 

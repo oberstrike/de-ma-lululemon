@@ -3,6 +3,8 @@ package com.mediaserver.controller;
 import com.mediaserver.dto.StreamInfoDto;
 import com.mediaserver.entity.Movie;
 import com.mediaserver.entity.MovieStatus;
+import com.mediaserver.config.MediaProperties;
+import com.mediaserver.config.WebConfig;
 import com.mediaserver.exception.GlobalExceptionHandler;
 import com.mediaserver.exception.MovieNotFoundException;
 import com.mediaserver.exception.VideoNotReadyException;
@@ -29,7 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(StreamController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, MediaProperties.class, WebConfig.class})
 @WithMockUser(username = "admin", roles = "ADMIN")
 class StreamControllerTest {
 
@@ -51,7 +53,7 @@ class StreamControllerTest {
                 .title("Test Movie")
                 .status(MovieStatus.READY)
                 .localPath("/path/to/video.mp4")
-                .fileSize(1024L * 1024 * 100) // 100MB
+                .fileSize(1024L * 1024 * 100)
                 .contentType("video/mp4")
                 .build();
     }
