@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: media-server
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mediaserver
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+
+  liquibase:
+    change-log: classpath:db/changelog-master.yaml
+    enabled: true
+
+  servlet:
+    multipart:
+      max-file-size: 10GB
+      max-request-size: 10GB
+
+server:
+  port: 8080
+
+# Custom properties
+media:
+  storage:
+    path: ${MEDIA_STORAGE_PATH:/var/media/videos}
+    temp-path: ${MEDIA_TEMP_PATH:/var/media/temp}
+    max-cache-size-gb: 100
+
+  mega:
+    email: ${MEGA_EMAIL:}
+    password: ${MEGA_PASSWORD:}
+
+  streaming:
+    chunk-size: 1048576  # 1MB chunks for streaming
+
+logging:
+  level:
+    com.mediaserver: DEBUG
+    org.springframework.web: INFO

@@ -1,0 +1,21 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog-master.yaml
+
+media:
+  storage:
+    path: /tmp/media-test/videos
+    temp-path: /tmp/media-test/temp
+    max-cache-size-gb: 10
+
+  streaming:
+    chunk-size: 1048576
+
+  scan:
+    enabled: false

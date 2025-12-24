@@ -1,36 +1,24 @@
-# Gradle
-.gradle/
-build/
+# Backend
+backend/target/
+*.class
+*.jar
+*.war
 
-# Eclipse
-.project
-.classpath
-.settings/
-bin/
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
 
-# IntelliJ
-.idea
-*.ipr
+# IDE
+.idea/
 *.iml
-*.iws
+.vscode/
 
-# NetBeans
-nb-configuration.xml
-
-# Visual Studio Code
-.vscode
-.factorypath
-
-# OSX
+# OS
 .DS_Store
-
-# Vim
 *.swp
-*.swo
+*~
 
-# patch
-*.orig
-*.rej
-
-# Local environment
+# Environment
 .env
+*.local

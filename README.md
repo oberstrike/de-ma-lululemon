@@ -1,54 +1,104 @@
-# de-ma-lululemon Project
+# Media Server
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Full-stack media streaming application with Angular frontend and Spring Boot backend.
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+## Architecture
 
-## Running the application in dev mode
-
-You can run your application in dev mode that enables live coding using:
-```shell script
-./gradlew quarkusDev
+```
+┌─────────────────┐         ┌─────────────────┐         ┌─────────────┐
+│  Angular App    │  HTTP   │  Spring Boot    │  SDK    │  Mega.nz    │
+│  (Frontend)     │ ◄─────► │  (Backend)      │ ◄─────► │  Cloud      │
+└─────────────────┘         └────────┬────────┘         └─────────────┘
+                                     │
+                                     ▼
+                            ┌─────────────────┐
+                            │  PostgreSQL     │
+                            │  + File Storage │
+                            └─────────────────┘
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at http://localhost:8080/q/dev/.
+## Project Structure
 
-## Packaging and running the application
-
-The application can be packaged using:
-```shell script
-./gradlew build
 ```
-It produces the `quarkus-run.jar` file in the `build/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar build/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-```shell script
-./gradlew build -Dquarkus.package.type=uber-jar
-```
-
-The application, packaged as an _über-jar_, is now runnable using `java -jar build/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using: 
-```shell script
-./gradlew build -Dquarkus.package.type=native
+├── frontend/          # Angular 18 app
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── features/      # Movie list, detail, video player
+│   │   │   ├── services/      # API, WebSocket
+│   │   │   └── store/         # NgRx signals stores
+│   │   └── environments/
+│   └── Dockerfile
+├── backend/           # Spring Boot 3 app
+│   ├── src/main/java/com/mediaserver/
+│   │   ├── controller/        # REST endpoints
+│   │   ├── service/           # Business logic
+│   │   ├── entity/            # JPA entities
+│   │   └── repository/        # Data access
+│   └── Dockerfile
+└── docker-compose.yml
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using: 
-```shell script
-./gradlew build -Dquarkus.package.type=native -Dquarkus.native.container-build=true
+## Features
+
+- Video streaming with HTTP range requests (seeking support)
+- Mega.nz downloads (server-side, no CORS issues)
+- Real-time download progress via WebSocket
+- PostgreSQL database for movie metadata
+- Centralized video cache
+
+## Quick Start
+
+```bash
+# Run everything with Docker
+docker-compose up
+
+# Access the app at http://localhost
 ```
 
-You can then execute your native executable with: `./build/de-ma-lululemon-1.0.0-SNAPSHOT-runner`
+## Development
 
-If you want to learn more about building native executables, please consult https://quarkus.io/guides/gradle-tooling.
+### Backend
 
-## Related Guides
+```bash
+cd backend
 
-- Quartz ([guide](https://quarkus.io/guides/quartz)): Schedule clustered tasks with Quartz
-- Kotlin ([guide](https://quarkus.io/guides/kotlin)): Write your services in Kotlin
-- MongoDB with Panache for Kotlin ([guide](https://quarkus.io/guides/mongodb-panache-kotlin)): Simplify your persistence code for MongoDB via the active record or the repository pattern
+# Start PostgreSQL
+docker-compose up -d db
+
+# Run Spring Boot
+./mvnw spring-boot:run
+```
+
+### Frontend
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start dev server (proxies to backend at :8080)
+npm start
+
+# Access at http://localhost:4200
+```
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/movies | List all movies |
+| POST | /api/movies | Create movie |
+| GET | /api/movies/{id} | Get movie details |
+| DELETE | /api/movies/{id} | Delete movie |
+| POST | /api/movies/{id}/download | Start Mega download |
+| GET | /api/stream/{id} | Stream video |
+| GET | /api/downloads | Active downloads |
+| GET | /api/categories | List categories |
+
+## Configuration
+
+Environment variables:
+- `DB_USERNAME` / `DB_PASSWORD` - Database credentials
+- `MEDIA_STORAGE_PATH` - Video storage path
+- `MEGA_EMAIL` / `MEGA_PASSWORD` - Mega.nz credentials (optional)
