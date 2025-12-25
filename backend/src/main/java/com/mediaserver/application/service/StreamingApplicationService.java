@@ -39,8 +39,12 @@ public class StreamingApplicationService implements StreamVideoUseCase {
         }
 
         var videoPath = Path.of(movie.getLocalPath());
-        var fileSize = movie.getFileSize();
-        var contentType = movie.getContentType();
+        var fileSizeValue = movie.getFileSize();
+        if (fileSizeValue == null || fileSizeValue <= 0) {
+            throw new VideoNotReadyException("Video file size is not available");
+        }
+        long fileSize = fileSizeValue;
+        var contentType = movie.getContentType() != null ? movie.getContentType() : "video/mp4";
         var range = parseRange(rangeHeader, fileSize);
 
         return StreamingResponse.builder()
@@ -59,30 +63,56 @@ public class StreamingApplicationService implements StreamVideoUseCase {
             return new HttpRange(0, fileSize - 1, fileSize);
         }
 
-        var rangeSpec = rangeHeader.substring(6);
-        var ranges = rangeSpec.split("-");
-        var start = Long.parseLong(ranges[0]);
-        var end = ranges.length > 1 && !ranges[1].isEmpty() ? Long.parseLong(ranges[1]) : fileSize - 1;
+        try {
+            var rangeSpec = rangeHeader.substring(6);
+            var ranges = rangeSpec.split("-", 2);
 
-        var chunkSize = properties.getStreaming().getChunkSize();
-        if (end - start + 1 > chunkSize) {
-            end = start + chunkSize - 1;
+            // Validate range format
+            if (ranges.length == 0 || ranges[0].isEmpty()) {
+                log.warn("Invalid range header format: {}", rangeHeader);
+                return new HttpRange(0, fileSize - 1, fileSize);
+            }
+
+            var start = Long.parseLong(ranges[0].trim());
+            var end = (ranges.length > 1 && !ranges[1].isEmpty())
+                    ? Long.parseLong(ranges[1].trim())
+                    : fileSize - 1;
+
+            // Validate range values
+            if (start < 0 || start >= fileSize || end < start) {
+                log.warn("Invalid range values: start={}, end={}, fileSize={}", start, end, fileSize);
+                return new HttpRange(0, fileSize - 1, fileSize);
+            }
+
+            var chunkSize = properties.getStreaming().getChunkSize();
+            if (end - start + 1 > chunkSize) {
+                end = start + chunkSize - 1;
+            }
+            end = Math.min(end, fileSize - 1);
+
+            return new HttpRange(start, end, end - start + 1);
+        } catch (NumberFormatException e) {
+            log.warn("Failed to parse range header '{}': {}", rangeHeader, e.getMessage());
+            return new HttpRange(0, fileSize - 1, fileSize);
         }
-        end = Math.min(end, fileSize - 1);
-
-        return new HttpRange(start, end, end - start + 1);
     }
 
     @SuppressWarnings("deprecation")
     private InputStream createRangeInputStream(Path path, HttpRange range) {
+        RandomAccessFile file = null;
         try {
-            RandomAccessFile file = new RandomAccessFile(path.toFile(), "r");
+            file = new RandomAccessFile(path.toFile(), "r");
             file.seek(range.start());
             InputStream channelStream = Channels.newInputStream(file.getChannel());
             InputStream boundedStream = new BoundedInputStream(channelStream, range.length());
 
+            // Capture the file reference for the wrapper
+            final RandomAccessFile fileRef = file;
+
             // Wrap to ensure RandomAccessFile is closed when stream is closed
             return new InputStream() {
+                private boolean closed = false;
+
                 @Override
                 public int read() throws IOException {
                     return boundedStream.read();
@@ -94,16 +124,36 @@ public class StreamingApplicationService implements StreamVideoUseCase {
                 }
 
                 @Override
+                public int available() throws IOException {
+                    return boundedStream.available();
+                }
+
+                @Override
+                public long skip(long n) throws IOException {
+                    return boundedStream.skip(n);
+                }
+
+                @Override
                 public void close() throws IOException {
+                    if (closed) return;
+                    closed = true;
                     try {
                         boundedStream.close();
                     } finally {
-                        file.close();
+                        fileRef.close();
                     }
                 }
             };
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create range input stream", e);
+            // Ensure file is closed if exception occurs during setup
+            if (file != null) {
+                try {
+                    file.close();
+                } catch (IOException closeEx) {
+                    log.warn("Failed to close RandomAccessFile after error: {}", closeEx.getMessage());
+                }
+            }
+            throw new RuntimeException("Failed to create range input stream for: " + path, e);
         }
     }
 

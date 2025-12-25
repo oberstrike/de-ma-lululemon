@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.net.URI;
@@ -23,9 +24,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 @Service
@@ -37,6 +40,15 @@ public class MegaDownloadService {
     private final MovieRepository movieRepository;
     private final DownloadTaskRepository taskRepository;
     private final ApplicationEventPublisher eventPublisher;
+
+    // Lock for task creation to prevent race conditions
+    private final ReentrantLock taskCreationLock = new ReentrantLock();
+
+    // Reusable HTTP client for better resource management
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .connectTimeout(Duration.ofSeconds(30))
+            .build();
 
     @Async
     public CompletableFuture<Path> downloadMovie(Movie movie) {
@@ -113,9 +125,12 @@ public class MegaDownloadService {
 
     private void downloadViaHttp(String url, Path targetPath, Consumer<DownloadProgress> progressCallback)
             throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
-        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .timeout(Duration.ofHours(2))
+                .build();
+        HttpResponse<InputStream> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
         long totalBytes = response.headers().firstValueAsLong("Content-Length").orElse(-1);
 
@@ -153,15 +168,22 @@ public class MegaDownloadService {
         return contentType != null ? contentType : "video/mp4";
     }
 
-    private DownloadTask createOrUpdateTask(Movie movie, DownloadStatus status) {
-        DownloadTask task = taskRepository.findByMovieId(movie.getId())
-                .orElse(DownloadTask.builder().movieId(movie.getId()).build());
-        DownloadTask updatedTask = task
-                .withStatus(status)
-                .withStartedAt(LocalDateTime.now())
-                .withProgress(0)
-                .withBytesDownloaded(0L);
-        return taskRepository.save(updatedTask);
+    @Transactional
+    protected DownloadTask createOrUpdateTask(Movie movie, DownloadStatus status) {
+        // Use lock to prevent race conditions when creating/updating tasks
+        taskCreationLock.lock();
+        try {
+            DownloadTask task = taskRepository.findByMovieId(movie.getId())
+                    .orElse(DownloadTask.builder().movieId(movie.getId()).build());
+            DownloadTask updatedTask = task
+                    .withStatus(status)
+                    .withStartedAt(LocalDateTime.now())
+                    .withProgress(0)
+                    .withBytesDownloaded(0L);
+            return taskRepository.save(updatedTask);
+        } finally {
+            taskCreationLock.unlock();
+        }
     }
 
     private void updateProgress(DownloadTask task, DownloadProgress progress) {
@@ -199,12 +221,19 @@ public class MegaDownloadService {
 
     private DownloadProgress parseProgress(String line) {
         try {
-            if (line.contains("%")) {
+            if (line != null && line.contains("%")) {
                 for (String part : line.split("\\s+")) {
-                    if (part.endsWith("%")) return new DownloadProgress(Integer.parseInt(part.replace("%", "")), 0, 0);
+                    if (part.endsWith("%")) {
+                        String percentStr = part.replace("%", "").trim();
+                        if (!percentStr.isEmpty()) {
+                            return new DownloadProgress(Integer.parseInt(percentStr), 0, 0);
+                        }
+                    }
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (NumberFormatException e) {
+            log.trace("Could not parse progress from line: {}", line);
+        }
         return null;
     }
 

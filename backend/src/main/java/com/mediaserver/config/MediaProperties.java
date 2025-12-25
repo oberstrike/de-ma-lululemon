@@ -13,6 +13,7 @@ public class MediaProperties {
     private Streaming streaming = new Streaming();
     private Cors cors = new Cors();
     private Download download = new Download();
+    private Admin admin = new Admin();
 
     @Data
     public static class Storage {
@@ -44,5 +45,11 @@ public class MediaProperties {
     @Data
     public static class Download {
         private int processTimeoutMinutes = 60; // Default: 1 hour timeout for mega-get
+    }
+
+    @Data
+    public static class Admin {
+        private String username = "admin";
+        private String password; // Must be set via environment variable MEDIA_ADMIN_PASSWORD
     }
 }

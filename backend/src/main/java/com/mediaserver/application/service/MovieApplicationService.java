@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Application service implementing movie-related use cases.
@@ -45,6 +47,9 @@ public class MovieApplicationService implements
     private final FileStoragePort fileStoragePort;
     private final DownloadServicePort downloadServicePort;
     private final MediaProperties properties;
+
+    // Thread-safe set to track movies currently being downloaded
+    private static final Set<String> activeDownloads = ConcurrentHashMap.newKeySet();
 
     @Override
     public Movie getMovie(String id) {
@@ -149,17 +154,41 @@ public class MovieApplicationService implements
 
     @Override
     public void startDownload(String movieId) {
-        Movie movie = moviePort.findById(movieId)
-                .orElseThrow(() -> new MovieNotFoundException(movieId));
-
-        if (movie.isCached()) {
-            throw new IllegalStateException("Movie is already downloaded");
+        // Use atomic operation to prevent concurrent downloads of the same movie
+        if (!activeDownloads.add(movieId)) {
+            throw new IllegalStateException("Download already in progress for movie: " + movieId);
         }
 
-        Movie downloadingMovie = movie.withStatus(MovieStatus.DOWNLOADING);
-        moviePort.save(downloadingMovie);
+        try {
+            Movie movie = moviePort.findById(movieId)
+                    .orElseThrow(() -> new MovieNotFoundException(movieId));
 
-        downloadServicePort.downloadMovie(downloadingMovie);
+            if (movie.isCached()) {
+                throw new IllegalStateException("Movie is already downloaded");
+            }
+
+            if (movie.getStatus() == MovieStatus.DOWNLOADING) {
+                throw new IllegalStateException("Movie is already being downloaded");
+            }
+
+            Movie downloadingMovie = movie.withStatus(MovieStatus.DOWNLOADING);
+            moviePort.save(downloadingMovie);
+
+            // Start async download - the download service should call removeFromActiveDownloads when done
+            downloadServicePort.downloadMovie(downloadingMovie)
+                    .whenComplete((result, error) -> activeDownloads.remove(movieId));
+        } catch (Exception e) {
+            // Ensure we remove from active downloads on any error
+            activeDownloads.remove(movieId);
+            throw e;
+        }
+    }
+
+    /**
+     * Check if a movie is currently being downloaded.
+     */
+    public boolean isDownloadActive(String movieId) {
+        return activeDownloads.contains(movieId);
     }
 
     @Override

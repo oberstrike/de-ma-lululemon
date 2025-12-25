@@ -20,6 +20,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,14 +34,32 @@ public class MegaScanService {
     private final CategoryRepository categoryRepository;
     private final MovieRepository movieRepository;
 
+    // Prevent concurrent scans
+    private final AtomicBoolean scanInProgress = new AtomicBoolean(false);
+
+    // Process timeout in seconds
+    private static final int PROCESS_TIMEOUT_SECONDS = 120;
+
     @Scheduled(cron = "${media.mega.scan-cron:0 0 * * * *}")
     public void scheduledScan() {
         if (!properties.getMega().isScanEnabled()) {
             log.debug("Scheduled scan is disabled");
             return;
         }
-        log.info("Starting scheduled Mega folder scan");
-        scanFolder(null);
+        if (!scanInProgress.compareAndSet(false, true)) {
+            log.warn("Scan already in progress, skipping scheduled scan");
+            return;
+        }
+        try {
+            log.info("Starting scheduled Mega folder scan");
+            scanFolder(null);
+        } finally {
+            scanInProgress.set(false);
+        }
+    }
+
+    public boolean isScanInProgress() {
+        return scanInProgress.get();
     }
 
     @Async
@@ -207,21 +227,34 @@ public class MegaScanService {
 
         List<MegaEntry> entries = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.isBlank() || line.startsWith("FLAGS")) continue;
+        try {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.isBlank() || line.startsWith("FLAGS")) continue;
 
-                MegaEntry entry = parseMegaLsLine(line);
-                if (entry != null) {
-                    entries.add(entry);
+                    MegaEntry entry = parseMegaLsLine(line);
+                    if (entry != null) {
+                        entries.add(entry);
+                    }
                 }
             }
-        }
 
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            throw new RuntimeException("mega-ls failed with exit code: " + exitCode);
+            boolean completed = process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            if (!completed) {
+                process.destroyForcibly();
+                throw new RuntimeException("mega-ls timed out after " + PROCESS_TIMEOUT_SECONDS + " seconds");
+            }
+
+            int exitCode = process.exitValue();
+            if (exitCode != 0) {
+                throw new RuntimeException("mega-ls failed with exit code: " + exitCode);
+            }
+        } finally {
+            // Ensure process is always destroyed
+            if (process.isAlive()) {
+                process.destroyForcibly();
+            }
         }
 
         return entries;
@@ -334,6 +367,7 @@ public class MegaScanService {
     }
 
     private String downloadThumbnail(String megaPath, String movieTitle) {
+        Process process = null;
         try {
             // Create thumbnails directory
             Path thumbnailsDir = Path.of(properties.getStorage().getPath(), "thumbnails");
@@ -345,22 +379,39 @@ public class MegaScanService {
             String fileName = safeTitle + "_" + System.currentTimeMillis() + extension;
             Path localPath = thumbnailsDir.resolve(fileName);
 
-            // Download from Mega
+            // Download from Mega with timeout
             ProcessBuilder pb = new ProcessBuilder("mega-get", megaPath, localPath.toString());
             pb.redirectErrorStream(true);
-            Process process = pb.start();
-            int exitCode = process.waitFor();
+            process = pb.start();
 
+            // Drain the input stream to prevent process from blocking
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                while (reader.readLine() != null) {
+                    // Just consume the output
+                }
+            }
+
+            boolean completed = process.waitFor(60, TimeUnit.SECONDS);
+            if (!completed) {
+                log.warn("Thumbnail download timed out for: {}", megaPath);
+                return null;
+            }
+
+            int exitCode = process.exitValue();
             if (exitCode == 0 && Files.exists(localPath)) {
                 log.debug("Downloaded thumbnail: {}", localPath);
                 return "/api/thumbnails/file/" + fileName;
             } else {
-                log.warn("Failed to download thumbnail from: {}", megaPath);
+                log.warn("Failed to download thumbnail from: {} (exit code: {})", megaPath, exitCode);
                 return null;
             }
         } catch (Exception e) {
-            log.error("Error downloading thumbnail: {}", e.getMessage());
+            log.error("Error downloading thumbnail from {}: {}", megaPath, e.getMessage());
             return null;
+        } finally {
+            if (process != null && process.isAlive()) {
+                process.destroyForcibly();
+            }
         }
     }
 

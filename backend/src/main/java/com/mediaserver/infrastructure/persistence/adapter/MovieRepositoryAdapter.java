@@ -85,7 +85,8 @@ public class MovieRepositoryAdapter implements MovieRepository {
 
     @Override
     public Long getTotalCacheSize() {
-        return jpaMovieRepository.getTotalCacheSize();
+        Long size = jpaMovieRepository.getTotalCacheSize();
+        return size != null ? size : 0L;
     }
 
     @Override
