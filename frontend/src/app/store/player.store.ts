@@ -19,6 +19,15 @@ interface PlayerState {
   error: string | null;
 }
 
+function formatTime(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  return h > 0
+    ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+    : `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 export const PlayerStore = signalStore(
   { providedIn: 'root' },
 
@@ -53,70 +62,80 @@ export const PlayerStore = signalStore(
       const movieId = state.currentMovieId();
       return movieId ? api.getStreamUrl(movieId) : null;
     }),
+
+    isLoading: computed(() => state.loading()),
+    hasError: computed(() => state.error() !== null),
   })),
 
   withMethods((store, api = inject(ApiService)) => ({
-    async loadMovie(movieId: string) {
-      patchState(store, { loading: true, error: null, currentMovieId: movieId });
+    async loadMovie(movieId: string): Promise<void> {
+      patchState(store, { currentMovieId: movieId, loading: true, error: null });
 
       try {
         const streamInfo = await firstValueFrom(api.getStreamInfo(movieId));
         patchState(store, { streamInfo, loading: false });
-      } catch (error) {
+      } catch (err) {
         patchState(store, {
-          error: error instanceof Error ? error.message : 'Failed to load stream',
+          error: err instanceof Error ? err.message : 'Failed to load stream',
           loading: false,
         });
       }
     },
 
-    play() {
+    play(): void {
       patchState(store, { isPlaying: true });
     },
-    pause() {
+
+    pause(): void {
       patchState(store, { isPlaying: false });
     },
-    togglePlay() {
+
+    togglePlay(): void {
       patchState(store, { isPlaying: !store.isPlaying() });
     },
 
-    setCurrentTime(time: number) {
+    setCurrentTime(time: number): void {
       patchState(store, { currentTime: time });
     },
-    setDuration(duration: number) {
+
+    setDuration(duration: number): void {
       patchState(store, { duration });
     },
-    setBuffered(buffered: number) {
+
+    setBuffered(buffered: number): void {
       patchState(store, { buffered });
     },
 
-    seekTo(time: number) {
+    seekTo(time: number): void {
       patchState(store, { currentTime: Math.max(0, Math.min(store.duration(), time)) });
     },
 
-    seekRelative(seconds: number) {
+    seekRelative(seconds: number): void {
       const newTime = Math.max(0, Math.min(store.duration(), store.currentTime() + seconds));
       patchState(store, { currentTime: newTime });
     },
 
-    setVolume(volume: number) {
+    setVolume(volume: number): void {
       patchState(store, { volume: Math.max(0, Math.min(1, volume)), muted: false });
     },
 
-    toggleMute() {
+    toggleMute(): void {
       patchState(store, { muted: !store.muted() });
     },
-    toggleFullscreen() {
+
+    toggleFullscreen(): void {
       patchState(store, { isFullscreen: !store.isFullscreen() });
     },
-    showControls() {
+
+    showControls(): void {
       patchState(store, { controlsVisible: true });
     },
-    hideControls() {
+
+    hideControls(): void {
       patchState(store, { controlsVisible: false });
     },
 
-    reset() {
+    reset(): void {
       patchState(store, {
         currentMovieId: null,
         streamInfo: null,
@@ -129,14 +148,9 @@ export const PlayerStore = signalStore(
         error: null,
       });
     },
+
+    clearError(): void {
+      patchState(store, { error: null });
+    },
   }))
 );
-
-function formatTime(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  return h > 0
-    ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
-    : `${m}:${s.toString().padStart(2, '0')}`;
-}
