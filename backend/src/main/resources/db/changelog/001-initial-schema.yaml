@@ -78,6 +78,12 @@ databaseChangeLog:
                   type: varchar(20)
                   defaultValue: PENDING
               - column:
+                  name: favorite
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
                   name: category_id
                   type: varchar(36)
               - column:
@@ -161,6 +167,12 @@ databaseChangeLog:
             columns:
               - column:
                   name: category_id
+        - createIndex:
+            tableName: movies
+            indexName: idx_movies_favorite
+            columns:
+              - column:
+                  name: favorite
         - createIndex:
             tableName: movies
             indexName: idx_movies_mega_path
