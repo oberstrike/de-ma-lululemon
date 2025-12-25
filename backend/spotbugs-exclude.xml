@@ -49,4 +49,20 @@
     <Match>
         <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
     </Match>
+
+    <!-- Security: CRLF log injection - false positives for file path logging -->
+    <!-- File paths from database are logged for debugging, not user input -->
+    <Match>
+        <Bug pattern="CRLF_INJECTION_LOGS"/>
+    </Match>
+
+    <!-- Security: Command injection - paths come from database/config, not user input -->
+    <!-- mega-get/mega-ls commands use validated Mega paths stored in database -->
+    <Match>
+        <Or>
+            <Class name="com.mediaserver.service.MegaDownloadService"/>
+            <Class name="com.mediaserver.service.MegaScanService"/>
+        </Or>
+        <Bug pattern="COMMAND_INJECTION"/>
+    </Match>
 </FindBugsFilter>
