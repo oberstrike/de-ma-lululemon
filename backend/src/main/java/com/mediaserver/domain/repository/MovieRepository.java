@@ -82,4 +82,11 @@ public interface MovieRepository {
      * @return count of cached movies
      */
     long countCached();
+
+    /**
+     * Check if a movie exists with the given Mega path.
+     * @param megaPath the Mega path
+     * @return true if a movie exists with the given path
+     */
+    boolean existsByMegaPath(String megaPath);
 }

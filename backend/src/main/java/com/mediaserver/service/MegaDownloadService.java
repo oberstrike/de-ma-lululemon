@@ -2,14 +2,14 @@ package com.mediaserver.service;
 
 import com.mediaserver.config.MediaProperties;
 import com.mediaserver.infrastructure.rest.dto.DownloadProgressDto;
-import com.mediaserver.entity.DownloadStatus;
-import com.mediaserver.entity.DownloadTask;
-import com.mediaserver.entity.Movie;
-import com.mediaserver.entity.MovieStatus;
+import com.mediaserver.domain.model.DownloadStatus;
+import com.mediaserver.domain.model.DownloadTask;
+import com.mediaserver.domain.model.Movie;
+import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.event.DownloadProgressEvent;
 import com.mediaserver.exception.DownloadException;
-import com.mediaserver.repository.DownloadTaskRepository;
-import com.mediaserver.repository.MovieRepository;
+import com.mediaserver.domain.repository.DownloadTaskRepository;
+import com.mediaserver.domain.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -58,16 +58,18 @@ public class MegaDownloadService {
                 });
             }
 
-            movie.setLocalPath(targetPath.toString());
-            movie.setFileSize(Files.size(targetPath));
-            movie.setContentType(detectContentType(targetPath));
-            movie.setStatus(MovieStatus.READY);
-            movieRepository.save(movie);
+            Movie updatedMovie = movie
+                    .withLocalPath(targetPath.toString())
+                    .withFileSize(Files.size(targetPath))
+                    .withContentType(detectContentType(targetPath))
+                    .withStatus(MovieStatus.READY);
+            movieRepository.save(updatedMovie);
 
-            task.setStatus(DownloadStatus.COMPLETED);
-            task.setCompletedAt(LocalDateTime.now());
-            task.setProgress(100);
-            taskRepository.save(task);
+            DownloadTask updatedTask = task
+                    .withStatus(DownloadStatus.COMPLETED)
+                    .withCompletedAt(LocalDateTime.now())
+                    .withProgress(100);
+            taskRepository.save(updatedTask);
 
             publishProgress(movie, new DownloadProgress(100, movie.getFileSize(), movie.getFileSize()));
             log.info("Download completed for movie: {}", movie.getTitle());
@@ -153,19 +155,21 @@ public class MegaDownloadService {
 
     private DownloadTask createOrUpdateTask(Movie movie, DownloadStatus status) {
         DownloadTask task = taskRepository.findByMovieId(movie.getId())
-                .orElse(DownloadTask.builder().movie(movie).build());
-        task.setStatus(status);
-        task.setStartedAt(LocalDateTime.now());
-        task.setProgress(0);
-        task.setBytesDownloaded(0L);
-        return taskRepository.save(task);
+                .orElse(DownloadTask.builder().movieId(movie.getId()).build());
+        DownloadTask updatedTask = task
+                .withStatus(status)
+                .withStartedAt(LocalDateTime.now())
+                .withProgress(0)
+                .withBytesDownloaded(0L);
+        return taskRepository.save(updatedTask);
     }
 
     private void updateProgress(DownloadTask task, DownloadProgress progress) {
-        task.setProgress(progress.percent());
-        task.setBytesDownloaded(progress.bytesDownloaded());
-        task.setTotalBytes(progress.totalBytes());
-        taskRepository.save(task);
+        DownloadTask updatedTask = task
+                .withProgress(progress.percent())
+                .withBytesDownloaded(progress.bytesDownloaded())
+                .withTotalBytes(progress.totalBytes());
+        taskRepository.save(updatedTask);
     }
 
     private void publishProgress(Movie movie, DownloadProgress progress) {
@@ -179,11 +183,13 @@ public class MegaDownloadService {
     }
 
     private void handleDownloadError(Movie movie, DownloadTask task, Exception e) {
-        movie.setStatus(MovieStatus.ERROR);
-        movieRepository.save(movie);
-        task.setStatus(DownloadStatus.FAILED);
-        task.setErrorMessage(e.getMessage());
-        taskRepository.save(task);
+        Movie updatedMovie = movie.withStatus(MovieStatus.ERROR);
+        movieRepository.save(updatedMovie);
+
+        DownloadTask updatedTask = task
+                .withStatus(DownloadStatus.FAILED)
+                .withErrorMessage(e.getMessage());
+        taskRepository.save(updatedTask);
 
         DownloadProgressDto dto = DownloadProgressDto.builder()
                 .movieId(movie.getId()).movieTitle(movie.getTitle())

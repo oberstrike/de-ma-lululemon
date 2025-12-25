@@ -1,7 +1,7 @@
 package com.mediaserver.infrastructure.rest.controller;
 
 import com.mediaserver.application.usecase.movie.*;
-import com.mediaserver.entity.Movie;
+import com.mediaserver.domain.model.Movie;
 import com.mediaserver.infrastructure.rest.dto.CacheStatsDto;
 import com.mediaserver.infrastructure.rest.dto.MovieRequestDto;
 import com.mediaserver.infrastructure.rest.dto.MovieResponseDto;

@@ -92,4 +92,9 @@ public class MovieRepositoryAdapter implements MovieRepository {
     public long countCached() {
         return jpaMovieRepository.countByLocalPathIsNotNull();
     }
+
+    @Override
+    public boolean existsByMegaPath(String megaPath) {
+        return jpaMovieRepository.existsByMegaPath(megaPath);
+    }
 }

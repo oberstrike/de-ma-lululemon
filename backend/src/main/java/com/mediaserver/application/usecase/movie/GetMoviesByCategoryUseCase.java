@@ -1,6 +1,6 @@
 package com.mediaserver.application.usecase.movie;
 
-import com.mediaserver.entity.Movie;
+import com.mediaserver.domain.model.Movie;
 import java.util.List;
 
 public interface GetMoviesByCategoryUseCase {

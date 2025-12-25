@@ -63,4 +63,10 @@ public class CategoryRepositoryAdapter implements CategoryRepository {
     public long countMoviesByCategoryId(String categoryId) {
         return jpaCategoryRepository.countMoviesByCategoryId(categoryId);
     }
+
+    @Override
+    public Optional<Category> findByMegaPath(String megaPath) {
+        return jpaCategoryRepository.findByMegaPath(megaPath)
+                .map(mapper::toDomain);
+    }
 }

@@ -1,10 +1,10 @@
 package com.mediaserver.service;
 
 import com.mediaserver.config.MediaProperties;
-import com.mediaserver.entity.Movie;
+import com.mediaserver.domain.model.Movie;
 import com.mediaserver.exception.MovieNotFoundException;
 import com.mediaserver.exception.VideoNotReadyException;
-import com.mediaserver.repository.MovieRepository;
+import com.mediaserver.domain.repository.MovieRepository;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

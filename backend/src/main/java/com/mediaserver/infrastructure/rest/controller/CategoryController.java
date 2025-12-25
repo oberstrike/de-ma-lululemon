@@ -1,7 +1,7 @@
 package com.mediaserver.infrastructure.rest.controller;
 
 import com.mediaserver.application.usecase.category.*;
-import com.mediaserver.entity.Category;
+import com.mediaserver.domain.model.Category;
 import com.mediaserver.infrastructure.rest.dto.CategoryRequestDto;
 import com.mediaserver.infrastructure.rest.dto.CategoryResponseDto;
 import com.mediaserver.infrastructure.rest.mapper.CategoryRestMapper;

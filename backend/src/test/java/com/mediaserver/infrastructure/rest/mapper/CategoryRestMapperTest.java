@@ -2,16 +2,12 @@ package com.mediaserver.infrastructure.rest.mapper;
 
 import com.mediaserver.application.command.CreateCategoryCommand;
 import com.mediaserver.application.command.UpdateCategoryCommand;
-import com.mediaserver.entity.Category;
-import com.mediaserver.entity.Movie;
+import com.mediaserver.domain.model.Category;
 import com.mediaserver.infrastructure.rest.dto.CategoryRequestDto;
 import com.mediaserver.infrastructure.rest.dto.CategoryResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,7 +30,6 @@ class CategoryRestMapperTest {
                 .description("Action movies")
                 .megaPath("/Action")
                 .sortOrder(1)
-                .movies(new ArrayList<>())
                 .build();
 
         requestDto = CategoryRequestDto.builder()
@@ -58,33 +53,9 @@ class CategoryRestMapperTest {
     }
 
     @Test
-    void toResponse_shouldCalculateMovieCount() {
-        // Given
-        List<Movie> movies = new ArrayList<>();
-        movies.add(Movie.builder().id("movie-1").title("Movie 1").build());
-        movies.add(Movie.builder().id("movie-2").title("Movie 2").build());
-        movies.add(Movie.builder().id("movie-3").title("Movie 3").build());
-
-        Category categoryWithMovies = category.toBuilder()
-                .movies(movies)
-                .build();
-
-        // When
-        CategoryResponseDto result = mapper.toResponse(categoryWithMovies);
-
-        // Then
-        assertThat(result.getMovieCount()).isEqualTo(3);
-    }
-
-    @Test
-    void toResponse_shouldHandleNullMoviesList() {
-        // Given
-        Category categoryWithNullMovies = category.toBuilder()
-                .movies(null)
-                .build();
-
-        // When
-        CategoryResponseDto result = mapper.toResponse(categoryWithNullMovies);
+    void toResponse_shouldReturnZeroMovieCount() {
+        // When - domain Category doesn't have movies list, movie count is derived elsewhere
+        CategoryResponseDto result = mapper.toResponse(category);
 
         // Then
         assertThat(result.getMovieCount()).isEqualTo(0);
@@ -112,9 +83,7 @@ class CategoryRestMapperTest {
     @Test
     void toResponse_shouldHandleZeroSortOrder() {
         // Given
-        Category categoryWithZeroSort = category.toBuilder()
-                .sortOrder(0)
-                .build();
+        Category categoryWithZeroSort = category.withSortOrder(0);
 
         // When
         CategoryResponseDto result = mapper.toResponse(categoryWithZeroSort);
@@ -126,9 +95,7 @@ class CategoryRestMapperTest {
     @Test
     void toResponse_shouldHandleNegativeSortOrder() {
         // Given
-        Category categoryWithNegativeSort = category.toBuilder()
-                .sortOrder(-1)
-                .build();
+        Category categoryWithNegativeSort = category.withSortOrder(-1);
 
         // When
         CategoryResponseDto result = mapper.toResponse(categoryWithNegativeSort);
@@ -140,34 +107,13 @@ class CategoryRestMapperTest {
     @Test
     void toResponse_shouldHandleEmptyDescription() {
         // Given
-        Category categoryWithEmptyDescription = category.toBuilder()
-                .description("")
-                .build();
+        Category categoryWithEmptyDescription = category.withDescription("");
 
         // When
         CategoryResponseDto result = mapper.toResponse(categoryWithEmptyDescription);
 
         // Then
         assertThat(result.getDescription()).isEmpty();
-    }
-
-    @Test
-    void toResponse_shouldHandleLargeMovieCount() {
-        // Given
-        List<Movie> movies = new ArrayList<>();
-        for (int i = 0; i < 1000; i++) {
-            movies.add(Movie.builder().id("movie-" + i).title("Movie " + i).build());
-        }
-
-        Category categoryWithManyMovies = category.toBuilder()
-                .movies(movies)
-                .build();
-
-        // When
-        CategoryResponseDto result = mapper.toResponse(categoryWithManyMovies);
-
-        // Then
-        assertThat(result.getMovieCount()).isEqualTo(1000);
     }
 
     @Test

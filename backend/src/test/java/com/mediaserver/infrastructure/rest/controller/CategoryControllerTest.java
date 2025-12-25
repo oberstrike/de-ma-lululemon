@@ -6,7 +6,7 @@ import com.mediaserver.application.command.UpdateCategoryCommand;
 import com.mediaserver.application.usecase.category.*;
 import com.mediaserver.config.MediaProperties;
 import com.mediaserver.config.WebConfig;
-import com.mediaserver.entity.Category;
+import com.mediaserver.domain.model.Category;
 import com.mediaserver.exception.CategoryNotFoundException;
 import com.mediaserver.exception.GlobalExceptionHandler;
 import com.mediaserver.infrastructure.rest.controller.CategoryController;
@@ -206,7 +206,8 @@ class CategoryControllerTest {
                 .sortOrder(10)
                 .build();
 
-        Category updatedCategory = domainCategory.toBuilder()
+        Category updatedCategory = Category.builder()
+                .id("cat-1")
                 .name("Updated Action")
                 .description("Updated description")
                 .sortOrder(10)

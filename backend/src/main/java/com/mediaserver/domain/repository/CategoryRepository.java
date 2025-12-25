@@ -56,4 +56,11 @@ public interface CategoryRepository {
      * @return number of movies in the category
      */
     long countMoviesByCategoryId(String categoryId);
+
+    /**
+     * Find a category by its Mega path.
+     * @param megaPath the Mega path
+     * @return Optional containing the category if found
+     */
+    Optional<Category> findByMegaPath(String megaPath);
 }

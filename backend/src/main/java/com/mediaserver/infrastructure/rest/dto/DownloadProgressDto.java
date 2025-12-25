@@ -1,6 +1,6 @@
 package com.mediaserver.infrastructure.rest.dto;
 
-import com.mediaserver.entity.DownloadStatus;
+import com.mediaserver.domain.model.DownloadStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

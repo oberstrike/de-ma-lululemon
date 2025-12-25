@@ -1,6 +1,6 @@
 package com.mediaserver.infrastructure.rest.dto;
 
-import com.mediaserver.entity.MovieStatus;
+import com.mediaserver.domain.model.MovieStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

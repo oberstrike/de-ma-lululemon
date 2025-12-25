@@ -1,4 +1,4 @@
-package com.mediaserver.controller;
+package com.mediaserver.infrastructure.rest.controller;
 
 import com.mediaserver.config.MediaProperties;
 import lombok.RequiredArgsConstructor;

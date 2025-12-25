@@ -6,8 +6,8 @@ import com.mediaserver.application.command.UpdateMovieCommand;
 import com.mediaserver.application.usecase.movie.*;
 import com.mediaserver.config.MediaProperties;
 import com.mediaserver.config.WebConfig;
-import com.mediaserver.entity.Movie;
-import com.mediaserver.entity.MovieStatus;
+import com.mediaserver.domain.model.Movie;
+import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.exception.GlobalExceptionHandler;
 import com.mediaserver.exception.MovieNotFoundException;
 import com.mediaserver.infrastructure.rest.controller.MovieController;
@@ -166,10 +166,9 @@ class MovieControllerTest {
     @Test
     void getAllMovies_withReadyOnly_shouldCallGetReadyMovies() throws Exception {
         // Given
-        Movie readyMovie = entityMovie.toBuilder()
-                .status(MovieStatus.READY)
-                .localPath("/cache/movie.mp4")
-                .build();
+        Movie readyMovie = entityMovie
+                .withStatus(MovieStatus.READY)
+                .withLocalPath("/cache/movie.mp4");
 
         MovieResponseDto readyDto = movieResponseDto.toBuilder()
                 .status(MovieStatus.READY)
@@ -282,9 +281,7 @@ class MovieControllerTest {
                 .megaUrl("https://mega.nz/file/test")
                 .build();
 
-        Movie updatedMovie = entityMovie.toBuilder()
-                .title("Updated Movie")
-                .build();
+        Movie updatedMovie = entityMovie.withTitle("Updated Movie");
 
         MovieResponseDto updatedDto = movieResponseDto.toBuilder()
                 .title("Updated Movie")
@@ -359,10 +356,9 @@ class MovieControllerTest {
     @Test
     void getCachedMovies_shouldReturnCachedMovies() throws Exception {
         // Given
-        Movie cachedMovie = entityMovie.toBuilder()
-                .localPath("/cache/movie.mp4")
-                .status(MovieStatus.READY)
-                .build();
+        Movie cachedMovie = entityMovie
+                .withLocalPath("/cache/movie.mp4")
+                .withStatus(MovieStatus.READY);
 
         MovieResponseDto cachedDto = movieResponseDto.toBuilder()
                 .cached(true)

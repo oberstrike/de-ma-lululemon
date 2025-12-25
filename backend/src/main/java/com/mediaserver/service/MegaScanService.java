@@ -2,11 +2,11 @@ package com.mediaserver.service;
 
 import com.mediaserver.config.MediaProperties;
 import com.mediaserver.dto.ScanResultDto;
-import com.mediaserver.entity.Category;
-import com.mediaserver.entity.Movie;
-import com.mediaserver.entity.MovieStatus;
-import com.mediaserver.repository.CategoryRepository;
-import com.mediaserver.repository.MovieRepository;
+import com.mediaserver.domain.model.Category;
+import com.mediaserver.domain.model.Movie;
+import com.mediaserver.domain.model.MovieStatus;
+import com.mediaserver.domain.repository.CategoryRepository;
+import com.mediaserver.domain.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -302,10 +302,7 @@ public class MegaScanService {
     private Category getOrCreateCategory(String name, String megaPath) {
         return categoryRepository.findByMegaPath(megaPath)
                 .orElseGet(() -> categoryRepository.findByName(name)
-                        .map(cat -> {
-                            cat.setMegaPath(megaPath);
-                            return cat;
-                        })
+                        .map(cat -> cat.withMegaPath(megaPath))
                         .orElse(Category.builder()
                                 .name(name)
                                 .megaPath(megaPath)
@@ -329,7 +326,7 @@ public class MegaScanService {
                 .megaUrl(megaPath)
                 .thumbnailUrl(localThumbnailUrl)
                 .fileSize(entry.size())
-                .category(category)
+                .categoryId(category != null ? category.getId() : null)
                 .status(MovieStatus.PENDING)
                 .year(year)
                 .contentType(detectContentType(entry.name()))

@@ -2,9 +2,8 @@ package com.mediaserver.infrastructure.rest.mapper;
 
 import com.mediaserver.application.command.CreateMovieCommand;
 import com.mediaserver.application.command.UpdateMovieCommand;
-import com.mediaserver.entity.Category;
-import com.mediaserver.entity.Movie;
-import com.mediaserver.entity.MovieStatus;
+import com.mediaserver.domain.model.Movie;
+import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.infrastructure.rest.dto.MovieRequestDto;
 import com.mediaserver.infrastructure.rest.dto.MovieResponseDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +23,6 @@ class MovieRestMapperTest {
     private MovieRestMapper movieRestMapper;
 
     private Movie movie;
-    private Category category;
     private MovieRequestDto requestDto;
 
     @BeforeEach
@@ -32,12 +30,6 @@ class MovieRestMapperTest {
         movieRestMapper = Mappers.getMapper(MovieRestMapper.class);
 
         LocalDateTime now = LocalDateTime.now();
-
-        category = Category.builder()
-                .id("cat-1")
-                .name("Action")
-                .description("Action movies")
-                .build();
 
         movie = Movie.builder()
                 .id("movie-1")
@@ -50,7 +42,7 @@ class MovieRestMapperTest {
                 .localPath("/cache/test.mp4")
                 .fileSize(1024L * 1024 * 1024) // 1GB
                 .status(MovieStatus.READY)
-                .category(category)
+                .categoryId("cat-1")
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
@@ -87,22 +79,21 @@ class MovieRestMapperTest {
     }
 
     @Test
-    void toResponse_shouldMapCategoryFields() {
+    void toResponse_shouldMapCategoryId() {
         // When
         MovieResponseDto result = movieRestMapper.toResponse(movie);
 
-        // Then
+        // Then - categoryName is ignored by mapper, only categoryId is mapped
         assertThat(result.getCategoryId()).isEqualTo("cat-1");
-        assertThat(result.getCategoryName()).isEqualTo("Action");
+        assertThat(result.getCategoryName()).isNull();
     }
 
     @Test
     void toResponse_shouldMapCachedField_whenMovieIsCached() {
         // Given - movie with localPath and READY status
-        Movie cachedMovie = movie.toBuilder()
-                .localPath("/cache/video.mp4")
-                .status(MovieStatus.READY)
-                .build();
+        Movie cachedMovie = movie
+                .withLocalPath("/cache/video.mp4")
+                .withStatus(MovieStatus.READY);
 
         // When
         MovieResponseDto result = movieRestMapper.toResponse(cachedMovie);
@@ -114,10 +105,9 @@ class MovieRestMapperTest {
     @Test
     void toResponse_shouldMapCachedFieldFalse_whenNoLocalPath() {
         // Given
-        Movie notCachedMovie = movie.toBuilder()
-                .localPath(null)
-                .status(MovieStatus.READY)
-                .build();
+        Movie notCachedMovie = movie
+                .withLocalPath(null)
+                .withStatus(MovieStatus.READY);
 
         // When
         MovieResponseDto result = movieRestMapper.toResponse(notCachedMovie);
@@ -129,10 +119,9 @@ class MovieRestMapperTest {
     @Test
     void toResponse_shouldMapCachedFieldFalse_whenStatusNotReady() {
         // Given
-        Movie downloadingMovie = movie.toBuilder()
-                .localPath("/cache/video.mp4")
-                .status(MovieStatus.DOWNLOADING)
-                .build();
+        Movie downloadingMovie = movie
+                .withLocalPath("/cache/video.mp4")
+                .withStatus(MovieStatus.DOWNLOADING);
 
         // When
         MovieResponseDto result = movieRestMapper.toResponse(downloadingMovie);
@@ -142,11 +131,9 @@ class MovieRestMapperTest {
     }
 
     @Test
-    void toResponse_shouldHandleNullCategory() {
+    void toResponse_shouldHandleNullCategoryId() {
         // Given
-        Movie movieWithoutCategory = movie.toBuilder()
-                .category(null)
-                .build();
+        Movie movieWithoutCategory = movie.withCategoryId(null);
 
         // When
         MovieResponseDto result = movieRestMapper.toResponse(movieWithoutCategory);
@@ -185,24 +172,22 @@ class MovieRestMapperTest {
     @Test
     void toResponse_shouldHandleAllMovieStatuses() {
         // Test PENDING
-        Movie pendingMovie = movie.toBuilder().status(MovieStatus.PENDING).localPath(null).build();
+        Movie pendingMovie = movie.withStatus(MovieStatus.PENDING).withLocalPath(null);
         assertThat(movieRestMapper.toResponse(pendingMovie).getStatus()).isEqualTo(MovieStatus.PENDING);
 
         // Test DOWNLOADING
-        Movie downloadingMovie = movie.toBuilder().status(MovieStatus.DOWNLOADING).build();
+        Movie downloadingMovie = movie.withStatus(MovieStatus.DOWNLOADING);
         assertThat(movieRestMapper.toResponse(downloadingMovie).getStatus()).isEqualTo(MovieStatus.DOWNLOADING);
 
         // Test READY
-        Movie readyMovie = movie.toBuilder().status(MovieStatus.READY).build();
+        Movie readyMovie = movie.withStatus(MovieStatus.READY);
         assertThat(movieRestMapper.toResponse(readyMovie).getStatus()).isEqualTo(MovieStatus.READY);
     }
 
     @Test
     void toResponse_shouldHandleZeroFileSize() {
         // Given
-        Movie movieWithZeroSize = movie.toBuilder()
-                .fileSize(0L)
-                .build();
+        Movie movieWithZeroSize = movie.withFileSize(0L);
 
         // When
         MovieResponseDto result = movieRestMapper.toResponse(movieWithZeroSize);
@@ -214,9 +199,7 @@ class MovieRestMapperTest {
     @Test
     void toResponse_shouldHandleLargeFileSize() {
         // Given
-        Movie movieWithLargeSize = movie.toBuilder()
-                .fileSize(5L * 1024 * 1024 * 1024) // 5GB
-                .build();
+        Movie movieWithLargeSize = movie.withFileSize(5L * 1024 * 1024 * 1024); // 5GB
 
         // When
         MovieResponseDto result = movieRestMapper.toResponse(movieWithLargeSize);
