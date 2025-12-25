@@ -1,10 +1,9 @@
 package com.mediaserver.application.port.in;
 
-import lombok.Builder;
-import lombok.Value;
-
 import java.io.InputStream;
 import java.util.function.Supplier;
+import lombok.Builder;
+import lombok.Value;
 
 /**
  * Use case for streaming video content.

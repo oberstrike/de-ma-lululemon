@@ -2,10 +2,9 @@ package com.mediaserver.infrastructure.persistence.mapper;
 
 import com.mediaserver.domain.model.Movie;
 import com.mediaserver.infrastructure.persistence.entity.MovieJpaEntity;
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
-import java.util.List;
 
 /**
  * MapStruct mapper for converting between Movie domain entity and MovieJpaEntity.

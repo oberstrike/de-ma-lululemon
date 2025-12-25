@@ -1,11 +1,9 @@
 package com.mediaserver.domain.model;
 
-import com.mediaserver.domain.model.MovieStatus;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for Movie domain entity.

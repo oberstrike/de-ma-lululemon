@@ -1,5 +1,11 @@
 package com.mediaserver.infrastructure.rest.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mediaserver.application.command.CreateCategoryCommand;
 import com.mediaserver.application.command.UpdateCategoryCommand;
@@ -9,10 +15,10 @@ import com.mediaserver.config.WebConfig;
 import com.mediaserver.domain.model.Category;
 import com.mediaserver.exception.CategoryNotFoundException;
 import com.mediaserver.exception.GlobalExceptionHandler;
-import com.mediaserver.infrastructure.rest.controller.CategoryController;
 import com.mediaserver.infrastructure.rest.dto.CategoryRequestDto;
 import com.mediaserver.infrastructure.rest.dto.CategoryResponseDto;
 import com.mediaserver.infrastructure.rest.mapper.CategoryRestMapper;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +28,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Unit tests for CategoryController in Clean Architecture.

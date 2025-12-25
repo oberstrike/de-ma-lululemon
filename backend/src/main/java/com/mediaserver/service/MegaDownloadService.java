@@ -1,22 +1,15 @@
 package com.mediaserver.service;
 
 import com.mediaserver.config.MediaProperties;
-import com.mediaserver.infrastructure.rest.dto.DownloadProgressDto;
 import com.mediaserver.domain.model.DownloadStatus;
 import com.mediaserver.domain.model.DownloadTask;
 import com.mediaserver.domain.model.Movie;
 import com.mediaserver.domain.model.MovieStatus;
-import com.mediaserver.event.DownloadProgressEvent;
-import com.mediaserver.exception.DownloadException;
 import com.mediaserver.domain.repository.DownloadTaskRepository;
 import com.mediaserver.domain.repository.MovieRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import com.mediaserver.event.DownloadProgressEvent;
+import com.mediaserver.exception.DownloadException;
+import com.mediaserver.infrastructure.rest.dto.DownloadProgressDto;
 import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -30,6 +23,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j

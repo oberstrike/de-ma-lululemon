@@ -9,11 +9,10 @@ import com.mediaserver.application.port.in.UpdateCategoryUseCase;
 import com.mediaserver.application.port.out.CategoryPort;
 import com.mediaserver.domain.model.Category;
 import com.mediaserver.exception.CategoryNotFoundException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * Application service implementing category-related use cases.

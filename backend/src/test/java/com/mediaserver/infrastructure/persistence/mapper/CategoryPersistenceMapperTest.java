@@ -1,12 +1,12 @@
 package com.mediaserver.infrastructure.persistence.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.mediaserver.domain.model.Category;
 import com.mediaserver.infrastructure.persistence.entity.CategoryJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for CategoryPersistenceMapper.

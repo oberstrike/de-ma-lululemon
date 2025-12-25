@@ -1,7 +1,6 @@
 package com.mediaserver.application.port.out;
 
 import com.mediaserver.domain.model.Movie;
-
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 

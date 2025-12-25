@@ -3,6 +3,8 @@ package com.mediaserver.infrastructure.rest.controller;
 import com.mediaserver.application.usecase.stream.GetStreamInfoUseCase;
 import com.mediaserver.infrastructure.rest.dto.StreamInfoDto;
 import com.mediaserver.service.VideoStreamingService;
+import java.io.IOException;
+import java.io.InputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -11,9 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 @RestController
 @RequestMapping("/api/stream")

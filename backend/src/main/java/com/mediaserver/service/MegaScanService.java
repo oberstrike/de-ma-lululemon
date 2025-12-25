@@ -1,19 +1,12 @@
 package com.mediaserver.service;
 
 import com.mediaserver.config.MediaProperties;
-import com.mediaserver.dto.ScanResultDto;
 import com.mediaserver.domain.model.Category;
 import com.mediaserver.domain.model.Movie;
 import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.domain.repository.CategoryRepository;
 import com.mediaserver.domain.repository.MovieRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import com.mediaserver.dto.ScanResultDto;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -24,6 +17,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j

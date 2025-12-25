@@ -2,22 +2,21 @@ package com.mediaserver.service;
 
 import com.mediaserver.config.MediaProperties;
 import com.mediaserver.domain.model.Movie;
+import com.mediaserver.domain.repository.MovieRepository;
 import com.mediaserver.exception.MovieNotFoundException;
 import com.mediaserver.exception.VideoNotReadyException;
-import com.mediaserver.domain.repository.MovieRepository;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.input.BoundedInputStream;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.file.Path;
 import java.util.function.Supplier;
+import lombok.Builder;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.input.BoundedInputStream;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j

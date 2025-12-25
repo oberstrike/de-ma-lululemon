@@ -2,7 +2,6 @@ package com.mediaserver.domain.repository;
 
 import com.mediaserver.domain.model.Movie;
 import com.mediaserver.domain.model.MovieStatus;
-
 import java.util.List;
 import java.util.Optional;
 

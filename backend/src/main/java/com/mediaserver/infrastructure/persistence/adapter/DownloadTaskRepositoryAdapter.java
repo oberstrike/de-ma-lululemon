@@ -2,16 +2,13 @@ package com.mediaserver.infrastructure.persistence.adapter;
 
 import com.mediaserver.domain.model.DownloadTask;
 import com.mediaserver.domain.repository.DownloadTaskRepository;
-import com.mediaserver.infrastructure.persistence.entity.DownloadTaskJpaEntity;
-import com.mediaserver.infrastructure.persistence.entity.MovieJpaEntity;
 import com.mediaserver.infrastructure.persistence.mapper.DownloadTaskPersistenceMapper;
 import com.mediaserver.infrastructure.persistence.repository.JpaDownloadTaskRepository;
 import com.mediaserver.infrastructure.persistence.repository.JpaMovieRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 /**
  * Adapter implementation of DownloadTaskRepository port.

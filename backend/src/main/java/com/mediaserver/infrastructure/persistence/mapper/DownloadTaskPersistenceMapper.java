@@ -2,10 +2,9 @@ package com.mediaserver.infrastructure.persistence.mapper;
 
 import com.mediaserver.domain.model.DownloadTask;
 import com.mediaserver.infrastructure.persistence.entity.DownloadTaskJpaEntity;
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
-import java.util.List;
 
 /**
  * MapStruct mapper for converting between DownloadTask domain entity and DownloadTaskJpaEntity.

@@ -2,9 +2,8 @@ package com.mediaserver.infrastructure.persistence.entity;
 
 import com.mediaserver.domain.model.MovieStatus;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
 @Table(name = "movies")

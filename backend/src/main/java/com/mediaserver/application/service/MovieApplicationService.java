@@ -16,17 +16,16 @@ import com.mediaserver.domain.model.Movie;
 import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.exception.CategoryNotFoundException;
 import com.mediaserver.exception.MovieNotFoundException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Application service implementing movie-related use cases.

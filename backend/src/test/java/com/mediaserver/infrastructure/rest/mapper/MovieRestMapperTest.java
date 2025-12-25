@@ -1,18 +1,17 @@
 package com.mediaserver.infrastructure.rest.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.mediaserver.application.command.CreateMovieCommand;
 import com.mediaserver.application.command.UpdateMovieCommand;
 import com.mediaserver.domain.model.Movie;
 import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.infrastructure.rest.dto.MovieRequestDto;
 import com.mediaserver.infrastructure.rest.dto.MovieResponseDto;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-
-import java.time.LocalDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for MovieRestMapper.

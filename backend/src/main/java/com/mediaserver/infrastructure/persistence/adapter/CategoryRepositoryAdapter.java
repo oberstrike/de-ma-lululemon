@@ -2,14 +2,12 @@ package com.mediaserver.infrastructure.persistence.adapter;
 
 import com.mediaserver.domain.model.Category;
 import com.mediaserver.domain.repository.CategoryRepository;
-import com.mediaserver.infrastructure.persistence.entity.CategoryJpaEntity;
 import com.mediaserver.infrastructure.persistence.mapper.CategoryPersistenceMapper;
 import com.mediaserver.infrastructure.persistence.repository.JpaCategoryRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 /**
  * Adapter implementation of CategoryRepository port.

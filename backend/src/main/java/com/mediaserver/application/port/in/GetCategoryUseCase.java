@@ -1,7 +1,6 @@
 package com.mediaserver.application.port.in;
 
 import com.mediaserver.domain.model.Category;
-
 import java.util.List;
 
 /**

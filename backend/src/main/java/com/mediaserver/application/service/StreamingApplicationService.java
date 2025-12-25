@@ -3,19 +3,17 @@ package com.mediaserver.application.service;
 import com.mediaserver.application.port.in.StreamVideoUseCase;
 import com.mediaserver.application.port.out.MoviePort;
 import com.mediaserver.config.MediaProperties;
-import com.mediaserver.domain.model.Movie;
 import com.mediaserver.exception.MovieNotFoundException;
 import com.mediaserver.exception.VideoNotReadyException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.input.BoundedInputStream;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.file.Path;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.input.BoundedInputStream;
+import org.springframework.stereotype.Service;
 
 /**
  * Application service implementing video streaming use cases.

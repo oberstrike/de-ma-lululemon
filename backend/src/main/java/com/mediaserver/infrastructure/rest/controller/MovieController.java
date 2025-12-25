@@ -7,11 +7,10 @@ import com.mediaserver.infrastructure.rest.dto.MovieRequestDto;
 import com.mediaserver.infrastructure.rest.dto.MovieResponseDto;
 import com.mediaserver.infrastructure.rest.mapper.MovieRestMapper;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/movies")

@@ -2,9 +2,8 @@ package com.mediaserver.infrastructure.persistence.entity;
 
 import com.mediaserver.domain.model.DownloadStatus;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
 @Table(name = "download_tasks")

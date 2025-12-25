@@ -2,14 +2,12 @@ package com.mediaserver.infrastructure.rest.controller;
 
 import com.mediaserver.application.usecase.download.GetActiveDownloadsUseCase;
 import com.mediaserver.application.usecase.download.GetDownloadProgressUseCase;
-import com.mediaserver.domain.model.DownloadTask;
 import com.mediaserver.infrastructure.rest.dto.DownloadProgressDto;
 import com.mediaserver.infrastructure.rest.mapper.DownloadRestMapper;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/downloads")

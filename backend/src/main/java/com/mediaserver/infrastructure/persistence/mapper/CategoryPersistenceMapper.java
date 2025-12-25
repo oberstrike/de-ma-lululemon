@@ -2,10 +2,9 @@ package com.mediaserver.infrastructure.persistence.mapper;
 
 import com.mediaserver.domain.model.Category;
 import com.mediaserver.infrastructure.persistence.entity.CategoryJpaEntity;
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
-import java.util.List;
 
 /**
  * MapStruct mapper for converting between Category domain entity and CategoryJpaEntity.

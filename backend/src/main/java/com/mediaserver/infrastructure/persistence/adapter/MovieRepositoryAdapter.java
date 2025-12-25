@@ -3,16 +3,13 @@ package com.mediaserver.infrastructure.persistence.adapter;
 import com.mediaserver.domain.model.Movie;
 import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.domain.repository.MovieRepository;
-import com.mediaserver.infrastructure.persistence.entity.CategoryJpaEntity;
-import com.mediaserver.infrastructure.persistence.entity.MovieJpaEntity;
 import com.mediaserver.infrastructure.persistence.mapper.MoviePersistenceMapper;
 import com.mediaserver.infrastructure.persistence.repository.JpaCategoryRepository;
 import com.mediaserver.infrastructure.persistence.repository.JpaMovieRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 /**
  * Adapter implementation of MovieRepository port.

@@ -1,16 +1,15 @@
 package com.mediaserver.infrastructure.persistence.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.mediaserver.domain.model.Movie;
 import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.infrastructure.persistence.entity.CategoryJpaEntity;
 import com.mediaserver.infrastructure.persistence.entity.MovieJpaEntity;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-
-import java.time.LocalDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for MoviePersistenceMapper.
