@@ -1,0 +1,17 @@
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <!-- Suppress checks on generated MapStruct mappers -->
+    <suppress files=".*Impl\.java$" checks=".*"/>
+
+    <!-- Suppress Javadoc requirements for test classes -->
+    <suppress files=".*Test\.java$" checks="MissingJavadocType"/>
+
+    <!-- Suppress file length for large test classes -->
+    <suppress files=".*Test\.java$" checks="FileLength"/>
+
+    <!-- Suppress star imports for static test imports (common in JUnit/Mockito) -->
+    <suppress files=".*Test\.java$" checks="AvoidStarImport"/>
+</suppressions>
