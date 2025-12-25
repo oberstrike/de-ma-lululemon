@@ -17,7 +17,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:all": "npm run format:check && npm run lint:all",
-    "prepare": "cd .. && husky frontend/.husky || true"
+    "prepare": "cd .. && husky || true"
   },
   "lint-staged": {
     "*.{ts,html,json,scss,css,md}": "prettier --write",
