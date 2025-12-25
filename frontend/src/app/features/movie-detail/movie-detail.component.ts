@@ -290,8 +290,12 @@ export class MovieDetailComponent implements OnInit {
 
   readonly isDownloading = computed(() => this.movie()?.status === 'DOWNLOADING');
 
-  ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id')!;
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.router.navigate(['/']);
+      return;
+    }
 
     this.api
       .getMovie(id)
@@ -320,14 +324,14 @@ export class MovieDetailComponent implements OnInit {
       });
   }
 
-  startDownload() {
+  startDownload(): void {
     const currentMovie = this.movie();
     if (!currentMovie) return;
     this.movie.set({ ...currentMovie, status: 'DOWNLOADING' });
     this.moviesStore.startDownload(currentMovie.id);
   }
 
-  toggleFavorite() {
+  toggleFavorite(): void {
     const currentMovie = this.movie();
     if (!currentMovie) return;
 
@@ -341,7 +345,7 @@ export class MovieDetailComponent implements OnInit {
     }
   }
 
-  confirmDelete() {
+  confirmDelete(): void {
     this.confirmationService.confirm({
       message: 'Are you sure you want to delete this movie?',
       header: 'Delete Confirmation',
@@ -353,14 +357,14 @@ export class MovieDetailComponent implements OnInit {
     });
   }
 
-  deleteMovie() {
+  deleteMovie(): void {
     const currentMovie = this.movie();
     if (!currentMovie) return;
     this.moviesStore.deleteMovie(currentMovie.id);
     this.router.navigate(['/']);
   }
 
-  confirmClearCache() {
+  confirmClearCache(): void {
     this.confirmationService.confirm({
       message:
         'Remove this movie from server storage? The movie will still be available on Mega.nz for re-download.',
@@ -372,7 +376,7 @@ export class MovieDetailComponent implements OnInit {
     });
   }
 
-  clearCache() {
+  clearCache(): void {
     const currentMovie = this.movie();
     if (!currentMovie) return;
 

@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -15,9 +15,10 @@ describe('VideoPlayerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VideoPlayerComponent, NoopAnimationsModule],
+      imports: [VideoPlayerComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideNoopAnimations(),
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),

@@ -183,7 +183,7 @@ module.exports = tseslint.config(
   {
     files: ['**/*.test.ts', '**/*.spec.ts'],
     rules: {
-      // Relax rules for test files
+      // Relax type-safety rules for test mocking
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
@@ -191,7 +191,22 @@ module.exports = tseslint.config(
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       'max-lines-per-function': 'off',
-      '@typescript-eslint/explicit-function-return-type': 'off',
+      // provideNoopAnimations is deprecated in Angular 21 for v23 - no alternative available yet
+      '@typescript-eslint/no-deprecated': 'off',
+    },
+  },
+  {
+    // NgRx stores have larger factory functions by design
+    files: ['**/*.store.ts'],
+    rules: {
+      'max-lines-per-function': ['warn', { max: 150, skipBlankLines: true, skipComments: true }],
+    },
+  },
+  {
+    // Animation providers deprecated in Angular 21 for v23 - no alternative available yet
+    files: ['**/main.ts'],
+    rules: {
+      '@typescript-eslint/no-deprecated': 'off',
     },
   },
   {

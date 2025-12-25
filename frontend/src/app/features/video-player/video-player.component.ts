@@ -322,7 +322,7 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
 
   private readonly syncEffect = effect(() => {
     const video = this.videoRef?.nativeElement;
-    if (!video) return;
+    if (video === undefined) return;
 
     if (this.player.isPlaying()) {
       video.play().catch(() => {
@@ -333,24 +333,25 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     }
   });
 
-  async ngOnInit() {
-    const movieId = this.route.snapshot.paramMap.get('id')!;
+  async ngOnInit(): Promise<void> {
+    const movieId = this.route.snapshot.paramMap.get('id');
+    if (!movieId) return;
     await this.player.loadMovie(movieId);
     this.startControlsTimer();
     this.volumeValue = this.player.volume() * 100;
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.player.reset();
-    if (this.controlsTimer) clearTimeout(this.controlsTimer);
+    if (this.controlsTimer !== null) clearTimeout(this.controlsTimer);
   }
 
-  onLoaded() {
+  onLoaded(): void {
     this.player.setDuration(this.videoRef.nativeElement.duration);
     this.videoRef.nativeElement.play();
   }
 
-  onTimeUpdate() {
+  onTimeUpdate(): void {
     const video = this.videoRef.nativeElement;
     this.player.setCurrentTime(video.currentTime);
     if (video.buffered.length > 0) {
@@ -358,18 +359,18 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  onEnded() {
+  onEnded(): void {
     this.player.pause();
     this.player.showControls();
   }
 
-  onMouseMove() {
+  onMouseMove(): void {
     this.player.showControls();
     this.startControlsTimer();
   }
 
-  startControlsTimer() {
-    if (this.controlsTimer) clearTimeout(this.controlsTimer);
+  startControlsTimer(): void {
+    if (this.controlsTimer !== null) clearTimeout(this.controlsTimer);
     this.controlsTimer = setTimeout(() => {
       if (this.player.isPlaying()) {
         this.player.hideControls();
@@ -377,11 +378,11 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  togglePlay() {
+  togglePlay(): void {
     this.player.togglePlay();
   }
 
-  seekTo(event: MouseEvent) {
+  seekTo(event: MouseEvent): void {
     const rect = (event.target as HTMLElement).getBoundingClientRect();
     const percent = (event.clientX - rect.left) / rect.width;
     const time = percent * this.player.duration();
@@ -389,7 +390,7 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     this.player.setCurrentTime(time);
   }
 
-  seekRelative(seconds: number) {
+  seekRelative(seconds: number): void {
     const newTime = this.player.currentTime() + seconds;
     this.videoRef.nativeElement.currentTime = Math.max(
       0,
@@ -397,14 +398,15 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     );
   }
 
-  onVolumeSliderChange(event: { value?: number }) {
+  onVolumeSliderChange(event: { value?: number }): void {
     const value = (event.value ?? 0) / 100;
     this.player.setVolume(value);
     this.videoRef.nativeElement.volume = value;
   }
 
-  toggleFullscreen() {
-    const wrapper = this.videoRef.nativeElement.parentElement!;
+  toggleFullscreen(): void {
+    const wrapper = this.videoRef.nativeElement.parentElement;
+    if (!wrapper) return;
     if (!document.fullscreenElement) {
       wrapper.requestFullscreen?.();
     } else {
@@ -413,9 +415,11 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     this.player.toggleFullscreen();
   }
 
-  retry(event: Event) {
+  retry(event: Event): void {
     event.stopPropagation();
-    const movieId = this.route.snapshot.paramMap.get('id')!;
-    this.player.loadMovie(movieId);
+    const movieId = this.route.snapshot.paramMap.get('id');
+    if (movieId) {
+      this.player.loadMovie(movieId);
+    }
   }
 }

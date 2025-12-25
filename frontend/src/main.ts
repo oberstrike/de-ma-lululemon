@@ -1,7 +1,7 @@
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { definePreset } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
@@ -33,7 +33,7 @@ bootstrapApplication(AppComponent, {
     provideZonelessChangeDetection(),
     provideRouter(routes, withViewTransitions()),
     provideHttpClient(withFetch()),
-    provideAnimationsAsync(),
+    provideAnimations(),
     providePrimeNG({
       theme: {
         preset: MediaPreset,

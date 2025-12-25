@@ -7,7 +7,7 @@ import { DownloadProgress } from './api.service';
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService {
-  private client!: Client;
+  private client: Client | undefined;
   private readonly ngZone = inject(NgZone);
   private readonly downloadProgress$ = new Subject<DownloadProgress>();
   private readonly connected$ = new Subject<boolean>();

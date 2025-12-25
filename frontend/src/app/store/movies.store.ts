@@ -14,6 +14,64 @@ interface MoviesState {
   error: string | null;
 }
 
+interface MovieGroup {
+  name: string;
+  movies: Movie[];
+}
+
+function groupMoviesByCategory(movies: Movie[], filter: string): MovieGroup[] {
+  const lowerFilter = filter.toLowerCase();
+  const filtered = lowerFilter
+    ? movies.filter((m) => m.title.toLowerCase().includes(lowerFilter))
+    : movies;
+
+  const groups: MovieGroup[] = [];
+  const categorized = new Map<string, Movie[]>();
+  const uncategorized: Movie[] = [];
+
+  for (const movie of filtered) {
+    if (movie.categoryName) {
+      const existing = categorized.get(movie.categoryName) ?? [];
+      existing.push(movie);
+      categorized.set(movie.categoryName, existing);
+    } else {
+      uncategorized.push(movie);
+    }
+  }
+
+  // Add favorites row first
+  const favorites = filtered.filter((m) => m.favorite);
+  if (favorites.length > 0) {
+    groups.push({ name: 'My Favorites', movies: favorites });
+  }
+
+  // Add cached movies row second
+  const cached = filtered.filter((m) => m.cached);
+  if (cached.length > 0) {
+    groups.push({ name: 'Downloaded on Server', movies: cached });
+  }
+
+  // Add category rows
+  for (const [name, categoryMovies] of categorized) {
+    groups.push({ name, movies: categoryMovies });
+  }
+
+  // Add uncategorized at the end
+  if (uncategorized.length > 0) {
+    groups.push({ name: 'Other Movies', movies: uncategorized });
+  }
+
+  return groups;
+}
+
+function selectFeaturedMovie(movies: Movie[]): Movie | null {
+  const cached = movies.filter((m) => m.cached);
+  if (cached.length > 0) {
+    return cached[Math.floor(Math.random() * cached.length)];
+  }
+  return movies[0] ?? null;
+}
+
 export const MoviesStore = signalStore(
   { providedIn: 'root' },
 
@@ -44,102 +102,40 @@ export const MoviesStore = signalStore(
 
     favoriteMovies: computed(() => state.movies().filter((m) => m.favorite)),
 
-    moviesByCategory: computed(() => {
-      const movies = state.movies();
-      const filter = state.filter().toLowerCase();
-      const filtered = filter
-        ? movies.filter((m) => m.title.toLowerCase().includes(filter))
-        : movies;
+    moviesByCategory: computed(() => groupMoviesByCategory(state.movies(), state.filter())),
 
-      const groups: { name: string; movies: Movie[] }[] = [];
-      const categorized = new Map<string, Movie[]>();
-      const uncategorized: Movie[] = [];
-
-      for (const movie of filtered) {
-        if (movie.categoryName) {
-          const existing = categorized.get(movie.categoryName) ?? [];
-          existing.push(movie);
-          categorized.set(movie.categoryName, existing);
-        } else {
-          uncategorized.push(movie);
-        }
-      }
-
-      // Add favorites row first
-      const favorites = filtered.filter((m) => m.favorite);
-      if (favorites.length > 0) {
-        groups.push({ name: 'My Favorites', movies: favorites });
-      }
-
-      // Add cached movies row second
-      const cached = filtered.filter((m) => m.cached);
-      if (cached.length > 0) {
-        groups.push({ name: 'Downloaded on Server', movies: cached });
-      }
-
-      // Add category rows
-      for (const [name, categoryMovies] of categorized) {
-        groups.push({ name, movies: categoryMovies });
-      }
-
-      // Add uncategorized at the end
-      if (uncategorized.length > 0) {
-        groups.push({ name: 'Other Movies', movies: uncategorized });
-      }
-
-      return groups;
-    }),
-
-    featuredMovie: computed(() => {
-      const movies = state.movies();
-      // Pick a random cached movie as featured, or first movie
-      const cached = movies.filter((m) => m.cached);
-      if (cached.length > 0) {
-        return cached[Math.floor(Math.random() * cached.length)];
-      }
-      return movies[0] ?? null;
-    }),
+    featuredMovie: computed(() => selectFeaturedMovie(state.movies())),
   })),
 
-  withMethods((store, api = inject(ApiService)) => ({
-    loadMovies: rxMethod<void>(
+  withMethods((store, api = inject(ApiService)) => {
+    const loadMovies = rxMethod<void>(
       pipe(
-        tap(() => {
-          patchState(store, { loading: true, error: null });
-        }),
+        tap(() => patchState(store, { loading: true, error: null })),
         switchMap(() =>
           api.getMovies().pipe(
             tapResponse({
-              next: (movies) => {
-                patchState(store, { movies, loading: false });
-              },
-              error: (error: Error) => {
-                patchState(store, { error: error.message, loading: false });
-              },
+              next: (movies) => patchState(store, { movies, loading: false }),
+              error: (err: Error) => patchState(store, { error: err.message, loading: false }),
             })
           )
         )
       )
-    ),
+    );
 
-    createMovie: rxMethod<MovieCreateRequest>(
+    const createMovie = rxMethod<MovieCreateRequest>(
       pipe(
         switchMap((request) =>
           api.createMovie(request).pipe(
             tapResponse({
-              next: (movie) => {
-                patchState(store, { movies: [...store.movies(), movie] });
-              },
-              error: (error: Error) => {
-                patchState(store, { error: error.message });
-              },
+              next: (movie) => patchState(store, { movies: [...store.movies(), movie] }),
+              error: (err: Error) => patchState(store, { error: err.message }),
             })
           )
         )
       )
-    ),
+    );
 
-    startDownload: rxMethod<string>(
+    const startDownload = rxMethod<string>(
       pipe(
         switchMap((movieId) =>
           api.startDownload(movieId).pipe(
@@ -150,32 +146,15 @@ export const MoviesStore = signalStore(
               patchState(store, { movies });
             }),
             tapResponse({
-              next: () => {
-                /* Success - no action needed */
-              },
-              error: (error: Error) => {
-                patchState(store, { error: error.message });
-              },
+              next: () => undefined,
+              error: (err: Error) => patchState(store, { error: err.message }),
             })
           )
         )
       )
-    ),
+    );
 
-    updateMovieStatus(movieId: string, status: Movie['status'], cached = false) {
-      const movies = store.movies().map((m) => (m.id === movieId ? { ...m, status, cached } : m));
-      patchState(store, { movies });
-    },
-
-    selectMovie(id: string | null) {
-      patchState(store, { selectedMovieId: id });
-    },
-
-    setFilter(filter: string) {
-      patchState(store, { filter });
-    },
-
-    deleteMovie: rxMethod<string>(
+    const deleteMovie = rxMethod<string>(
       pipe(
         switchMap((id) =>
           api.deleteMovie(id).pipe(
@@ -186,19 +165,15 @@ export const MoviesStore = signalStore(
               });
             }),
             tapResponse({
-              next: () => {
-                /* Success - no action needed */
-              },
-              error: (error: Error) => {
-                patchState(store, { error: error.message });
-              },
+              next: () => undefined,
+              error: (err: Error) => patchState(store, { error: err.message }),
             })
           )
         )
       )
-    ),
+    );
 
-    addFavorite: rxMethod<string>(
+    const addFavorite = rxMethod<string>(
       pipe(
         switchMap((movieId) =>
           api.addFavorite(movieId).pipe(
@@ -207,16 +182,14 @@ export const MoviesStore = signalStore(
                 const movies = store.movies().map((m) => (m.id === movieId ? movie : m));
                 patchState(store, { movies });
               },
-              error: (error: Error) => {
-                patchState(store, { error: error.message });
-              },
+              error: (err: Error) => patchState(store, { error: err.message }),
             })
           )
         )
       )
-    ),
+    );
 
-    removeFavorite: rxMethod<string>(
+    const removeFavorite = rxMethod<string>(
       pipe(
         switchMap((movieId) =>
           api.removeFavorite(movieId).pipe(
@@ -225,22 +198,42 @@ export const MoviesStore = signalStore(
                 const movies = store.movies().map((m) => (m.id === movieId ? movie : m));
                 patchState(store, { movies });
               },
-              error: (error: Error) => {
-                patchState(store, { error: error.message });
-              },
+              error: (err: Error) => patchState(store, { error: err.message }),
             })
           )
         )
       )
-    ),
+    );
 
-    toggleFavorite(movieId: string) {
-      const movie = store.movies().find((m) => m.id === movieId);
-      if (movie?.favorite) {
-        this.removeFavorite(movieId);
-      } else {
-        this.addFavorite(movieId);
-      }
-    },
-  }))
+    return {
+      loadMovies,
+      createMovie,
+      startDownload,
+      deleteMovie,
+      addFavorite,
+      removeFavorite,
+
+      updateMovieStatus(movieId: string, status: Movie['status'], cached = false): void {
+        const movies = store.movies().map((m) => (m.id === movieId ? { ...m, status, cached } : m));
+        patchState(store, { movies });
+      },
+
+      selectMovie(id: string | null): void {
+        patchState(store, { selectedMovieId: id });
+      },
+
+      setFilter(filter: string): void {
+        patchState(store, { filter });
+      },
+
+      toggleFavorite(movieId: string): void {
+        const movie = store.movies().find((m) => m.id === movieId);
+        if (movie?.favorite) {
+          removeFavorite(movieId);
+        } else {
+          addFavorite(movieId);
+        }
+      },
+    };
+  })
 );

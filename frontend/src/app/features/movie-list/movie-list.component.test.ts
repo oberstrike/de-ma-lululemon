@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -26,9 +26,10 @@ describe('MovieListComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [MovieListComponent, NoopAnimationsModule],
+      imports: [MovieListComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideNoopAnimations(),
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),

@@ -688,7 +688,7 @@ export class MovieListComponent implements OnInit {
   private readonly ws = inject(WebSocketService);
   private readonly destroyRef = inject(DestroyRef);
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.store.loadMovies();
     this.ws.connect();
 
@@ -704,18 +704,18 @@ export class MovieListComponent implements OnInit {
       });
   }
 
-  scrollRow(event: MouseEvent, direction: number) {
+  scrollRow(event: MouseEvent, direction: number): void {
     event.stopPropagation();
     const button = event.target as HTMLElement;
     const wrapper = button.closest('.row-wrapper');
     const row = wrapper?.querySelector('.movies-row');
-    if (row !== null && row !== undefined) {
+    if (row) {
       const scrollAmount = row.clientWidth * 0.8;
       row.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
     }
   }
 
-  playOrView(event: MouseEvent, movie: Movie) {
+  playOrView(event: MouseEvent, movie: Movie): void {
     event.stopPropagation();
     event.preventDefault();
     if (movie.cached) {
@@ -725,7 +725,7 @@ export class MovieListComponent implements OnInit {
     }
   }
 
-  toggleFavorite(event: MouseEvent, movie: Movie) {
+  toggleFavorite(event: MouseEvent, movie: Movie): void {
     event.stopPropagation();
     event.preventDefault();
     this.store.toggleFavorite(movie.id);

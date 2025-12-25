@@ -49,9 +49,10 @@ export const PlayerStore = signalStore(
     formattedTime: computed(() => formatTime(state.currentTime())),
     formattedDuration: computed(() => formatTime(state.duration())),
 
-    streamUrl: computed(() =>
-      state.currentMovieId() ? api.getStreamUrl(state.currentMovieId()!) : null
-    ),
+    streamUrl: computed(() => {
+      const movieId = state.currentMovieId();
+      return movieId ? api.getStreamUrl(movieId) : null;
+    }),
   })),
 
   withMethods((store, api = inject(ApiService)) => ({

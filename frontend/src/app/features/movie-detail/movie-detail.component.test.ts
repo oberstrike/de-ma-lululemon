@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { of, Subject } from 'rxjs';
@@ -28,9 +28,10 @@ describe('MovieDetailComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [MovieDetailComponent, NoopAnimationsModule],
+      imports: [MovieDetailComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideNoopAnimations(),
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
