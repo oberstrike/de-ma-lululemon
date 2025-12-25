@@ -2,11 +2,11 @@ package com.mediaserver.service;
 
 import com.mediaserver.dto.CategoryCreateRequest;
 import com.mediaserver.dto.CategoryDto;
+import com.mediaserver.adapter.CategoryAdapter;
 import com.mediaserver.entity.Category;
 import com.mediaserver.exception.CategoryNotFoundException;
 import com.mediaserver.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,17 +18,17 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final ConversionService conversionService;
+    private final CategoryAdapter categoryAdapter;
 
     public List<CategoryDto> getAllCategories() {
         return categoryRepository.findAllByOrderBySortOrderAsc().stream()
-                .map(category -> conversionService.convert(category, CategoryDto.class))
+                .map(categoryAdapter::toDto)
                 .toList();
     }
 
     public CategoryDto getCategory(String id) {
         return categoryRepository.findById(id)
-                .map(category -> conversionService.convert(category, CategoryDto.class))
+                .map(categoryAdapter::toDto)
                 .orElseThrow(() -> new CategoryNotFoundException(id));
     }
 
@@ -40,7 +40,7 @@ public class CategoryService {
                 .build();
 
         category = categoryRepository.save(category);
-        return conversionService.convert(category, CategoryDto.class);
+        return categoryAdapter.toDto(category);
     }
 
     public CategoryDto updateCategory(String id, CategoryCreateRequest request) {
@@ -52,7 +52,7 @@ public class CategoryService {
         category.setSortOrder(request.getSortOrder());
 
         category = categoryRepository.save(category);
-        return conversionService.convert(category, CategoryDto.class);
+        return categoryAdapter.toDto(category);
     }
 
     public void deleteCategory(String id) {
