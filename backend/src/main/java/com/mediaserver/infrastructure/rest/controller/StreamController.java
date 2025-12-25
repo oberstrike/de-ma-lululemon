@@ -30,13 +30,14 @@ public class StreamController {
             @RequestHeader(value = "Range", required = false) String rangeHeader) {
 
         try {
-            VideoStreamingService.StreamingResponse response =
-                    streamingService.streamVideo(movieId, rangeHeader);
+            var response = streamingService.streamVideo(movieId, rangeHeader);
 
-            HttpHeaders headers = new HttpHeaders();
+            var headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(response.getContentType()));
             headers.setContentLength(response.getContentLength());
             headers.set("Accept-Ranges", "bytes");
+
+            var streamingBody = createStreamingBody(response);
 
             if (response.isPartial()) {
                 headers.set("Content-Range", String.format("bytes %d-%d/%d",
@@ -46,25 +47,25 @@ public class StreamController {
 
                 return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
                         .headers(headers)
-                        .body(outputStream -> {
-                            try (InputStream is = response.getInputStreamSupplier().get()) {
-                                is.transferTo(outputStream);
-                            }
-                        });
+                        .body(streamingBody);
             }
 
             return ResponseEntity.ok()
                     .headers(headers)
-                    .body(outputStream -> {
-                        try (InputStream is = response.getInputStreamSupplier().get()) {
-                            is.transferTo(outputStream);
-                        }
-                    });
+                    .body(streamingBody);
 
         } catch (IOException e) {
             log.error("Error streaming video: {}", movieId, e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    private StreamingResponseBody createStreamingBody(VideoStreamingService.StreamingResponse response) {
+        return outputStream -> {
+            try (InputStream is = response.getInputStreamSupplier().get()) {
+                is.transferTo(outputStream);
+            }
+        };
     }
 
     @GetMapping("/{movieId}/info")

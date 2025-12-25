@@ -40,34 +40,36 @@ public class MovieController {
             @RequestParam(required = false) String categoryId,
             @RequestParam(defaultValue = "false") boolean readyOnly) {
 
-        List<Movie> movies;
-
-        if (search != null && !search.isBlank()) {
-            movies = searchMoviesUseCase.searchMovies(search);
-        } else if (categoryId != null && !categoryId.isBlank()) {
-            movies = getMoviesByCategoryUseCase.getMoviesByCategory(categoryId);
-        } else if (readyOnly) {
-            movies = getReadyMoviesUseCase.getReadyMovies();
-        } else {
-            movies = getAllMoviesUseCase.getAllMovies();
-        }
-
-        List<MovieResponseDto> response = movies.stream()
+        var movies = getMovies(search, categoryId, readyOnly);
+        var response = movies.stream()
                 .map(movieMapper::toResponse)
                 .toList();
 
         return ResponseEntity.ok(response);
     }
 
+    private List<Movie> getMovies(String search, String categoryId, boolean readyOnly) {
+        if (search != null && !search.isBlank()) {
+            return searchMoviesUseCase.searchMovies(search);
+        }
+        if (categoryId != null && !categoryId.isBlank()) {
+            return getMoviesByCategoryUseCase.getMoviesByCategory(categoryId);
+        }
+        if (readyOnly) {
+            return getReadyMoviesUseCase.getReadyMovies();
+        }
+        return getAllMoviesUseCase.getAllMovies();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<MovieResponseDto> getMovie(@PathVariable String id) {
-        Movie movie = getMovieUseCase.getMovie(id);
+        var movie = getMovieUseCase.getMovie(id);
         return ResponseEntity.ok(movieMapper.toResponse(movie));
     }
 
     @PostMapping
     public ResponseEntity<MovieResponseDto> createMovie(@Valid @RequestBody MovieRequestDto request) {
-        Movie movie = createMovieUseCase.createMovie(movieMapper.toCreateCommand(request));
+        var movie = createMovieUseCase.createMovie(movieMapper.toCreateCommand(request));
         return ResponseEntity.status(HttpStatus.CREATED).body(movieMapper.toResponse(movie));
     }
 
@@ -75,7 +77,7 @@ public class MovieController {
     public ResponseEntity<MovieResponseDto> updateMovie(
             @PathVariable String id,
             @Valid @RequestBody MovieRequestDto request) {
-        Movie movie = updateMovieUseCase.updateMovie(movieMapper.toUpdateCommand(id, request));
+        var movie = updateMovieUseCase.updateMovie(movieMapper.toUpdateCommand(id, request));
         return ResponseEntity.ok(movieMapper.toResponse(movie));
     }
 
@@ -98,8 +100,8 @@ public class MovieController {
 
     @GetMapping("/cached")
     public ResponseEntity<List<MovieResponseDto>> getCachedMovies() {
-        List<Movie> movies = getCachedMoviesUseCase.getCachedMovies();
-        List<MovieResponseDto> response = movies.stream()
+        var movies = getCachedMoviesUseCase.getCachedMovies();
+        var response = movies.stream()
                 .map(movieMapper::toResponse)
                 .toList();
         return ResponseEntity.ok(response);

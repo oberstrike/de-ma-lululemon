@@ -22,8 +22,8 @@ public class DownloadController {
 
     @GetMapping
     public ResponseEntity<List<DownloadProgressDto>> getActiveDownloads() {
-        List<DownloadTask> downloads = getActiveDownloadsUseCase.getActiveDownloads();
-        List<DownloadProgressDto> response = downloads.stream()
+        var downloads = getActiveDownloadsUseCase.getActiveDownloads();
+        var response = downloads.stream()
                 .map(downloadMapper::toResponse)
                 .toList();
         return ResponseEntity.ok(response);

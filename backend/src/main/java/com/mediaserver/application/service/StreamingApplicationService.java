@@ -31,17 +31,17 @@ public class StreamingApplicationService implements StreamVideoUseCase {
 
     @Override
     public StreamingResponse streamVideo(String movieId, String rangeHeader) {
-        Movie movie = moviePort.findById(movieId)
+        var movie = moviePort.findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException(movieId));
 
         if (!movie.isCached()) {
             throw new VideoNotReadyException("Video is not yet downloaded");
         }
 
-        Path videoPath = Path.of(movie.getLocalPath());
-        long fileSize = movie.getFileSize();
-        String contentType = movie.getContentType();
-        HttpRange range = parseRange(rangeHeader, fileSize);
+        var videoPath = Path.of(movie.getLocalPath());
+        var fileSize = movie.getFileSize();
+        var contentType = movie.getContentType();
+        var range = parseRange(rangeHeader, fileSize);
 
         return StreamingResponse.builder()
                 .inputStreamSupplier(() -> createRangeInputStream(videoPath, range))
@@ -59,12 +59,12 @@ public class StreamingApplicationService implements StreamVideoUseCase {
             return new HttpRange(0, fileSize - 1, fileSize);
         }
 
-        String rangeSpec = rangeHeader.substring(6);
-        String[] ranges = rangeSpec.split("-");
-        long start = Long.parseLong(ranges[0]);
-        long end = ranges.length > 1 && !ranges[1].isEmpty() ? Long.parseLong(ranges[1]) : fileSize - 1;
+        var rangeSpec = rangeHeader.substring(6);
+        var ranges = rangeSpec.split("-");
+        var start = Long.parseLong(ranges[0]);
+        var end = ranges.length > 1 && !ranges[1].isEmpty() ? Long.parseLong(ranges[1]) : fileSize - 1;
 
-        int chunkSize = properties.getStreaming().getChunkSize();
+        var chunkSize = properties.getStreaming().getChunkSize();
         if (end - start + 1 > chunkSize) {
             end = start + chunkSize - 1;
         }

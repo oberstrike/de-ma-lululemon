@@ -39,21 +39,17 @@ public class DownloadTaskRepositoryAdapter implements DownloadTaskRepository {
 
     @Override
     public DownloadTask save(DownloadTask task) {
-        DownloadTaskJpaEntity entity = mapper.toEntity(task);
+        var entity = mapper.toEntity(task);
 
-        // Set the movie relationship if movieId is present
         if (task.getMovieId() != null) {
-            MovieJpaEntity movie = jpaMovieRepository.findById(task.getMovieId())
+            var movie = jpaMovieRepository.findById(task.getMovieId())
                     .orElseThrow(() -> new IllegalArgumentException("Movie not found with id: " + task.getMovieId()));
             entity.setMovie(movie);
         }
 
-        // If updating an existing task, preserve the ID
-        if (task.getId() != null) {
-            entity.setId(task.getId());
-        }
+        entity.setId(task.getId());
 
-        DownloadTaskJpaEntity saved = jpaDownloadTaskRepository.save(entity);
+        var saved = jpaDownloadTaskRepository.save(entity);
         return mapper.toDomain(saved);
     }
 

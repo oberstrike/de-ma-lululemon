@@ -136,7 +136,6 @@ public class MovieApplicationService implements
         Movie movie = moviePort.findById(id)
                 .orElseThrow(() -> new MovieNotFoundException(id));
 
-        // Delete local file if exists
         if (movie.getLocalPath() != null) {
             try {
                 fileStoragePort.deleteIfExists(Path.of(movie.getLocalPath()));
@@ -157,18 +156,16 @@ public class MovieApplicationService implements
             throw new IllegalStateException("Movie is already downloaded");
         }
 
-        // Update status to downloading
         Movie downloadingMovie = movie.withStatus(MovieStatus.DOWNLOADING);
         moviePort.save(downloadingMovie);
 
-        // Start async download
         downloadServicePort.downloadMovie(downloadingMovie);
     }
 
     @Override
     public CacheStats getCacheStats() {
-        long totalSize = moviePort.getTotalCacheSize();
-        long maxSize = (long) properties.getStorage().getMaxCacheSizeGb() * 1024 * 1024 * 1024;
+        var totalSize = moviePort.getTotalCacheSize();
+        var maxSize = (long) properties.getStorage().getMaxCacheSizeGb() * 1024 * 1024 * 1024;
 
         return CacheStats.builder()
                 .totalSizeBytes(totalSize)
@@ -218,18 +215,20 @@ public class MovieApplicationService implements
         int cleared = 0;
 
         for (Movie movie : cachedMovies) {
+            if (movie.getLocalPath() == null) {
+                continue;
+            }
+
             try {
-                if (movie.getLocalPath() != null) {
-                    fileStoragePort.deleteIfExists(Path.of(movie.getLocalPath()));
+                fileStoragePort.deleteIfExists(Path.of(movie.getLocalPath()));
 
-                    Movie clearedMovie = movie.withLocalPath(null)
-                            .withFileSize(null)
-                            .withStatus(MovieStatus.PENDING)
-                            .withUpdatedAt(LocalDateTime.now());
+                Movie clearedMovie = movie.withLocalPath(null)
+                        .withFileSize(null)
+                        .withStatus(MovieStatus.PENDING)
+                        .withUpdatedAt(LocalDateTime.now());
 
-                    moviePort.save(clearedMovie);
-                    cleared++;
-                }
+                moviePort.save(clearedMovie);
+                cleared++;
             } catch (IOException e) {
                 log.warn("Failed to delete cached file for movie {}: {}", movie.getId(), e.getMessage());
             }

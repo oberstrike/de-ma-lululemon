@@ -35,14 +35,11 @@ public class CategoryRepositoryAdapter implements CategoryRepository {
 
     @Override
     public Category save(Category category) {
-        CategoryJpaEntity entity = mapper.toEntity(category);
+        var entity = mapper.toEntity(category);
 
-        // If updating an existing category, preserve the ID
-        if (category.getId() != null) {
-            entity.setId(category.getId());
-        }
+        entity.setId(category.getId());
 
-        CategoryJpaEntity saved = jpaCategoryRepository.save(entity);
+        var saved = jpaCategoryRepository.save(entity);
         return mapper.toDomain(saved);
     }
 

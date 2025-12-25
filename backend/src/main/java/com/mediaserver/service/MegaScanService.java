@@ -68,7 +68,6 @@ public class MegaScanService {
 
             for (MegaEntry entry : entries) {
                 if (entry.isDirectory()) {
-                    // This is a category folder
                     String categoryPath = rootPath.endsWith("/")
                             ? rootPath + entry.name()
                             : rootPath + "/" + entry.name();
@@ -81,7 +80,6 @@ public class MegaScanService {
                     }
                     category = categoryRepository.save(category);
 
-                    // Scan movies in category folder
                     try {
                         List<MegaEntry> movieEntries = listFolder(categoryPath);
 
@@ -112,7 +110,6 @@ public class MegaScanService {
                                 continue;
                             }
 
-                            // Find matching thumbnail
                             String videoBaseName = getBaseName(videoEntry.name()).toLowerCase();
                             String thumbnailPath = imageFiles.get(videoBaseName);
 
@@ -376,7 +373,6 @@ public class MegaScanService {
     }
 
     private String extractTitleFromFileName(String fileName) {
-        // Remove extension
         String name = fileName;
         int lastDot = name.lastIndexOf('.');
         if (lastDot > 0) {
@@ -392,7 +388,6 @@ public class MegaScanService {
                    .replaceAll("[._-]+", " ")
                    .trim();
 
-        // Capitalize words
         String[] words = name.split("\\s+");
         StringBuilder result = new StringBuilder();
         for (String word : words) {

@@ -39,21 +39,17 @@ public class MovieRepositoryAdapter implements MovieRepository {
 
     @Override
     public Movie save(Movie movie) {
-        MovieJpaEntity entity = mapper.toEntity(movie);
+        var entity = mapper.toEntity(movie);
 
-        // Set the category relationship if categoryId is present
         if (movie.getCategoryId() != null) {
-            CategoryJpaEntity category = jpaCategoryRepository.findById(movie.getCategoryId())
+            var category = jpaCategoryRepository.findById(movie.getCategoryId())
                     .orElse(null);
             entity.setCategory(category);
         }
 
-        // If updating an existing movie, preserve the ID
-        if (movie.getId() != null) {
-            entity.setId(movie.getId());
-        }
+        entity.setId(movie.getId());
 
-        MovieJpaEntity saved = jpaMovieRepository.save(entity);
+        var saved = jpaMovieRepository.save(entity);
         return mapper.toDomain(saved);
     }
 

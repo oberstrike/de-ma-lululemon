@@ -27,8 +27,8 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<List<CategoryResponseDto>> getAllCategories() {
-        List<Category> categories = getAllCategoriesUseCase.getAllCategories();
-        List<CategoryResponseDto> response = categories.stream()
+        var categories = getAllCategoriesUseCase.getAllCategories();
+        var response = categories.stream()
                 .map(categoryMapper::toResponse)
                 .toList();
         return ResponseEntity.ok(response);
@@ -36,13 +36,13 @@ public class CategoryController {
 
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponseDto> getCategory(@PathVariable String id) {
-        Category category = getCategoryUseCase.getCategory(id);
+        var category = getCategoryUseCase.getCategory(id);
         return ResponseEntity.ok(categoryMapper.toResponse(category));
     }
 
     @PostMapping
     public ResponseEntity<CategoryResponseDto> createCategory(@Valid @RequestBody CategoryRequestDto request) {
-        Category category = createCategoryUseCase.createCategory(categoryMapper.toCreateCommand(request));
+        var category = createCategoryUseCase.createCategory(categoryMapper.toCreateCommand(request));
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryMapper.toResponse(category));
     }
 
@@ -50,7 +50,7 @@ public class CategoryController {
     public ResponseEntity<CategoryResponseDto> updateCategory(
             @PathVariable String id,
             @Valid @RequestBody CategoryRequestDto request) {
-        Category category = updateCategoryUseCase.updateCategory(categoryMapper.toUpdateCommand(id, request));
+        var category = updateCategoryUseCase.updateCategory(categoryMapper.toUpdateCommand(id, request));
         return ResponseEntity.ok(categoryMapper.toResponse(category));
     }
 

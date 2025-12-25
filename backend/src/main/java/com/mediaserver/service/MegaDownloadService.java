@@ -1,7 +1,7 @@
 package com.mediaserver.service;
 
 import com.mediaserver.config.MediaProperties;
-import com.mediaserver.dto.DownloadProgressDto;
+import com.mediaserver.infrastructure.rest.dto.DownloadProgressDto;
 import com.mediaserver.entity.DownloadStatus;
 import com.mediaserver.entity.DownloadTask;
 import com.mediaserver.entity.Movie;

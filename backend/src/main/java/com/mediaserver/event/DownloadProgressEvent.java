@@ -1,6 +1,6 @@
 package com.mediaserver.event;
 
-import com.mediaserver.dto.DownloadProgressDto;
+import com.mediaserver.infrastructure.rest.dto.DownloadProgressDto;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
