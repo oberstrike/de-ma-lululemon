@@ -9,7 +9,6 @@ import com.mediaserver.infrastructure.rest.mapper.MovieRestMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,17 +37,13 @@ public class MovieController {
     private final MovieRestMapper movieMapper;
 
     @GetMapping
-    public ResponseEntity<List<MovieResponseDto>> getAllMovies(
+    public List<MovieResponseDto> getAllMovies(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String categoryId,
             @RequestParam(defaultValue = "false") boolean readyOnly) {
-
-        var movies = getMovies(search, categoryId, readyOnly);
-        var response = movies.stream()
+        return getMovies(search, categoryId, readyOnly).stream()
                 .map(movieMapper::toResponse)
                 .toList();
-
-        return ResponseEntity.ok(response);
     }
 
     private List<Movie> getMovies(String search, String categoryId, boolean readyOnly) {
@@ -65,81 +60,74 @@ public class MovieController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MovieResponseDto> getMovie(@PathVariable String id) {
-        var movie = getMovieUseCase.getMovie(id);
-        return ResponseEntity.ok(movieMapper.toResponse(movie));
+    public MovieResponseDto getMovie(@PathVariable String id) {
+        return movieMapper.toResponse(getMovieUseCase.getMovie(id));
     }
 
     @PostMapping
-    public ResponseEntity<MovieResponseDto> createMovie(@Valid @RequestBody MovieRequestDto request) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public MovieResponseDto createMovie(@Valid @RequestBody MovieRequestDto request) {
         var movie = createMovieUseCase.createMovie(movieMapper.toCreateCommand(request));
-        return ResponseEntity.status(HttpStatus.CREATED).body(movieMapper.toResponse(movie));
+        return movieMapper.toResponse(movie);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MovieResponseDto> updateMovie(
+    public MovieResponseDto updateMovie(
             @PathVariable String id,
             @Valid @RequestBody MovieRequestDto request) {
         var movie = updateMovieUseCase.updateMovie(movieMapper.toUpdateCommand(id, request));
-        return ResponseEntity.ok(movieMapper.toResponse(movie));
+        return movieMapper.toResponse(movie);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMovie(@PathVariable String id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteMovie(@PathVariable String id) {
         deleteMovieUseCase.deleteMovie(id);
-        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/download")
-    public ResponseEntity<Void> startDownload(@PathVariable String id) {
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void startDownload(@PathVariable String id) {
         startDownloadUseCase.startDownload(id);
-        return ResponseEntity.accepted().build();
     }
 
     @GetMapping("/cache/stats")
-    public ResponseEntity<CacheStatsDto> getCacheStats() {
-        return ResponseEntity.ok(getCacheStatsUseCase.getCacheStats());
+    public CacheStatsDto getCacheStats() {
+        return getCacheStatsUseCase.getCacheStats();
     }
 
     @GetMapping("/cached")
-    public ResponseEntity<List<MovieResponseDto>> getCachedMovies() {
-        var movies = getCachedMoviesUseCase.getCachedMovies();
-        var response = movies.stream()
+    public List<MovieResponseDto> getCachedMovies() {
+        return getCachedMoviesUseCase.getCachedMovies().stream()
                 .map(movieMapper::toResponse)
                 .toList();
-        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}/cache")
-    public ResponseEntity<Void> clearMovieCache(@PathVariable String id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void clearMovieCache(@PathVariable String id) {
         clearMovieCacheUseCase.clearCache(id);
-        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/cache")
-    public ResponseEntity<Integer> clearAllCache() {
-        int cleared = clearAllCacheUseCase.clearAllCache();
-        return ResponseEntity.ok(cleared);
+    public int clearAllCache() {
+        return clearAllCacheUseCase.clearAllCache();
     }
 
     @GetMapping("/favorites")
-    public ResponseEntity<List<MovieResponseDto>> getFavorites() {
-        var movies = getFavoritesUseCase.getFavorites();
-        var response = movies.stream()
+    public List<MovieResponseDto> getFavorites() {
+        return getFavoritesUseCase.getFavorites().stream()
                 .map(movieMapper::toResponse)
                 .toList();
-        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{id}/favorite")
-    public ResponseEntity<MovieResponseDto> addFavorite(@PathVariable String id) {
-        var movie = addFavoriteUseCase.addFavorite(id);
-        return ResponseEntity.ok(movieMapper.toResponse(movie));
+    public MovieResponseDto addFavorite(@PathVariable String id) {
+        return movieMapper.toResponse(addFavoriteUseCase.addFavorite(id));
     }
 
     @DeleteMapping("/{id}/favorite")
-    public ResponseEntity<MovieResponseDto> removeFavorite(@PathVariable String id) {
-        var movie = removeFavoriteUseCase.removeFavorite(id);
-        return ResponseEntity.ok(movieMapper.toResponse(movie));
+    public MovieResponseDto removeFavorite(@PathVariable String id) {
+        return movieMapper.toResponse(removeFavoriteUseCase.removeFavorite(id));
     }
 }

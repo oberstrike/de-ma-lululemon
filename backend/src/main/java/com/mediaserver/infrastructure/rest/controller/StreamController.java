@@ -69,8 +69,7 @@ public class StreamController {
     }
 
     @GetMapping("/{movieId}/info")
-    public ResponseEntity<StreamInfoDto> getStreamInfo(@PathVariable String movieId) {
-        StreamInfoDto info = getStreamInfoUseCase.getStreamInfo(movieId);
-        return ResponseEntity.ok(info);
+    public StreamInfoDto getStreamInfo(@PathVariable String movieId) {
+        return getStreamInfoUseCase.getStreamInfo(movieId);
     }
 }

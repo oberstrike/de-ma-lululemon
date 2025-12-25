@@ -26,37 +26,35 @@ public class CategoryController {
     private final CategoryRestMapper categoryMapper;
 
     @GetMapping
-    public ResponseEntity<List<CategoryResponseDto>> getAllCategories() {
-        var categories = getAllCategoriesUseCase.getAllCategories();
-        var response = categories.stream()
+    public List<CategoryResponseDto> getAllCategories() {
+        return getAllCategoriesUseCase.getAllCategories().stream()
                 .map(categoryMapper::toResponse)
                 .toList();
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponseDto> getCategory(@PathVariable String id) {
-        var category = getCategoryUseCase.getCategory(id);
-        return ResponseEntity.ok(categoryMapper.toResponse(category));
+    public CategoryResponseDto getCategory(@PathVariable String id) {
+        return categoryMapper.toResponse(getCategoryUseCase.getCategory(id));
     }
 
     @PostMapping
-    public ResponseEntity<CategoryResponseDto> createCategory(@Valid @RequestBody CategoryRequestDto request) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public CategoryResponseDto createCategory(@Valid @RequestBody CategoryRequestDto request) {
         var category = createCategoryUseCase.createCategory(categoryMapper.toCreateCommand(request));
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoryMapper.toResponse(category));
+        return categoryMapper.toResponse(category);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryResponseDto> updateCategory(
+    public CategoryResponseDto updateCategory(
             @PathVariable String id,
             @Valid @RequestBody CategoryRequestDto request) {
         var category = updateCategoryUseCase.updateCategory(categoryMapper.toUpdateCommand(id, request));
-        return ResponseEntity.ok(categoryMapper.toResponse(category));
+        return categoryMapper.toResponse(category);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable String id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCategory(@PathVariable String id) {
         deleteCategoryUseCase.deleteCategory(id);
-        return ResponseEntity.noContent().build();
     }
 }

@@ -21,12 +21,10 @@ public class DownloadController {
     private final DownloadRestMapper downloadMapper;
 
     @GetMapping
-    public ResponseEntity<List<DownloadProgressDto>> getActiveDownloads() {
-        var downloads = getActiveDownloadsUseCase.getActiveDownloads();
-        var response = downloads.stream()
+    public List<DownloadProgressDto> getActiveDownloads() {
+        return getActiveDownloadsUseCase.getActiveDownloads().stream()
                 .map(downloadMapper::toResponse)
                 .toList();
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{movieId}")
