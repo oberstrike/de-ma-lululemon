@@ -6,6 +6,7 @@ import com.mediaserver.dto.CategoryMapper;
 import com.mediaserver.entity.Category;
 import com.mediaserver.exception.CategoryNotFoundException;
 import com.mediaserver.repository.CategoryRepository;
+import com.mediaserver.rules.CategoryRules;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +32,9 @@ class CategoryServiceTest {
 
     @Mock
     private CategoryMapper categoryMapper;
+
+    @Mock
+    private CategoryRules categoryRules;
 
     @InjectMocks
     private CategoryService categoryService;
@@ -160,7 +164,7 @@ class CategoryServiceTest {
     }
 
     private void stubCategoryMapper() {
-        when(categoryMapper.toDto(any(Category.class), eq(categoryRepository)))
+        when(categoryMapper.toDto(any(Category.class), eq(categoryRules)))
                 .thenAnswer(invocation -> toDto(invocation.getArgument(0)));
     }
 }

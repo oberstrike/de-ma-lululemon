@@ -10,6 +10,7 @@ import com.mediaserver.exception.GlobalExceptionHandler;
 import com.mediaserver.exception.MovieNotFoundException;
 import com.mediaserver.exception.VideoNotReadyException;
 import com.mediaserver.repository.MovieRepository;
+import com.mediaserver.rules.StreamInfoRules;
 import com.mediaserver.service.VideoStreamingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,9 @@ class StreamControllerTest {
     @MockitoBean
     private StreamInfoMapper streamInfoMapper;
 
+    @MockitoBean
+    private StreamInfoRules streamInfoRules;
+
     private Movie testMovie;
 
     @BeforeEach
@@ -61,7 +65,7 @@ class StreamControllerTest {
                 .contentType("video/mp4")
                 .build();
 
-        when(streamInfoMapper.toDto(any(Movie.class)))
+        when(streamInfoMapper.toDto(any(Movie.class), eq(streamInfoRules)))
                 .thenAnswer(invocation -> toDto(invocation.getArgument(0)));
     }
 

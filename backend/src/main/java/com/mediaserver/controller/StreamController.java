@@ -2,6 +2,7 @@ package com.mediaserver.controller;
 
 import com.mediaserver.dto.StreamInfoDto;
 import com.mediaserver.dto.StreamInfoMapper;
+import com.mediaserver.rules.StreamInfoRules;
 import com.mediaserver.entity.Movie;
 import com.mediaserver.exception.MovieNotFoundException;
 import com.mediaserver.repository.MovieRepository;
@@ -31,6 +32,7 @@ public class StreamController {
     private final VideoStreamingService streamingService;
     private final MovieRepository movieRepository;
     private final StreamInfoMapper streamInfoMapper;
+    private final StreamInfoRules streamInfoRules;
 
     @GetMapping("/{movieId}")
     public ResponseEntity<StreamingResponseBody> streamVideo(
@@ -80,7 +82,7 @@ public class StreamController {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException(movieId));
 
-        StreamInfoDto info = streamInfoMapper.toDto(movie);
+        StreamInfoDto info = streamInfoMapper.toDto(movie, streamInfoRules);
 
         return ResponseEntity.ok(info);
     }

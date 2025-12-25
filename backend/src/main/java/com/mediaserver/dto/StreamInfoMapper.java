@@ -1,6 +1,8 @@
 package com.mediaserver.dto;
 
 import com.mediaserver.entity.Movie;
+import com.mediaserver.rules.StreamInfoRules;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -8,9 +10,9 @@ import org.mapstruct.Mapping;
 public interface StreamInfoMapper {
     @Mapping(target = "movieId", source = "id")
     @Mapping(target = "title", source = "title")
-    @Mapping(target = "fileSize", expression = "java(movie.getFileSize() != null ? movie.getFileSize() : 0)")
-    @Mapping(target = "contentType", expression = "java(movie.getContentType() != null ? movie.getContentType() : \"video/mp4\")")
-    @Mapping(target = "streamUrl", expression = "java(\"/api/stream/\" + movie.getId())")
-    @Mapping(target = "supportsRangeRequests", expression = "java(true)")
-    StreamInfoDto toDto(Movie movie);
+    @Mapping(target = "fileSize", expression = "java(rules.fileSize(movie))")
+    @Mapping(target = "contentType", expression = "java(rules.contentType(movie))")
+    @Mapping(target = "streamUrl", expression = "java(rules.streamUrl(movie))")
+    @Mapping(target = "supportsRangeRequests", expression = "java(rules.supportsRangeRequests(movie))")
+    StreamInfoDto toDto(Movie movie, @Context StreamInfoRules rules);
 }
