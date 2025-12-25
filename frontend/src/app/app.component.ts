@@ -10,10 +10,12 @@ import { RouterOutlet } from '@angular/router';
       <router-outlet />
     </div>
   `,
-  styles: [`
-    .app-container {
-      min-height: 100vh;
-    }
-  `]
+  styles: [
+    `
+      .app-container {
+        min-height: 100vh;
+      }
+    `,
+  ],
 })
 export class AppComponent {}

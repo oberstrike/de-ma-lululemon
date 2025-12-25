@@ -68,13 +68,25 @@ export const PlayerStore = signalStore(
       }
     },
 
-    play() { patchState(store, { isPlaying: true }); },
-    pause() { patchState(store, { isPlaying: false }); },
-    togglePlay() { patchState(store, { isPlaying: !store.isPlaying() }); },
+    play() {
+      patchState(store, { isPlaying: true });
+    },
+    pause() {
+      patchState(store, { isPlaying: false });
+    },
+    togglePlay() {
+      patchState(store, { isPlaying: !store.isPlaying() });
+    },
 
-    setCurrentTime(time: number) { patchState(store, { currentTime: time }); },
-    setDuration(duration: number) { patchState(store, { duration }); },
-    setBuffered(buffered: number) { patchState(store, { buffered }); },
+    setCurrentTime(time: number) {
+      patchState(store, { currentTime: time });
+    },
+    setDuration(duration: number) {
+      patchState(store, { duration });
+    },
+    setBuffered(buffered: number) {
+      patchState(store, { buffered });
+    },
 
     seekTo(time: number) {
       patchState(store, { currentTime: Math.max(0, Math.min(store.duration(), time)) });
@@ -89,10 +101,18 @@ export const PlayerStore = signalStore(
       patchState(store, { volume: Math.max(0, Math.min(1, volume)), muted: false });
     },
 
-    toggleMute() { patchState(store, { muted: !store.muted() }); },
-    toggleFullscreen() { patchState(store, { isFullscreen: !store.isFullscreen() }); },
-    showControls() { patchState(store, { controlsVisible: true }); },
-    hideControls() { patchState(store, { controlsVisible: false }); },
+    toggleMute() {
+      patchState(store, { muted: !store.muted() });
+    },
+    toggleFullscreen() {
+      patchState(store, { isFullscreen: !store.isFullscreen() });
+    },
+    showControls() {
+      patchState(store, { controlsVisible: true });
+    },
+    hideControls() {
+      patchState(store, { controlsVisible: false });
+    },
 
     reset() {
       patchState(store, {

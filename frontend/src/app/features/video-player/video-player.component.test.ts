@@ -15,10 +15,7 @@ describe('VideoPlayerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        VideoPlayerComponent,
-        NoopAnimationsModule
-      ],
+      imports: [VideoPlayerComponent, NoopAnimationsModule],
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
@@ -30,12 +27,12 @@ describe('VideoPlayerComponent', () => {
           useValue: {
             snapshot: {
               paramMap: {
-                get: () => 'test-movie-id'
-              }
-            }
-          }
-        }
-      ]
+                get: () => 'test-movie-id',
+              },
+            },
+          },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(VideoPlayerComponent);

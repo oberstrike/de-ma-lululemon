@@ -10,11 +10,7 @@ describe('ApiService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        ApiService
-      ]
+      providers: [provideHttpClient(), provideHttpClientTesting(), ApiService],
     });
     service = TestBed.inject(ApiService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -36,11 +32,11 @@ describe('ApiService', () => {
           title: 'Test Movie',
           cached: false,
           status: 'PENDING',
-          createdAt: '2024-01-01'
-        }
+          createdAt: '2024-01-01',
+        },
       ];
 
-      service.getMovies().subscribe(movies => {
+      service.getMovies().subscribe((movies) => {
         expect(movies.length).toBe(1);
         expect(movies[0].title).toBe('Test Movie');
       });
@@ -75,10 +71,10 @@ describe('ApiService', () => {
         description: 'A test',
         cached: true,
         status: 'READY',
-        createdAt: '2024-01-01'
+        createdAt: '2024-01-01',
       };
 
-      service.getMovie('1').subscribe(movie => {
+      service.getMovie('1').subscribe((movie) => {
         expect(movie.id).toBe('1');
         expect(movie.title).toBe('Test Movie');
       });
@@ -93,7 +89,7 @@ describe('ApiService', () => {
     it('should create a movie', () => {
       const request: MovieCreateRequest = {
         title: 'New Movie',
-        megaUrl: 'https://mega.nz/file/test'
+        megaUrl: 'https://mega.nz/file/test',
       };
 
       const mockResponse: Movie = {
@@ -101,10 +97,10 @@ describe('ApiService', () => {
         title: 'New Movie',
         cached: false,
         status: 'PENDING',
-        createdAt: '2024-01-01'
+        createdAt: '2024-01-01',
       };
 
-      service.createMovie(request).subscribe(movie => {
+      service.createMovie(request).subscribe((movie) => {
         expect(movie.id).toBe('2');
         expect(movie.title).toBe('New Movie');
       });
@@ -120,7 +116,7 @@ describe('ApiService', () => {
     it('should update a movie', () => {
       const request: MovieCreateRequest = {
         title: 'Updated Movie',
-        megaUrl: 'https://mega.nz/file/test'
+        megaUrl: 'https://mega.nz/file/test',
       };
 
       const mockResponse: Movie = {
@@ -128,10 +124,10 @@ describe('ApiService', () => {
         title: 'Updated Movie',
         cached: false,
         status: 'PENDING',
-        createdAt: '2024-01-01'
+        createdAt: '2024-01-01',
       };
 
-      service.updateMovie('1', request).subscribe(movie => {
+      service.updateMovie('1', request).subscribe((movie) => {
         expect(movie.title).toBe('Updated Movie');
       });
 
@@ -176,10 +172,10 @@ describe('ApiService', () => {
         fileSize: 1000,
         contentType: 'video/mp4',
         streamUrl: '/api/stream/1',
-        supportsRangeRequests: true
+        supportsRangeRequests: true,
       };
 
-      service.getStreamInfo('1').subscribe(info => {
+      service.getStreamInfo('1').subscribe((info) => {
         expect(info.movieId).toBe('1');
         expect(info.supportsRangeRequests).toBe(true);
       });
@@ -192,7 +188,7 @@ describe('ApiService', () => {
 
   describe('getCategories', () => {
     it('should return categories', () => {
-      service.getCategories().subscribe(categories => {
+      service.getCategories().subscribe((categories) => {
         expect(categories.length).toBe(1);
       });
 
@@ -204,7 +200,7 @@ describe('ApiService', () => {
 
   describe('getActiveDownloads', () => {
     it('should return active downloads', () => {
-      service.getActiveDownloads().subscribe(downloads => {
+      service.getActiveDownloads().subscribe((downloads) => {
         expect(downloads.length).toBe(1);
       });
 
@@ -216,7 +212,7 @@ describe('ApiService', () => {
 
   describe('getCacheStats', () => {
     it('should return cache stats', () => {
-      service.getCacheStats().subscribe(stats => {
+      service.getCacheStats().subscribe((stats) => {
         expect(stats.movieCount).toBe(5);
       });
 

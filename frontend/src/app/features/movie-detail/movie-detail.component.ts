@@ -1,4 +1,12 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  DestroyRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService, Movie, DownloadProgress } from '../../services/api.service';
@@ -16,15 +24,7 @@ import { Chip } from 'primeng/chip';
   selector: 'app-movie-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    RouterLink,
-    ButtonModule,
-    TagModule,
-    ProgressBar,
-    ProgressSpinner,
-    ConfirmDialog,
-    Chip
-  ],
+  imports: [RouterLink, ButtonModule, TagModule, ProgressBar, ProgressSpinner, ConfirmDialog, Chip],
   providers: [ConfirmationService],
   template: `
     <div class="movie-detail">
@@ -68,10 +68,7 @@ import { Chip } from 'primeng/chip';
             }
 
             <div class="status">
-              <p-tag
-                [value]="getStatusLabel(m)"
-                [severity]="getStatusSeverity(m.status)"
-              />
+              <p-tag [value]="getStatusLabel(m)" [severity]="getStatusSeverity(m.status)" />
               @if (m.cached) {
                 <p-chip label="Cached on Server" icon="pi pi-download" styleClass="cached-chip" />
               }
@@ -86,10 +83,7 @@ import { Chip } from 'primeng/chip';
             @if (downloadProgress(); as progress) {
               @if (m.status === 'DOWNLOADING') {
                 <div class="progress-section">
-                  <p-progressbar
-                    [value]="progress.progress"
-                    [showValue]="true"
-                  />
+                  <p-progressbar [value]="progress.progress" [showValue]="true" />
                   <span class="progress-info">
                     {{ formatSize(progress.bytesDownloaded || 0) }} /
                     {{ formatSize(progress.totalBytes || 0) }}
@@ -100,11 +94,7 @@ import { Chip } from 'primeng/chip';
 
             <div class="actions">
               @if (m.cached) {
-                <p-button
-                  icon="pi pi-play"
-                  label="Play"
-                  [routerLink]="['/play', m.id]"
-                />
+                <p-button icon="pi pi-play" label="Play" [routerLink]="['/play', m.id]" />
                 <p-button
                   icon="pi pi-times"
                   label="Clear Cache"
@@ -165,123 +155,125 @@ import { Chip } from 'primeng/chip';
       <p-confirmdialog />
     </div>
   `,
-  styles: [`
-    .movie-detail {
-      padding: 2rem;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    :host ::ng-deep .back-btn {
-      margin-bottom: 1.5rem;
-    }
-
-    .content {
-      display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: 2rem;
-    }
-
-    .poster {
-      aspect-ratio: 2/3;
-      background: var(--p-surface-card);
-      border-radius: var(--p-border-radius);
-      overflow: hidden;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+  styles: [
+    `
+      .movie-detail {
+        padding: 2rem;
+        max-width: 1000px;
+        margin: 0 auto;
       }
 
-      .placeholder {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--p-text-muted-color);
+      :host ::ng-deep .back-btn {
+        margin-bottom: 1.5rem;
       }
-    }
 
-    .info {
-      h1 {
-        font-size: 2rem;
-        margin: 0 0 1rem 0;
-      }
-    }
-
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .description {
-      color: var(--p-text-muted-color);
-      line-height: 1.6;
-      margin-bottom: 1.5rem;
-    }
-
-    .status {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-
-      .file-size {
-        color: var(--p-text-muted-color);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-    }
-
-    :host ::ng-deep .cached-chip {
-      background: var(--p-primary-color);
-      color: white;
-    }
-
-    .progress-section {
-      margin-bottom: 1.5rem;
-
-      .progress-info {
-        display: block;
-        text-align: center;
-        margin-top: 0.5rem;
-        font-size: 0.875rem;
-        color: var(--p-text-muted-color);
-      }
-    }
-
-    .actions {
-      display: flex;
-      gap: 1rem;
-    }
-
-    .loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem;
-      gap: 1rem;
-      color: var(--p-text-muted-color);
-    }
-
-    @media (max-width: 768px) {
       .content {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 2rem;
       }
 
       .poster {
-        max-width: 250px;
-        margin: 0 auto;
+        aspect-ratio: 2/3;
+        background: var(--p-surface-card);
+        border-radius: var(--p-border-radius);
+        overflow: hidden;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--p-text-muted-color);
+        }
       }
-    }
-  `]
+
+      .info {
+        h1 {
+          font-size: 2rem;
+          margin: 0 0 1rem 0;
+        }
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .description {
+        color: var(--p-text-muted-color);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+
+        .file-size {
+          color: var(--p-text-muted-color);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+      }
+
+      :host ::ng-deep .cached-chip {
+        background: var(--p-primary-color);
+        color: white;
+      }
+
+      .progress-section {
+        margin-bottom: 1.5rem;
+
+        .progress-info {
+          display: block;
+          text-align: center;
+          margin-top: 0.5rem;
+          font-size: 0.875rem;
+          color: var(--p-text-muted-color);
+        }
+      }
+
+      .actions {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        gap: 1rem;
+        color: var(--p-text-muted-color);
+      }
+
+      @media (max-width: 768px) {
+        .content {
+          grid-template-columns: 1fr;
+        }
+
+        .poster {
+          max-width: 250px;
+          margin: 0 auto;
+        }
+      }
+    `,
+  ],
 })
 export class MovieDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -300,17 +292,19 @@ export class MovieDetailComponent implements OnInit {
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
 
-    this.api.getMovie(id)
+    this.api
+      .getMovie(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: movie => this.movie.set(movie),
-        error: () => this.router.navigate(['/'])
+        next: (movie) => this.movie.set(movie),
+        error: () => this.router.navigate(['/']),
       });
 
     this.ws.connect();
-    this.ws.getDownloadProgress()
+    this.ws
+      .getDownloadProgress()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(progress => {
+      .subscribe((progress) => {
         const currentMovie = this.movie();
         if (currentMovie && progress.movieId === currentMovie.id) {
           this.downloadProgress.set(progress);
@@ -350,7 +344,7 @@ export class MovieDetailComponent implements OnInit {
       header: 'Delete Confirmation',
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',
-      accept: () => this.deleteMovie()
+      accept: () => this.deleteMovie(),
     });
   }
 
@@ -363,10 +357,11 @@ export class MovieDetailComponent implements OnInit {
 
   confirmClearCache() {
     this.confirmationService.confirm({
-      message: 'Remove this movie from server storage? The movie will still be available on Mega.nz for re-download.',
+      message:
+        'Remove this movie from server storage? The movie will still be available on Mega.nz for re-download.',
       header: 'Clear Cache',
       icon: 'pi pi-exclamation-triangle',
-      accept: () => this.clearCache()
+      accept: () => this.clearCache(),
     });
   }
 
@@ -374,7 +369,8 @@ export class MovieDetailComponent implements OnInit {
     const currentMovie = this.movie();
     if (!currentMovie) return;
 
-    this.api.clearMovieCache(currentMovie.id)
+    this.api
+      .clearMovieCache(currentMovie.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
@@ -382,21 +378,28 @@ export class MovieDetailComponent implements OnInit {
             ...currentMovie,
             status: 'PENDING',
             cached: false,
-            fileSize: undefined
+            fileSize: undefined,
           });
           this.moviesStore.updateMovieStatus(currentMovie.id, 'PENDING', false);
         },
-        error: (err) => console.error('Failed to clear cache:', err)
+        error: (err) => console.error('Failed to clear cache:', err),
       });
   }
 
-  getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+  getStatusSeverity(
+    status: string
+  ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
     switch (status) {
-      case 'READY': return 'success';
-      case 'DOWNLOADING': return 'info';
-      case 'PENDING': return 'warn';
-      case 'ERROR': return 'danger';
-      default: return 'secondary';
+      case 'READY':
+        return 'success';
+      case 'DOWNLOADING':
+        return 'info';
+      case 'PENDING':
+        return 'warn';
+      case 'ERROR':
+        return 'danger';
+      default:
+        return 'secondary';
     }
   }
 
@@ -405,11 +408,16 @@ export class MovieDetailComponent implements OnInit {
       return 'On Server';
     }
     switch (movie.status) {
-      case 'READY': return 'Ready';
-      case 'DOWNLOADING': return 'Downloading';
-      case 'PENDING': return 'On Mega';
-      case 'ERROR': return 'Error';
-      default: return movie.status;
+      case 'READY':
+        return 'Ready';
+      case 'DOWNLOADING':
+        return 'Downloading';
+      case 'PENDING':
+        return 'On Mega';
+      case 'ERROR':
+        return 'Error';
+      default:
+        return movie.status;
     }
   }
 

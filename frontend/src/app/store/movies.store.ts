@@ -28,34 +28,26 @@ export const MoviesStore = signalStore(
     filteredMovies: computed(() => {
       const filter = state.filter().toLowerCase();
       if (!filter) return state.movies();
-      return state.movies().filter(m => m.title.toLowerCase().includes(filter));
+      return state.movies().filter((m) => m.title.toLowerCase().includes(filter));
     }),
 
-    selectedMovie: computed(() =>
-      state.movies().find(m => m.id === state.selectedMovieId()) ?? null
+    selectedMovie: computed(
+      () => state.movies().find((m) => m.id === state.selectedMovieId()) ?? null
     ),
 
-    readyMovies: computed(() =>
-      state.movies().filter(m => m.status === 'READY')
-    ),
+    readyMovies: computed(() => state.movies().filter((m) => m.status === 'READY')),
 
-    downloadingMovies: computed(() =>
-      state.movies().filter(m => m.status === 'DOWNLOADING')
-    ),
+    downloadingMovies: computed(() => state.movies().filter((m) => m.status === 'DOWNLOADING')),
 
-    cachedMovies: computed(() =>
-      state.movies().filter(m => m.cached)
-    ),
+    cachedMovies: computed(() => state.movies().filter((m) => m.cached)),
 
-    favoriteMovies: computed(() =>
-      state.movies().filter(m => m.favorite)
-    ),
+    favoriteMovies: computed(() => state.movies().filter((m) => m.favorite)),
 
     moviesByCategory: computed(() => {
       const movies = state.movies();
       const filter = state.filter().toLowerCase();
       const filtered = filter
-        ? movies.filter(m => m.title.toLowerCase().includes(filter))
+        ? movies.filter((m) => m.title.toLowerCase().includes(filter))
         : movies;
 
       const groups: { name: string; movies: Movie[] }[] = [];
@@ -73,13 +65,13 @@ export const MoviesStore = signalStore(
       }
 
       // Add favorites row first
-      const favorites = filtered.filter(m => m.favorite);
+      const favorites = filtered.filter((m) => m.favorite);
       if (favorites.length > 0) {
         groups.push({ name: 'My Favorites', movies: favorites });
       }
 
       // Add cached movies row second
-      const cached = filtered.filter(m => m.cached);
+      const cached = filtered.filter((m) => m.cached);
       if (cached.length > 0) {
         groups.push({ name: 'Downloaded on Server', movies: cached });
       }
@@ -100,7 +92,7 @@ export const MoviesStore = signalStore(
     featuredMovie: computed(() => {
       const movies = state.movies();
       // Pick a random cached movie as featured, or first movie
-      const cached = movies.filter(m => m.cached);
+      const cached = movies.filter((m) => m.cached);
       if (cached.length > 0) {
         return cached[Math.floor(Math.random() * cached.length)];
       }
@@ -141,13 +133,15 @@ export const MoviesStore = signalStore(
         switchMap((movieId) =>
           api.startDownload(movieId).pipe(
             tap(() => {
-              const movies = store.movies().map(m =>
-                m.id === movieId ? { ...m, status: 'DOWNLOADING' as const } : m
-              );
+              const movies = store
+                .movies()
+                .map((m) => (m.id === movieId ? { ...m, status: 'DOWNLOADING' as const } : m));
               patchState(store, { movies });
             }),
             tapResponse({
-              next: () => { /* Success - no action needed */ },
+              next: () => {
+                /* Success - no action needed */
+              },
               error: (error: Error) => patchState(store, { error: error.message }),
             })
           )
@@ -156,9 +150,7 @@ export const MoviesStore = signalStore(
     ),
 
     updateMovieStatus(movieId: string, status: Movie['status'], cached = false) {
-      const movies = store.movies().map(m =>
-        m.id === movieId ? { ...m, status, cached } : m
-      );
+      const movies = store.movies().map((m) => (m.id === movieId ? { ...m, status, cached } : m));
       patchState(store, { movies });
     },
 
@@ -174,12 +166,16 @@ export const MoviesStore = signalStore(
       pipe(
         switchMap((id) =>
           api.deleteMovie(id).pipe(
-            tap(() => patchState(store, {
-              movies: store.movies().filter(m => m.id !== id),
-              selectedMovieId: store.selectedMovieId() === id ? null : store.selectedMovieId(),
-            })),
+            tap(() =>
+              patchState(store, {
+                movies: store.movies().filter((m) => m.id !== id),
+                selectedMovieId: store.selectedMovieId() === id ? null : store.selectedMovieId(),
+              })
+            ),
             tapResponse({
-              next: () => { /* Success - no action needed */ },
+              next: () => {
+                /* Success - no action needed */
+              },
               error: (error: Error) => patchState(store, { error: error.message }),
             })
           )
@@ -193,9 +189,7 @@ export const MoviesStore = signalStore(
           api.addFavorite(movieId).pipe(
             tapResponse({
               next: (movie) => {
-                const movies = store.movies().map(m =>
-                  m.id === movieId ? movie : m
-                );
+                const movies = store.movies().map((m) => (m.id === movieId ? movie : m));
                 patchState(store, { movies });
               },
               error: (error: Error) => patchState(store, { error: error.message }),
@@ -211,9 +205,7 @@ export const MoviesStore = signalStore(
           api.removeFavorite(movieId).pipe(
             tapResponse({
               next: (movie) => {
-                const movies = store.movies().map(m =>
-                  m.id === movieId ? movie : m
-                );
+                const movies = store.movies().map((m) => (m.id === movieId ? movie : m));
                 patchState(store, { movies });
               },
               error: (error: Error) => patchState(store, { error: error.message }),
@@ -224,7 +216,7 @@ export const MoviesStore = signalStore(
     ),
 
     toggleFavorite(movieId: string) {
-      const movie = store.movies().find(m => m.id === movieId);
+      const movie = store.movies().find((m) => m.id === movieId);
       if (movie?.favorite) {
         this.removeFavorite(movieId);
       } else {

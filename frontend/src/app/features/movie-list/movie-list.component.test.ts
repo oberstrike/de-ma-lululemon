@@ -21,22 +21,19 @@ describe('MovieListComponent', () => {
   beforeEach(async () => {
     mockWebSocketService = {
       connect: vi.fn(),
-      getDownloadProgress: vi.fn().mockReturnValue(of())
+      getDownloadProgress: vi.fn().mockReturnValue(of()),
     };
 
     await TestBed.configureTestingModule({
-      imports: [
-        MovieListComponent,
-        NoopAnimationsModule
-      ],
+      imports: [MovieListComponent, NoopAnimationsModule],
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
         MoviesStore,
-        { provide: WebSocketService, useValue: mockWebSocketService }
-      ]
+        { provide: WebSocketService, useValue: mockWebSocketService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MovieListComponent);

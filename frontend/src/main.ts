@@ -22,9 +22,9 @@ const MediaPreset = definePreset(Aura, {
       700: '{red.700}',
       800: '{red.800}',
       900: '{red.900}',
-      950: '{red.950}'
-    }
-  }
+      950: '{red.950}',
+    },
+  },
 });
 
 bootstrapApplication(AppComponent, {
@@ -37,9 +37,9 @@ bootstrapApplication(AppComponent, {
       theme: {
         preset: MediaPreset,
         options: {
-          darkModeSelector: '.dark-mode'
-        }
-      }
-    })
-  ]
-}).catch(err => console.error(err));
+          darkModeSelector: '.dark-mode',
+        },
+      },
+    }),
+  ],
+}).catch((err) => console.error(err));

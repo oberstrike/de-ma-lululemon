@@ -69,8 +69,14 @@ export class ApiService {
   private baseUrl = environment.apiUrl;
 
   // Movies
-  getMovies(params?: { search?: string; readyOnly?: boolean; categoryId?: string }): Observable<Movie[]> {
-    return this.http.get<Movie[]>(`${this.baseUrl}/movies`, { params: params as Record<string, string> });
+  getMovies(params?: {
+    search?: string;
+    readyOnly?: boolean;
+    categoryId?: string;
+  }): Observable<Movie[]> {
+    return this.http.get<Movie[]>(`${this.baseUrl}/movies`, {
+      params: params as Record<string, string>,
+    });
   }
 
   getMovie(id: string): Observable<Movie> {
