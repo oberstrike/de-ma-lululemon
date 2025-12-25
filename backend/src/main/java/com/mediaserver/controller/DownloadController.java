@@ -1,7 +1,7 @@
 package com.mediaserver.controller;
 
 import com.mediaserver.dto.DownloadProgressDto;
-import com.mediaserver.adapter.DownloadTaskAdapter;
+import com.mediaserver.dto.DownloadTaskMapper;
 import com.mediaserver.repository.DownloadTaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +18,12 @@ import java.util.List;
 public class DownloadController {
 
     private final DownloadTaskRepository taskRepository;
-    private final DownloadTaskAdapter downloadTaskAdapter;
+    private final DownloadTaskMapper downloadTaskMapper;
 
     @GetMapping
     public ResponseEntity<List<DownloadProgressDto>> getActiveDownloads() {
         List<DownloadProgressDto> downloads = taskRepository.findActiveDownloads().stream()
-                .map(downloadTaskAdapter::toDto)
+                .map(downloadTaskMapper::toDto)
                 .toList();
         return ResponseEntity.ok(downloads);
     }
@@ -31,7 +31,7 @@ public class DownloadController {
     @GetMapping("/{movieId}")
     public ResponseEntity<DownloadProgressDto> getDownloadProgress(@PathVariable String movieId) {
         return taskRepository.findByMovieId(movieId)
-                .map(downloadTaskAdapter::toDto)
+                .map(downloadTaskMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

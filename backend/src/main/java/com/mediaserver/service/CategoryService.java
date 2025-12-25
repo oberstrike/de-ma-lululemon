@@ -2,7 +2,7 @@ package com.mediaserver.service;
 
 import com.mediaserver.dto.CategoryCreateRequest;
 import com.mediaserver.dto.CategoryDto;
-import com.mediaserver.adapter.CategoryAdapter;
+import com.mediaserver.dto.CategoryMapper;
 import com.mediaserver.entity.Category;
 import com.mediaserver.exception.CategoryNotFoundException;
 import com.mediaserver.repository.CategoryRepository;
@@ -18,17 +18,17 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final CategoryAdapter categoryAdapter;
+    private final CategoryMapper categoryMapper;
 
     public List<CategoryDto> getAllCategories() {
         return categoryRepository.findAllByOrderBySortOrderAsc().stream()
-                .map(categoryAdapter::toDto)
+                .map(category -> categoryMapper.toDto(category, categoryRepository))
                 .toList();
     }
 
     public CategoryDto getCategory(String id) {
         return categoryRepository.findById(id)
-                .map(categoryAdapter::toDto)
+                .map(category -> categoryMapper.toDto(category, categoryRepository))
                 .orElseThrow(() -> new CategoryNotFoundException(id));
     }
 
@@ -40,7 +40,7 @@ public class CategoryService {
                 .build();
 
         category = categoryRepository.save(category);
-        return categoryAdapter.toDto(category);
+        return categoryMapper.toDto(category, categoryRepository);
     }
 
     public CategoryDto updateCategory(String id, CategoryCreateRequest request) {
@@ -52,7 +52,7 @@ public class CategoryService {
         category.setSortOrder(request.getSortOrder());
 
         category = categoryRepository.save(category);
-        return categoryAdapter.toDto(category);
+        return categoryMapper.toDto(category, categoryRepository);
     }
 
     public void deleteCategory(String id) {
