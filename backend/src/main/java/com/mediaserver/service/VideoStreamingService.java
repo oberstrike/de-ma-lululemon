@@ -27,8 +27,10 @@ public class VideoStreamingService {
     private final MovieRepository movieRepository;
 
     public StreamingResponse streamVideo(String movieId, String rangeHeader) throws IOException {
-        Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new MovieNotFoundException(movieId));
+        Movie movie =
+                movieRepository
+                        .findById(movieId)
+                        .orElseThrow(() -> new MovieNotFoundException(movieId));
 
         if (!movie.isCached()) {
             throw new VideoNotReadyException("Video is not yet downloaded");
@@ -70,13 +72,18 @@ public class VideoStreamingService {
             }
 
             long start = Long.parseLong(ranges[0].trim());
-            long end = (ranges.length > 1 && !ranges[1].isEmpty())
-                    ? Long.parseLong(ranges[1].trim())
-                    : fileSize - 1;
+            long end =
+                    (ranges.length > 1 && !ranges[1].isEmpty())
+                            ? Long.parseLong(ranges[1].trim())
+                            : fileSize - 1;
 
             // Validate range values
             if (start < 0 || start >= fileSize || end < start) {
-                log.warn("Invalid range values: start={}, end={}, fileSize={}", start, end, fileSize);
+                log.warn(
+                        "Invalid range values: start={}, end={}, fileSize={}",
+                        start,
+                        end,
+                        fileSize);
                 return new HttpRange(0, fileSize - 1, fileSize);
             }
 
@@ -146,7 +153,9 @@ public class VideoStreamingService {
                 try {
                     file.close();
                 } catch (IOException closeEx) {
-                    log.warn("Failed to close RandomAccessFile after error: {}", closeEx.getMessage());
+                    log.warn(
+                            "Failed to close RandomAccessFile after error: {}",
+                            closeEx.getMessage());
                 }
             }
             throw new RuntimeException("Failed to create range input stream for: " + path, e);

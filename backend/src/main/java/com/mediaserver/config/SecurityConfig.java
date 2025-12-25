@@ -31,20 +31,26 @@ public class SecurityConfig {
         var csrfHandler = new CsrfTokenRequestAttributeHandler();
         csrfHandler.setCsrfRequestAttributeName("_csrf");
 
-        http
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(csrfHandler)
-                        .ignoringRequestMatchers("/api/stream/**", "/api/thumbnails/**", "/ws/**"))
+        http.csrf(
+                        csrf ->
+                                csrf.csrfTokenRepository(
+                                                CookieCsrfTokenRepository.withHttpOnlyFalse())
+                                        .csrfTokenRequestHandler(csrfHandler)
+                                        .ignoringRequestMatchers(
+                                                "/api/stream/**", "/api/thumbnails/**", "/ws/**"))
                 .cors(withDefaults())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/stream/**").permitAll()
-                        .requestMatchers("/api/thumbnails/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(
+                        auth ->
+                                auth.requestMatchers("/api/stream/**")
+                                        .permitAll()
+                                        .requestMatchers("/api/thumbnails/**")
+                                        .permitAll()
+                                        .requestMatchers("/ws/**")
+                                        .permitAll()
+                                        .anyRequest()
+                                        .authenticated())
                 .httpBasic(withDefaults());
 
         return http.build();
@@ -56,15 +62,17 @@ public class SecurityConfig {
 
         if (adminConfig.getPassword() == null || adminConfig.getPassword().isBlank()) {
             throw new IllegalStateException(
-                "Admin password must be configured via 'media.admin.password' property or " +
-                "MEDIA_ADMIN_PASSWORD environment variable. Do not use default credentials in production.");
+                    "Admin password must be configured via 'media.admin.password' property or"
+                            + " MEDIA_ADMIN_PASSWORD environment variable. Do not use default"
+                            + " credentials in production.");
         }
 
-        var user = User.builder()
-                .username(adminConfig.getUsername())
-                .password(passwordEncoder.encode(adminConfig.getPassword()))
-                .roles("ADMIN")
-                .build();
+        var user =
+                User.builder()
+                        .username(adminConfig.getUsername())
+                        .password(passwordEncoder.encode(adminConfig.getPassword()))
+                        .roles("ADMIN")
+                        .build();
 
         log.info("Configured admin user: {}", adminConfig.getUsername());
         return new InMemoryUserDetailsManager(user);

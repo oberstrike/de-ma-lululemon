@@ -34,8 +34,7 @@ public class DownloadTaskJpaEntity {
     @Builder.Default
     private Long totalBytes = 0L;
 
-    @Builder.Default
-    private Integer progress = 0;
+    @Builder.Default private Integer progress = 0;
 
     @Column(name = "error_message")
     private String errorMessage;

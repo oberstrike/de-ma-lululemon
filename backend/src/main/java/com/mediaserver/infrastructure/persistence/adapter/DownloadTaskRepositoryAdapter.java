@@ -11,8 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 /**
- * Adapter implementation of DownloadTaskRepository port.
- * Bridges the domain layer with the JPA persistence layer.
+ * Adapter implementation of DownloadTaskRepository port. Bridges the domain layer with the JPA
+ * persistence layer.
  */
 @Repository
 @RequiredArgsConstructor
@@ -24,14 +24,12 @@ public class DownloadTaskRepositoryAdapter implements DownloadTaskRepository {
 
     @Override
     public Optional<DownloadTask> findById(String id) {
-        return jpaDownloadTaskRepository.findById(id)
-                .map(mapper::toDomain);
+        return jpaDownloadTaskRepository.findById(id).map(mapper::toDomain);
     }
 
     @Override
     public Optional<DownloadTask> findByMovieId(String movieId) {
-        return jpaDownloadTaskRepository.findByMovieId(movieId)
-                .map(mapper::toDomain);
+        return jpaDownloadTaskRepository.findByMovieId(movieId).map(mapper::toDomain);
     }
 
     @Override
@@ -39,8 +37,14 @@ public class DownloadTaskRepositoryAdapter implements DownloadTaskRepository {
         var entity = mapper.toEntity(task);
 
         if (task.getMovieId() != null) {
-            var movie = jpaMovieRepository.findById(task.getMovieId())
-                    .orElseThrow(() -> new IllegalArgumentException("Movie not found with id: " + task.getMovieId()));
+            var movie =
+                    jpaMovieRepository
+                            .findById(task.getMovieId())
+                            .orElseThrow(
+                                    () ->
+                                            new IllegalArgumentException(
+                                                    "Movie not found with id: "
+                                                            + task.getMovieId()));
             entity.setMovie(movie);
         }
 

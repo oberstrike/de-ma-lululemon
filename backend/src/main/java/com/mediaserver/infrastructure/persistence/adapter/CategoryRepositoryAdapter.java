@@ -10,8 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 /**
- * Adapter implementation of CategoryRepository port.
- * Bridges the domain layer with the JPA persistence layer.
+ * Adapter implementation of CategoryRepository port. Bridges the domain layer with the JPA
+ * persistence layer.
  */
 @Repository
 @RequiredArgsConstructor
@@ -22,8 +22,7 @@ public class CategoryRepositoryAdapter implements CategoryRepository {
 
     @Override
     public Optional<Category> findById(String id) {
-        return jpaCategoryRepository.findById(id)
-                .map(mapper::toDomain);
+        return jpaCategoryRepository.findById(id).map(mapper::toDomain);
     }
 
     @Override
@@ -48,8 +47,7 @@ public class CategoryRepositoryAdapter implements CategoryRepository {
 
     @Override
     public Optional<Category> findByName(String name) {
-        return jpaCategoryRepository.findByName(name)
-                .map(mapper::toDomain);
+        return jpaCategoryRepository.findByName(name).map(mapper::toDomain);
     }
 
     @Override
@@ -64,7 +62,6 @@ public class CategoryRepositoryAdapter implements CategoryRepository {
 
     @Override
     public Optional<Category> findByMegaPath(String megaPath) {
-        return jpaCategoryRepository.findByMegaPath(megaPath)
-                .map(mapper::toDomain);
+        return jpaCategoryRepository.findByMegaPath(megaPath).map(mapper::toDomain);
     }
 }

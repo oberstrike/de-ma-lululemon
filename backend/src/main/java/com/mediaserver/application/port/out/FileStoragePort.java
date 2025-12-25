@@ -5,13 +5,14 @@ import java.io.InputStream;
 import java.nio.file.Path;
 
 /**
- * Output port for file storage operations.
- * This port will be implemented by the infrastructure layer.
+ * Output port for file storage operations. This port will be implemented by the infrastructure
+ * layer.
  */
 public interface FileStoragePort {
 
     /**
      * Deletes a file if it exists.
+     *
      * @param path the file path
      * @return true if the file was deleted, false if it didn't exist
      * @throws IOException if deletion fails
@@ -20,6 +21,7 @@ public interface FileStoragePort {
 
     /**
      * Deletes a file.
+     *
      * @param path the file path
      * @throws IOException if deletion fails
      */
@@ -27,6 +29,7 @@ public interface FileStoragePort {
 
     /**
      * Checks if a file exists.
+     *
      * @param path the file path
      * @return true if the file exists
      */
@@ -34,6 +37,7 @@ public interface FileStoragePort {
 
     /**
      * Gets the size of a file.
+     *
      * @param path the file path
      * @return file size in bytes
      * @throws IOException if reading fails
@@ -42,6 +46,7 @@ public interface FileStoragePort {
 
     /**
      * Opens an input stream for reading a file.
+     *
      * @param path the file path
      * @return input stream
      * @throws IOException if opening fails

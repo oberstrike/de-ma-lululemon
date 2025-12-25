@@ -24,7 +24,8 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <testcontainers.version>1.20.4</testcontainers.version>
         <checkstyle.version>10.21.4</checkstyle.version>
-        <spotless.version>2.44.0</spotless.version>
+        <spotless.version>2.44.4</spotless.version>
+        <google-java-format.version>1.28.0</google-java-format.version>
     </properties>
 
     <dependencies>
@@ -207,14 +208,16 @@
                             <include>src/main/java/**/*.java</include>
                             <include>src/test/java/**/*.java</include>
                         </includes>
+                        <googleJavaFormat>
+                            <version>${google-java-format.version}</version>
+                            <style>AOSP</style>
+                            <reflowLongStrings>true</reflowLongStrings>
+                            <formatJavadoc>true</formatJavadoc>
+                        </googleJavaFormat>
                         <importOrder/>
                         <removeUnusedImports/>
-                        <trimTrailingWhitespace/>
-                        <endWithNewline/>
-                        <indent>
-                            <spaces>true</spaces>
-                            <spacesPerTab>4</spacesPerTab>
-                        </indent>
+                        <formatAnnotations/>
+                        <toggleOffOn/>
                     </java>
                 </configuration>
             </plugin>

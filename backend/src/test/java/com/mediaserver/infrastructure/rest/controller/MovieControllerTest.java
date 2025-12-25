@@ -33,97 +33,81 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Unit tests for MovieController in Clean Architecture.
- * Tests the REST adapter layer that uses application services (use cases).
+ * Unit tests for MovieController in Clean Architecture. Tests the REST adapter layer that uses
+ * application services (use cases).
  */
 @WebMvcTest(MovieController.class)
 @Import({GlobalExceptionHandler.class, MediaProperties.class, WebConfig.class})
 @WithMockUser(username = "admin", roles = "ADMIN")
 class MovieControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @MockitoBean
-    private GetAllMoviesUseCase getAllMoviesUseCase;
+    @MockitoBean private GetAllMoviesUseCase getAllMoviesUseCase;
 
-    @MockitoBean
-    private GetMovieUseCase getMovieUseCase;
+    @MockitoBean private GetMovieUseCase getMovieUseCase;
 
-    @MockitoBean
-    private SearchMoviesUseCase searchMoviesUseCase;
+    @MockitoBean private SearchMoviesUseCase searchMoviesUseCase;
 
-    @MockitoBean
-    private GetMoviesByCategoryUseCase getMoviesByCategoryUseCase;
+    @MockitoBean private GetMoviesByCategoryUseCase getMoviesByCategoryUseCase;
 
-    @MockitoBean
-    private GetReadyMoviesUseCase getReadyMoviesUseCase;
+    @MockitoBean private GetReadyMoviesUseCase getReadyMoviesUseCase;
 
-    @MockitoBean
-    private CreateMovieUseCase createMovieUseCase;
+    @MockitoBean private CreateMovieUseCase createMovieUseCase;
 
-    @MockitoBean
-    private UpdateMovieUseCase updateMovieUseCase;
+    @MockitoBean private UpdateMovieUseCase updateMovieUseCase;
 
-    @MockitoBean
-    private DeleteMovieUseCase deleteMovieUseCase;
+    @MockitoBean private DeleteMovieUseCase deleteMovieUseCase;
 
-    @MockitoBean
-    private StartDownloadUseCase startDownloadUseCase;
+    @MockitoBean private StartDownloadUseCase startDownloadUseCase;
 
-    @MockitoBean
-    private GetCacheStatsUseCase getCacheStatsUseCase;
+    @MockitoBean private GetCacheStatsUseCase getCacheStatsUseCase;
 
-    @MockitoBean
-    private GetCachedMoviesUseCase getCachedMoviesUseCase;
+    @MockitoBean private GetCachedMoviesUseCase getCachedMoviesUseCase;
 
-    @MockitoBean
-    private ClearMovieCacheUseCase clearMovieCacheUseCase;
+    @MockitoBean private ClearMovieCacheUseCase clearMovieCacheUseCase;
 
-    @MockitoBean
-    private ClearAllCacheUseCase clearAllCacheUseCase;
+    @MockitoBean private ClearAllCacheUseCase clearAllCacheUseCase;
 
-    @MockitoBean
-    private AddFavoriteUseCase addFavoriteUseCase;
+    @MockitoBean private AddFavoriteUseCase addFavoriteUseCase;
 
-    @MockitoBean
-    private RemoveFavoriteUseCase removeFavoriteUseCase;
+    @MockitoBean private RemoveFavoriteUseCase removeFavoriteUseCase;
 
-    @MockitoBean
-    private GetFavoritesUseCase getFavoritesUseCase;
+    @MockitoBean private GetFavoritesUseCase getFavoritesUseCase;
 
-    @MockitoBean
-    private MovieRestMapper movieRestMapper;
+    @MockitoBean private MovieRestMapper movieRestMapper;
 
     private Movie entityMovie;
     private MovieResponseDto movieResponseDto;
 
     @BeforeEach
     void setUp() {
-        entityMovie = Movie.builder()
-                .id("movie-1")
-                .title("Test Movie")
-                .description("A test movie")
-                .year(2024)
-                .duration("2h 30m")
-                .status(MovieStatus.PENDING)
-                .createdAt(LocalDateTime.now())
-                .build();
+        entityMovie =
+                Movie.builder()
+                        .id("movie-1")
+                        .title("Test Movie")
+                        .description("A test movie")
+                        .year(2024)
+                        .duration("2h 30m")
+                        .status(MovieStatus.PENDING)
+                        .createdAt(LocalDateTime.now())
+                        .build();
 
-        movieResponseDto = MovieResponseDto.builder()
-                .id("movie-1")
-                .title("Test Movie")
-                .description("A test movie")
-                .year(2024)
-                .duration("2h 30m")
-                .status(MovieStatus.PENDING)
-                .categoryId("cat-1")
-                .categoryName("Action")
-                .cached(false)
-                .createdAt(LocalDateTime.now())
-                .build();
+        movieResponseDto =
+                MovieResponseDto.builder()
+                        .id("movie-1")
+                        .title("Test Movie")
+                        .description("A test movie")
+                        .year(2024)
+                        .duration("2h 30m")
+                        .status(MovieStatus.PENDING)
+                        .categoryId("cat-1")
+                        .categoryName("Action")
+                        .cached(false)
+                        .createdAt(LocalDateTime.now())
+                        .build();
     }
 
     @Test
@@ -158,7 +142,8 @@ class MovieControllerTest {
     @Test
     void getAllMovies_withCategoryFilter_shouldCallGetMoviesByCategory() throws Exception {
         // Given
-        when(getMoviesByCategoryUseCase.getMoviesByCategory("cat-1")).thenReturn(List.of(entityMovie));
+        when(getMoviesByCategoryUseCase.getMoviesByCategory("cat-1"))
+                .thenReturn(List.of(entityMovie));
         when(movieRestMapper.toResponse(entityMovie)).thenReturn(movieResponseDto);
 
         // When & Then
@@ -172,14 +157,11 @@ class MovieControllerTest {
     @Test
     void getAllMovies_withReadyOnly_shouldCallGetReadyMovies() throws Exception {
         // Given
-        Movie readyMovie = entityMovie
-                .withStatus(MovieStatus.READY)
-                .withLocalPath("/cache/movie.mp4");
+        Movie readyMovie =
+                entityMovie.withStatus(MovieStatus.READY).withLocalPath("/cache/movie.mp4");
 
-        MovieResponseDto readyDto = movieResponseDto.toBuilder()
-                .status(MovieStatus.READY)
-                .cached(true)
-                .build();
+        MovieResponseDto readyDto =
+                movieResponseDto.toBuilder().status(MovieStatus.READY).cached(true).build();
 
         when(getReadyMoviesUseCase.getReadyMovies()).thenReturn(List.of(readyMovie));
         when(movieRestMapper.toResponse(readyMovie)).thenReturn(readyDto);
@@ -214,34 +196,36 @@ class MovieControllerTest {
                 .thenThrow(new MovieNotFoundException("nonexistent"));
 
         // When & Then
-        mockMvc.perform(get("/api/movies/nonexistent"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/movies/nonexistent")).andExpect(status().isNotFound());
     }
 
     @Test
     void createMovie_shouldReturnCreatedMovie() throws Exception {
         // Given
-        MovieRequestDto request = MovieRequestDto.builder()
-                .title("New Movie")
-                .megaUrl("https://mega.nz/file/test")
-                .categoryId("cat-1")
-                .build();
+        MovieRequestDto request =
+                MovieRequestDto.builder()
+                        .title("New Movie")
+                        .megaUrl("https://mega.nz/file/test")
+                        .categoryId("cat-1")
+                        .build();
 
-        CreateMovieCommand command = CreateMovieCommand.builder()
-                .title("New Movie")
-                .megaUrl("https://mega.nz/file/test")
-                .categoryId("cat-1")
-                .build();
+        CreateMovieCommand command =
+                CreateMovieCommand.builder()
+                        .title("New Movie")
+                        .megaUrl("https://mega.nz/file/test")
+                        .categoryId("cat-1")
+                        .build();
 
         when(movieRestMapper.toCreateCommand(request)).thenReturn(command);
         when(createMovieUseCase.createMovie(any(CreateMovieCommand.class))).thenReturn(entityMovie);
         when(movieRestMapper.toResponse(entityMovie)).thenReturn(movieResponseDto);
 
         // When & Then
-        mockMvc.perform(post("/api/movies")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(
+                        post("/api/movies")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value("movie-1"));
 
@@ -252,62 +236,63 @@ class MovieControllerTest {
     @Test
     void createMovie_shouldReturn400_whenTitleMissing() throws Exception {
         // Given
-        MovieRequestDto request = MovieRequestDto.builder()
-                .megaUrl("https://mega.nz/file/test")
-                .build();
+        MovieRequestDto request =
+                MovieRequestDto.builder().megaUrl("https://mega.nz/file/test").build();
 
         // When & Then
-        mockMvc.perform(post("/api/movies")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(
+                        post("/api/movies")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void createMovie_shouldReturn400_whenMegaUrlMissing() throws Exception {
         // Given
-        MovieRequestDto request = MovieRequestDto.builder()
-                .title("New Movie")
-                .build();
+        MovieRequestDto request = MovieRequestDto.builder().title("New Movie").build();
 
         // When & Then
-        mockMvc.perform(post("/api/movies")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(
+                        post("/api/movies")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void updateMovie_shouldReturnUpdatedMovie() throws Exception {
         // Given
-        MovieRequestDto request = MovieRequestDto.builder()
-                .title("Updated Movie")
-                .megaUrl("https://mega.nz/file/test")
-                .build();
+        MovieRequestDto request =
+                MovieRequestDto.builder()
+                        .title("Updated Movie")
+                        .megaUrl("https://mega.nz/file/test")
+                        .build();
 
         Movie updatedMovie = entityMovie.withTitle("Updated Movie");
 
-        MovieResponseDto updatedDto = movieResponseDto.toBuilder()
-                .title("Updated Movie")
-                .build();
+        MovieResponseDto updatedDto = movieResponseDto.toBuilder().title("Updated Movie").build();
 
-        UpdateMovieCommand command = UpdateMovieCommand.builder()
-                .id("movie-1")
-                .title("Updated Movie")
-                .megaUrl("https://mega.nz/file/test")
-                .build();
+        UpdateMovieCommand command =
+                UpdateMovieCommand.builder()
+                        .id("movie-1")
+                        .title("Updated Movie")
+                        .megaUrl("https://mega.nz/file/test")
+                        .build();
 
         when(movieRestMapper.toUpdateCommand("movie-1", request)).thenReturn(command);
-        when(updateMovieUseCase.updateMovie(any(UpdateMovieCommand.class))).thenReturn(updatedMovie);
+        when(updateMovieUseCase.updateMovie(any(UpdateMovieCommand.class)))
+                .thenReturn(updatedMovie);
         when(movieRestMapper.toResponse(updatedMovie)).thenReturn(updatedDto);
 
         // When & Then
-        mockMvc.perform(put("/api/movies/movie-1")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(
+                        put("/api/movies/movie-1")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Updated Movie"));
 
@@ -320,8 +305,7 @@ class MovieControllerTest {
         doNothing().when(deleteMovieUseCase).deleteMovie("movie-1");
 
         // When & Then
-        mockMvc.perform(delete("/api/movies/movie-1")
-                        .with(csrf()))
+        mockMvc.perform(delete("/api/movies/movie-1").with(csrf()))
                 .andExpect(status().isNoContent());
 
         verify(deleteMovieUseCase).deleteMovie("movie-1");
@@ -333,8 +317,7 @@ class MovieControllerTest {
         doNothing().when(startDownloadUseCase).startDownload("movie-1");
 
         // When & Then
-        mockMvc.perform(post("/api/movies/movie-1/download")
-                        .with(csrf()))
+        mockMvc.perform(post("/api/movies/movie-1/download").with(csrf()))
                 .andExpect(status().isAccepted());
 
         verify(startDownloadUseCase).startDownload("movie-1");
@@ -343,12 +326,13 @@ class MovieControllerTest {
     @Test
     void getCacheStats_shouldReturnStats() throws Exception {
         // Given
-        CacheStatsDto cacheStats = CacheStatsDto.builder()
-                .totalSizeBytes(1024L * 1024 * 1024)
-                .maxSizeBytes(100L * 1024 * 1024 * 1024)
-                .usagePercent(1)
-                .movieCount(5)
-                .build();
+        CacheStatsDto cacheStats =
+                CacheStatsDto.builder()
+                        .totalSizeBytes(1024L * 1024 * 1024)
+                        .maxSizeBytes(100L * 1024 * 1024 * 1024)
+                        .usagePercent(1)
+                        .movieCount(5)
+                        .build();
 
         when(getCacheStatsUseCase.getCacheStats()).thenReturn(cacheStats);
 
@@ -362,14 +346,11 @@ class MovieControllerTest {
     @Test
     void getCachedMovies_shouldReturnCachedMovies() throws Exception {
         // Given
-        Movie cachedMovie = entityMovie
-                .withLocalPath("/cache/movie.mp4")
-                .withStatus(MovieStatus.READY);
+        Movie cachedMovie =
+                entityMovie.withLocalPath("/cache/movie.mp4").withStatus(MovieStatus.READY);
 
-        MovieResponseDto cachedDto = movieResponseDto.toBuilder()
-                .cached(true)
-                .status(MovieStatus.READY)
-                .build();
+        MovieResponseDto cachedDto =
+                movieResponseDto.toBuilder().cached(true).status(MovieStatus.READY).build();
 
         when(getCachedMoviesUseCase.getCachedMovies()).thenReturn(List.of(cachedMovie));
         when(movieRestMapper.toResponse(cachedMovie)).thenReturn(cachedDto);
@@ -388,8 +369,7 @@ class MovieControllerTest {
         doNothing().when(clearMovieCacheUseCase).clearCache("movie-1");
 
         // When & Then
-        mockMvc.perform(delete("/api/movies/movie-1/cache")
-                        .with(csrf()))
+        mockMvc.perform(delete("/api/movies/movie-1/cache").with(csrf()))
                 .andExpect(status().isNoContent());
 
         verify(clearMovieCacheUseCase).clearCache("movie-1");
@@ -401,8 +381,7 @@ class MovieControllerTest {
         when(clearAllCacheUseCase.clearAllCache()).thenReturn(5);
 
         // When & Then
-        mockMvc.perform(delete("/api/movies/cache")
-                        .with(csrf()))
+        mockMvc.perform(delete("/api/movies/cache").with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value(5));
 

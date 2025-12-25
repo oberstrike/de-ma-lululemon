@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
 /**
- * Unit tests for CategoryRestMapper.
- * Tests conversion between DTOs, domain models, and commands for REST API.
+ * Unit tests for CategoryRestMapper. Tests conversion between DTOs, domain models, and commands for
+ * REST API.
  */
 class CategoryRestMapperTest {
 
@@ -24,19 +24,21 @@ class CategoryRestMapperTest {
 
     @BeforeEach
     void setUp() {
-        category = Category.builder()
-                .id("cat-1")
-                .name("Action")
-                .description("Action movies")
-                .megaPath("/Action")
-                .sortOrder(1)
-                .build();
+        category =
+                Category.builder()
+                        .id("cat-1")
+                        .name("Action")
+                        .description("Action movies")
+                        .megaPath("/Action")
+                        .sortOrder(1)
+                        .build();
 
-        requestDto = CategoryRequestDto.builder()
-                .name("Comedy")
-                .description("Comedy movies")
-                .sortOrder(3)
-                .build();
+        requestDto =
+                CategoryRequestDto.builder()
+                        .name("Comedy")
+                        .description("Comedy movies")
+                        .sortOrder(3)
+                        .build();
     }
 
     @Test
@@ -64,10 +66,7 @@ class CategoryRestMapperTest {
     @Test
     void toResponse_shouldHandleNullFields() {
         // Given
-        Category minimalCategory = Category.builder()
-                .id("cat-2")
-                .name("Drama")
-                .build();
+        Category minimalCategory = Category.builder().id("cat-2").name("Drama").build();
 
         // When
         CategoryResponseDto result = mapper.toResponse(minimalCategory);
@@ -130,9 +129,7 @@ class CategoryRestMapperTest {
     @Test
     void toCreateCommand_shouldHandleNullOptionalFields() {
         // Given
-        CategoryRequestDto minimalRequest = CategoryRequestDto.builder()
-                .name("Thriller")
-                .build();
+        CategoryRequestDto minimalRequest = CategoryRequestDto.builder().name("Thriller").build();
 
         // When
         CreateCategoryCommand result = mapper.toCreateCommand(minimalRequest);
@@ -146,9 +143,8 @@ class CategoryRestMapperTest {
     @Test
     void toCreateCommand_shouldHandleEmptyDescription() {
         // Given
-        CategoryRequestDto requestWithEmptyDescription = requestDto.toBuilder()
-                .description("")
-                .build();
+        CategoryRequestDto requestWithEmptyDescription =
+                requestDto.toBuilder().description("").build();
 
         // When
         CreateCategoryCommand result = mapper.toCreateCommand(requestWithEmptyDescription);
@@ -160,9 +156,8 @@ class CategoryRestMapperTest {
     @Test
     void toCreateCommand_shouldHandleSpecialCharactersInName() {
         // Given
-        CategoryRequestDto requestWithSpecialChars = requestDto.toBuilder()
-                .name("Sci-Fi & Fantasy")
-                .build();
+        CategoryRequestDto requestWithSpecialChars =
+                requestDto.toBuilder().name("Sci-Fi & Fantasy").build();
 
         // When
         CreateCategoryCommand result = mapper.toCreateCommand(requestWithSpecialChars);
@@ -175,9 +170,8 @@ class CategoryRestMapperTest {
     void toCreateCommand_shouldHandleLongDescription() {
         // Given
         String longDescription = "A".repeat(1000);
-        CategoryRequestDto requestWithLongDescription = requestDto.toBuilder()
-                .description(longDescription)
-                .build();
+        CategoryRequestDto requestWithLongDescription =
+                requestDto.toBuilder().description(longDescription).build();
 
         // When
         CreateCategoryCommand result = mapper.toCreateCommand(requestWithLongDescription);
@@ -205,9 +199,7 @@ class CategoryRestMapperTest {
     void toUpdateCommand_shouldHandleNullOptionalFields() {
         // Given
         String categoryId = "cat-456";
-        CategoryRequestDto minimalRequest = CategoryRequestDto.builder()
-                .name("Horror")
-                .build();
+        CategoryRequestDto minimalRequest = CategoryRequestDto.builder().name("Horror").build();
 
         // When
         UpdateCategoryCommand result = mapper.toUpdateCommand(categoryId, minimalRequest);
@@ -223,12 +215,12 @@ class CategoryRestMapperTest {
     void toUpdateCommand_shouldHandleEmptyDescription() {
         // Given
         String categoryId = "cat-789";
-        CategoryRequestDto requestWithEmptyDescription = requestDto.toBuilder()
-                .description("")
-                .build();
+        CategoryRequestDto requestWithEmptyDescription =
+                requestDto.toBuilder().description("").build();
 
         // When
-        UpdateCategoryCommand result = mapper.toUpdateCommand(categoryId, requestWithEmptyDescription);
+        UpdateCategoryCommand result =
+                mapper.toUpdateCommand(categoryId, requestWithEmptyDescription);
 
         // Then
         assertThat(result.getId()).isEqualTo("cat-789");
@@ -239,9 +231,7 @@ class CategoryRestMapperTest {
     void toUpdateCommand_shouldHandleZeroSortOrder() {
         // Given
         String categoryId = "cat-000";
-        CategoryRequestDto requestWithZeroSort = requestDto.toBuilder()
-                .sortOrder(0)
-                .build();
+        CategoryRequestDto requestWithZeroSort = requestDto.toBuilder().sortOrder(0).build();
 
         // When
         UpdateCategoryCommand result = mapper.toUpdateCommand(categoryId, requestWithZeroSort);
@@ -254,9 +244,7 @@ class CategoryRestMapperTest {
     void toUpdateCommand_shouldHandleNegativeSortOrder() {
         // Given
         String categoryId = "cat-neg";
-        CategoryRequestDto requestWithNegativeSort = requestDto.toBuilder()
-                .sortOrder(-1)
-                .build();
+        CategoryRequestDto requestWithNegativeSort = requestDto.toBuilder().sortOrder(-1).build();
 
         // When
         UpdateCategoryCommand result = mapper.toUpdateCommand(categoryId, requestWithNegativeSort);
@@ -269,9 +257,8 @@ class CategoryRestMapperTest {
     void toUpdateCommand_shouldHandleSpecialCharactersInName() {
         // Given
         String categoryId = "cat-special";
-        CategoryRequestDto requestWithSpecialChars = requestDto.toBuilder()
-                .name("Sci-Fi & Fantasy")
-                .build();
+        CategoryRequestDto requestWithSpecialChars =
+                requestDto.toBuilder().name("Sci-Fi & Fantasy").build();
 
         // When
         UpdateCategoryCommand result = mapper.toUpdateCommand(categoryId, requestWithSpecialChars);

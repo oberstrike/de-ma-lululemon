@@ -44,10 +44,11 @@ public class MegaDownloadService {
     private final ReentrantLock taskCreationLock = new ReentrantLock();
 
     // Reusable HTTP client for better resource management
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .connectTimeout(Duration.ofSeconds(30))
-            .build();
+    private static final HttpClient HTTP_CLIENT =
+            HttpClient.newBuilder()
+                    .followRedirects(HttpClient.Redirect.NORMAL)
+                    .connectTimeout(Duration.ofSeconds(30))
+                    .build();
 
     @Async
     public CompletableFuture<Path> downloadMovie(Movie movie) {
@@ -58,31 +59,38 @@ public class MegaDownloadService {
             Path targetPath = prepareTargetPath(movie);
 
             if (isMegaUrl(movie.getMegaUrl())) {
-                downloadFromMega(movie.getMegaUrl(), targetPath, progress -> {
-                    updateProgress(task, progress);
-                    publishProgress(movie, progress);
-                });
+                downloadFromMega(
+                        movie.getMegaUrl(),
+                        targetPath,
+                        progress -> {
+                            updateProgress(task, progress);
+                            publishProgress(movie, progress);
+                        });
             } else {
-                downloadViaHttp(movie.getMegaUrl(), targetPath, progress -> {
-                    updateProgress(task, progress);
-                    publishProgress(movie, progress);
-                });
+                downloadViaHttp(
+                        movie.getMegaUrl(),
+                        targetPath,
+                        progress -> {
+                            updateProgress(task, progress);
+                            publishProgress(movie, progress);
+                        });
             }
 
-            Movie updatedMovie = movie
-                    .withLocalPath(targetPath.toString())
-                    .withFileSize(Files.size(targetPath))
-                    .withContentType(detectContentType(targetPath))
-                    .withStatus(MovieStatus.READY);
+            Movie updatedMovie =
+                    movie.withLocalPath(targetPath.toString())
+                            .withFileSize(Files.size(targetPath))
+                            .withContentType(detectContentType(targetPath))
+                            .withStatus(MovieStatus.READY);
             movieRepository.save(updatedMovie);
 
-            DownloadTask updatedTask = task
-                    .withStatus(DownloadStatus.COMPLETED)
-                    .withCompletedAt(LocalDateTime.now())
-                    .withProgress(100);
+            DownloadTask updatedTask =
+                    task.withStatus(DownloadStatus.COMPLETED)
+                            .withCompletedAt(LocalDateTime.now())
+                            .withProgress(100);
             taskRepository.save(updatedTask);
 
-            publishProgress(movie, new DownloadProgress(100, movie.getFileSize(), movie.getFileSize()));
+            publishProgress(
+                    movie, new DownloadProgress(100, movie.getFileSize(), movie.getFileSize()));
             log.info("Download completed for movie: {}", movie.getTitle());
             return CompletableFuture.completedFuture(targetPath);
 
@@ -97,13 +105,15 @@ public class MegaDownloadService {
         return url != null && url.contains("mega.nz");
     }
 
-    private void downloadFromMega(String megaUrl, Path targetPath, Consumer<DownloadProgress> progressCallback)
+    private void downloadFromMega(
+            String megaUrl, Path targetPath, Consumer<DownloadProgress> progressCallback)
             throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder("mega-get", megaUrl, targetPath.toString());
         pb.redirectErrorStream(true);
         Process process = pb.start();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        try (BufferedReader reader =
+                new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 log.debug("mega-get: {}", line);
@@ -119,21 +129,26 @@ public class MegaDownloadService {
             throw new DownloadException("mega-get timed out after " + timeoutMinutes + " minutes");
         }
         int exitCode = process.exitValue();
-        if (exitCode != 0) throw new DownloadException("mega-get failed with exit code: " + exitCode);
+        if (exitCode != 0)
+            throw new DownloadException("mega-get failed with exit code: " + exitCode);
     }
 
-    private void downloadViaHttp(String url, Path targetPath, Consumer<DownloadProgress> progressCallback)
+    private void downloadViaHttp(
+            String url, Path targetPath, Consumer<DownloadProgress> progressCallback)
             throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .timeout(Duration.ofHours(2))
-                .build();
-        HttpResponse<InputStream> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(URI.create(url))
+                        .GET()
+                        .timeout(Duration.ofHours(2))
+                        .build();
+        HttpResponse<InputStream> response =
+                HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
         long totalBytes = response.headers().firstValueAsLong("Content-Length").orElse(-1);
 
-        try (InputStream in = response.body(); OutputStream out = Files.newOutputStream(targetPath)) {
+        try (InputStream in = response.body();
+                OutputStream out = Files.newOutputStream(targetPath)) {
             byte[] buffer = new byte[8192];
             long downloaded = 0;
             int read;
@@ -143,7 +158,11 @@ public class MegaDownloadService {
                 out.write(buffer, 0, read);
                 downloaded += read;
                 if (totalBytes > 0 && (downloaded - lastUpdate) > 1048576) {
-                    progressCallback.accept(new DownloadProgress((int) ((downloaded * 100) / totalBytes), downloaded, totalBytes));
+                    progressCallback.accept(
+                            new DownloadProgress(
+                                    (int) ((downloaded * 100) / totalBytes),
+                                    downloaded,
+                                    totalBytes));
                     lastUpdate = downloaded;
                 }
             }
@@ -172,13 +191,15 @@ public class MegaDownloadService {
         // Use lock to prevent race conditions when creating/updating tasks
         taskCreationLock.lock();
         try {
-            DownloadTask task = taskRepository.findByMovieId(movie.getId())
-                    .orElse(DownloadTask.builder().movieId(movie.getId()).build());
-            DownloadTask updatedTask = task
-                    .withStatus(status)
-                    .withStartedAt(LocalDateTime.now())
-                    .withProgress(0)
-                    .withBytesDownloaded(0L);
+            DownloadTask task =
+                    taskRepository
+                            .findByMovieId(movie.getId())
+                            .orElse(DownloadTask.builder().movieId(movie.getId()).build());
+            DownloadTask updatedTask =
+                    task.withStatus(status)
+                            .withStartedAt(LocalDateTime.now())
+                            .withProgress(0)
+                            .withBytesDownloaded(0L);
             return taskRepository.save(updatedTask);
         } finally {
             taskCreationLock.unlock();
@@ -186,20 +207,23 @@ public class MegaDownloadService {
     }
 
     private void updateProgress(DownloadTask task, DownloadProgress progress) {
-        DownloadTask updatedTask = task
-                .withProgress(progress.percent())
-                .withBytesDownloaded(progress.bytesDownloaded())
-                .withTotalBytes(progress.totalBytes());
+        DownloadTask updatedTask =
+                task.withProgress(progress.percent())
+                        .withBytesDownloaded(progress.bytesDownloaded())
+                        .withTotalBytes(progress.totalBytes());
         taskRepository.save(updatedTask);
     }
 
     private void publishProgress(Movie movie, DownloadProgress progress) {
-        DownloadProgressDto dto = DownloadProgressDto.builder()
-                .movieId(movie.getId()).movieTitle(movie.getTitle())
-                .status(DownloadStatus.IN_PROGRESS)
-                .bytesDownloaded(progress.bytesDownloaded())
-                .totalBytes(progress.totalBytes())
-                .progress(progress.percent()).build();
+        DownloadProgressDto dto =
+                DownloadProgressDto.builder()
+                        .movieId(movie.getId())
+                        .movieTitle(movie.getTitle())
+                        .status(DownloadStatus.IN_PROGRESS)
+                        .bytesDownloaded(progress.bytesDownloaded())
+                        .totalBytes(progress.totalBytes())
+                        .progress(progress.percent())
+                        .build();
         eventPublisher.publishEvent(new DownloadProgressEvent(this, dto));
     }
 
@@ -207,14 +231,17 @@ public class MegaDownloadService {
         Movie updatedMovie = movie.withStatus(MovieStatus.ERROR);
         movieRepository.save(updatedMovie);
 
-        DownloadTask updatedTask = task
-                .withStatus(DownloadStatus.FAILED)
-                .withErrorMessage(e.getMessage());
+        DownloadTask updatedTask =
+                task.withStatus(DownloadStatus.FAILED).withErrorMessage(e.getMessage());
         taskRepository.save(updatedTask);
 
-        DownloadProgressDto dto = DownloadProgressDto.builder()
-                .movieId(movie.getId()).movieTitle(movie.getTitle())
-                .status(DownloadStatus.FAILED).errorMessage(e.getMessage()).build();
+        DownloadProgressDto dto =
+                DownloadProgressDto.builder()
+                        .movieId(movie.getId())
+                        .movieTitle(movie.getTitle())
+                        .status(DownloadStatus.FAILED)
+                        .errorMessage(e.getMessage())
+                        .build();
         eventPublisher.publishEvent(new DownloadProgressEvent(this, dto));
     }
 

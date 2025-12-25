@@ -21,47 +21,45 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
- * Unit tests for MovieRepositoryAdapter.
- * Tests the adapter implementation that bridges domain and persistence layers.
+ * Unit tests for MovieRepositoryAdapter. Tests the adapter implementation that bridges domain and
+ * persistence layers.
  */
 @ExtendWith(MockitoExtension.class)
 class MovieRepositoryAdapterTest {
 
-    @Mock
-    private JpaMovieRepository jpaMovieRepository;
+    @Mock private JpaMovieRepository jpaMovieRepository;
 
-    @Mock
-    private JpaCategoryRepository jpaCategoryRepository;
+    @Mock private JpaCategoryRepository jpaCategoryRepository;
 
-    @Mock
-    private MoviePersistenceMapper mapper;
+    @Mock private MoviePersistenceMapper mapper;
 
-    @InjectMocks
-    private MovieRepositoryAdapter movieRepositoryAdapter;
+    @InjectMocks private MovieRepositoryAdapter movieRepositoryAdapter;
 
     private Movie domainMovie;
     private MovieJpaEntity entityMovie;
 
     @BeforeEach
     void setUp() {
-        domainMovie = Movie.builder()
-                .id("movie-1")
-                .title("Test Movie")
-                .description("A test movie")
-                .year(2024)
-                .status(MovieStatus.PENDING)
-                .categoryId("cat-1")
-                .createdAt(LocalDateTime.now())
-                .build();
+        domainMovie =
+                Movie.builder()
+                        .id("movie-1")
+                        .title("Test Movie")
+                        .description("A test movie")
+                        .year(2024)
+                        .status(MovieStatus.PENDING)
+                        .categoryId("cat-1")
+                        .createdAt(LocalDateTime.now())
+                        .build();
 
-        entityMovie = MovieJpaEntity.builder()
-                .id("movie-1")
-                .title("Test Movie")
-                .description("A test movie")
-                .year(2024)
-                .status(MovieStatus.PENDING)
-                .createdAt(LocalDateTime.now())
-                .build();
+        entityMovie =
+                MovieJpaEntity.builder()
+                        .id("movie-1")
+                        .title("Test Movie")
+                        .description("A test movie")
+                        .year(2024)
+                        .status(MovieStatus.PENDING)
+                        .createdAt(LocalDateTime.now())
+                        .build();
     }
 
     @Test
@@ -191,19 +189,19 @@ class MovieRepositoryAdapterTest {
     @Test
     void findCachedMovies_shouldReturnCachedMovies() {
         // Given
-        Movie cachedMovie = domainMovie
-                .withLocalPath("/cache/movie.mp4")
-                .withStatus(MovieStatus.READY);
+        Movie cachedMovie =
+                domainMovie.withLocalPath("/cache/movie.mp4").withStatus(MovieStatus.READY);
 
-        MovieJpaEntity cachedEntity = MovieJpaEntity.builder()
-                .id("movie-1")
-                .title("Test Movie")
-                .description("A test movie")
-                .year(2024)
-                .status(MovieStatus.READY)
-                .localPath("/cache/movie.mp4")
-                .createdAt(LocalDateTime.now())
-                .build();
+        MovieJpaEntity cachedEntity =
+                MovieJpaEntity.builder()
+                        .id("movie-1")
+                        .title("Test Movie")
+                        .description("A test movie")
+                        .year(2024)
+                        .status(MovieStatus.READY)
+                        .localPath("/cache/movie.mp4")
+                        .createdAt(LocalDateTime.now())
+                        .build();
 
         when(jpaMovieRepository.findCachedMovies()).thenReturn(List.of(cachedEntity));
         when(mapper.toDomainList(List.of(cachedEntity))).thenReturn(List.of(cachedMovie));
@@ -263,15 +261,16 @@ class MovieRepositoryAdapterTest {
         // Given
         Movie movieWithoutCategory = domainMovie.withCategoryId(null);
 
-        MovieJpaEntity entityWithoutCategory = MovieJpaEntity.builder()
-                .id("movie-1")
-                .title("Test Movie")
-                .description("A test movie")
-                .year(2024)
-                .status(MovieStatus.PENDING)
-                .category(null)
-                .createdAt(LocalDateTime.now())
-                .build();
+        MovieJpaEntity entityWithoutCategory =
+                MovieJpaEntity.builder()
+                        .id("movie-1")
+                        .title("Test Movie")
+                        .description("A test movie")
+                        .year(2024)
+                        .status(MovieStatus.PENDING)
+                        .category(null)
+                        .createdAt(LocalDateTime.now())
+                        .build();
 
         when(mapper.toEntity(movieWithoutCategory)).thenReturn(entityWithoutCategory);
         when(jpaMovieRepository.save(any(MovieJpaEntity.class))).thenReturn(entityWithoutCategory);

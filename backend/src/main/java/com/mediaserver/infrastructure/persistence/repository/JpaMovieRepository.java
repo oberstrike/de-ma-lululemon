@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Spring Data JPA repository for MovieJpaEntity.
- * This is an infrastructure component that provides persistence operations.
+ * Spring Data JPA repository for MovieJpaEntity. This is an infrastructure component that provides
+ * persistence operations.
  */
 public interface JpaMovieRepository extends JpaRepository<MovieJpaEntity, String> {
 
@@ -22,7 +22,9 @@ public interface JpaMovieRepository extends JpaRepository<MovieJpaEntity, String
 
     boolean existsByMegaPath(String megaPath);
 
-    @Query("SELECT m FROM MovieJpaEntity m WHERE LOWER(m.title) LIKE LOWER(CONCAT('%', :query, '%'))")
+    @Query(
+            "SELECT m FROM MovieJpaEntity m WHERE LOWER(m.title) LIKE LOWER(CONCAT('%', :query,"
+                    + " '%'))")
     List<MovieJpaEntity> search(@Param("query") String query);
 
     @Query("SELECT m FROM MovieJpaEntity m WHERE m.status = :status ORDER BY m.createdAt DESC")
@@ -32,7 +34,9 @@ public interface JpaMovieRepository extends JpaRepository<MovieJpaEntity, String
         return findByStatusOrderByCreatedAtDesc(MovieStatus.READY);
     }
 
-    @Query("SELECT COALESCE(SUM(m.fileSize), 0) FROM MovieJpaEntity m WHERE m.localPath IS NOT NULL")
+    @Query(
+            "SELECT COALESCE(SUM(m.fileSize), 0) FROM MovieJpaEntity m WHERE m.localPath IS NOT"
+                    + " NULL")
     Long getTotalCacheSize();
 
     @Query("SELECT m FROM MovieJpaEntity m WHERE m.localPath IS NOT NULL ORDER BY m.updatedAt DESC")
@@ -40,14 +44,12 @@ public interface JpaMovieRepository extends JpaRepository<MovieJpaEntity, String
 
     long countByLocalPathIsNotNull();
 
-    /**
-     * Find all favorite movies.
-     */
+    /** Find all favorite movies. */
     List<MovieJpaEntity> findByFavoriteTrue();
 
-    /**
-     * Find cached movies that are not favorites (for cache clearing).
-     */
-    @Query("SELECT m FROM MovieJpaEntity m WHERE m.localPath IS NOT NULL AND m.favorite = false ORDER BY m.updatedAt DESC")
+    /** Find cached movies that are not favorites (for cache clearing). */
+    @Query(
+            "SELECT m FROM MovieJpaEntity m WHERE m.localPath IS NOT NULL AND m.favorite = false"
+                    + " ORDER BY m.updatedAt DESC")
     List<MovieJpaEntity> findCachedNonFavoriteMovies();
 }

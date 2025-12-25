@@ -28,25 +28,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Application service implementing movie-related use cases.
- * This service orchestrates the business logic and delegates to output ports.
+ * Application service implementing movie-related use cases. This service orchestrates the business
+ * logic and delegates to output ports.
  */
 @Service
 @RequiredArgsConstructor
 @Transactional
 @Slf4j
-public class MovieApplicationService implements
-        GetMovieUseCase,
-        CreateMovieUseCase,
-        UpdateMovieUseCase,
-        DeleteMovieUseCase,
-        SearchMoviesUseCase,
-        DownloadMovieUseCase,
-        CacheManagementUseCase,
-        FavoriteMovieUseCase,
-        AddFavoriteUseCase,
-        RemoveFavoriteUseCase,
-        GetFavoritesUseCase {
+public class MovieApplicationService
+        implements GetMovieUseCase,
+                CreateMovieUseCase,
+                UpdateMovieUseCase,
+                DeleteMovieUseCase,
+                SearchMoviesUseCase,
+                DownloadMovieUseCase,
+                CacheManagementUseCase,
+                FavoriteMovieUseCase,
+                AddFavoriteUseCase,
+                RemoveFavoriteUseCase,
+                GetFavoritesUseCase {
 
     private final MoviePort moviePort;
     private final CategoryPort categoryPort;
@@ -59,8 +59,7 @@ public class MovieApplicationService implements
 
     @Override
     public Movie getMovie(String id) {
-        return moviePort.findById(id)
-                .orElseThrow(() -> new MovieNotFoundException(id));
+        return moviePort.findById(id).orElseThrow(() -> new MovieNotFoundException(id));
     }
 
     @Override
@@ -85,21 +84,25 @@ public class MovieApplicationService implements
 
     @Override
     public Movie createMovie(CreateMovieCommand command) {
-        Movie.MovieBuilder movieBuilder = Movie.builder()
-                .title(command.getTitle())
-                .description(command.getDescription())
-                .year(command.getYear())
-                .duration(command.getDuration())
-                .megaUrl(command.getMegaUrl())
-                .thumbnailUrl(command.getThumbnailUrl())
-                .status(MovieStatus.PENDING)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now());
+        Movie.MovieBuilder movieBuilder =
+                Movie.builder()
+                        .title(command.getTitle())
+                        .description(command.getDescription())
+                        .year(command.getYear())
+                        .duration(command.getDuration())
+                        .megaUrl(command.getMegaUrl())
+                        .thumbnailUrl(command.getThumbnailUrl())
+                        .status(MovieStatus.PENDING)
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now());
 
         // Set category if provided
         if (command.getCategoryId() != null) {
-            Category category = categoryPort.findById(command.getCategoryId())
-                    .orElseThrow(() -> new CategoryNotFoundException(command.getCategoryId()));
+            Category category =
+                    categoryPort
+                            .findById(command.getCategoryId())
+                            .orElseThrow(
+                                    () -> new CategoryNotFoundException(command.getCategoryId()));
             movieBuilder.categoryId(category.getId());
         }
 
@@ -109,34 +112,38 @@ public class MovieApplicationService implements
 
     @Override
     public Movie updateMovie(String id, UpdateMovieCommand command) {
-        Movie movie = moviePort.findById(id)
-                .orElseThrow(() -> new MovieNotFoundException(id));
+        Movie movie = moviePort.findById(id).orElseThrow(() -> new MovieNotFoundException(id));
 
         // Check if mega URL changed, if so reset download status
-        boolean megaUrlChanged = command.getMegaUrl() != null &&
-                !command.getMegaUrl().equals(movie.getMegaUrl());
+        boolean megaUrlChanged =
+                command.getMegaUrl() != null && !command.getMegaUrl().equals(movie.getMegaUrl());
 
         String newCategoryId = movie.getCategoryId();
         if (command.getCategoryId() != null) {
-            Category category = categoryPort.findById(command.getCategoryId())
-                    .orElseThrow(() -> new CategoryNotFoundException(command.getCategoryId()));
+            Category category =
+                    categoryPort
+                            .findById(command.getCategoryId())
+                            .orElseThrow(
+                                    () -> new CategoryNotFoundException(command.getCategoryId()));
             newCategoryId = category.getId();
         }
 
-        Movie updatedMovie = movie.withTitle(command.getTitle())
-                .withDescription(command.getDescription())
-                .withYear(command.getYear())
-                .withDuration(command.getDuration())
-                .withThumbnailUrl(command.getThumbnailUrl())
-                .withCategoryId(newCategoryId)
-                .withUpdatedAt(LocalDateTime.now());
+        Movie updatedMovie =
+                movie.withTitle(command.getTitle())
+                        .withDescription(command.getDescription())
+                        .withYear(command.getYear())
+                        .withDuration(command.getDuration())
+                        .withThumbnailUrl(command.getThumbnailUrl())
+                        .withCategoryId(newCategoryId)
+                        .withUpdatedAt(LocalDateTime.now());
 
         // If Mega URL changed, reset status and clear local path
         if (megaUrlChanged) {
-            updatedMovie = updatedMovie
-                    .withMegaUrl(command.getMegaUrl())
-                    .withStatus(MovieStatus.PENDING)
-                    .withLocalPath(null);
+            updatedMovie =
+                    updatedMovie
+                            .withMegaUrl(command.getMegaUrl())
+                            .withStatus(MovieStatus.PENDING)
+                            .withLocalPath(null);
         }
 
         return moviePort.save(updatedMovie);
@@ -144,8 +151,7 @@ public class MovieApplicationService implements
 
     @Override
     public void deleteMovie(String id) {
-        Movie movie = moviePort.findById(id)
-                .orElseThrow(() -> new MovieNotFoundException(id));
+        Movie movie = moviePort.findById(id).orElseThrow(() -> new MovieNotFoundException(id));
 
         if (movie.getLocalPath() != null) {
             try {
@@ -166,8 +172,10 @@ public class MovieApplicationService implements
         }
 
         try {
-            Movie movie = moviePort.findById(movieId)
-                    .orElseThrow(() -> new MovieNotFoundException(movieId));
+            Movie movie =
+                    moviePort
+                            .findById(movieId)
+                            .orElseThrow(() -> new MovieNotFoundException(movieId));
 
             if (movie.isCached()) {
                 throw new IllegalStateException("Movie is already downloaded");
@@ -180,8 +188,10 @@ public class MovieApplicationService implements
             Movie downloadingMovie = movie.withStatus(MovieStatus.DOWNLOADING);
             moviePort.save(downloadingMovie);
 
-            // Start async download - the download service should call removeFromActiveDownloads when done
-            downloadServicePort.downloadMovie(downloadingMovie)
+            // Start async download - the download service should call removeFromActiveDownloads
+            // when done
+            downloadServicePort
+                    .downloadMovie(downloadingMovie)
                     .whenComplete((result, error) -> activeDownloads.remove(movieId));
         } catch (Exception e) {
             // Ensure we remove from active downloads on any error
@@ -190,9 +200,7 @@ public class MovieApplicationService implements
         }
     }
 
-    /**
-     * Check if a movie is currently being downloaded.
-     */
+    /** Check if a movie is currently being downloaded. */
     public boolean isDownloadActive(String movieId) {
         return activeDownloads.contains(movieId);
     }
@@ -217,8 +225,8 @@ public class MovieApplicationService implements
 
     @Override
     public void clearCache(String movieId) {
-        Movie movie = moviePort.findById(movieId)
-                .orElseThrow(() -> new MovieNotFoundException(movieId));
+        Movie movie =
+                moviePort.findById(movieId).orElseThrow(() -> new MovieNotFoundException(movieId));
 
         if (movie.getLocalPath() == null) {
             log.info("Movie {} has no cached file", movieId);
@@ -235,10 +243,11 @@ public class MovieApplicationService implements
             throw new RuntimeException("Failed to delete cached file", e);
         }
 
-        Movie clearedMovie = movie.withLocalPath(null)
-                .withFileSize(null)
-                .withStatus(MovieStatus.PENDING)
-                .withUpdatedAt(LocalDateTime.now());
+        Movie clearedMovie =
+                movie.withLocalPath(null)
+                        .withFileSize(null)
+                        .withStatus(MovieStatus.PENDING)
+                        .withUpdatedAt(LocalDateTime.now());
 
         moviePort.save(clearedMovie);
         log.info("Cleared cache for movie: {} ({})", movie.getTitle(), movieId);
@@ -258,15 +267,19 @@ public class MovieApplicationService implements
             try {
                 fileStoragePort.deleteIfExists(Path.of(movie.getLocalPath()));
 
-                Movie clearedMovie = movie.withLocalPath(null)
-                        .withFileSize(null)
-                        .withStatus(MovieStatus.PENDING)
-                        .withUpdatedAt(LocalDateTime.now());
+                Movie clearedMovie =
+                        movie.withLocalPath(null)
+                                .withFileSize(null)
+                                .withStatus(MovieStatus.PENDING)
+                                .withUpdatedAt(LocalDateTime.now());
 
                 moviePort.save(clearedMovie);
                 cleared++;
             } catch (IOException e) {
-                log.warn("Failed to delete cached file for movie {}: {}", movie.getId(), e.getMessage());
+                log.warn(
+                        "Failed to delete cached file for movie {}: {}",
+                        movie.getId(),
+                        e.getMessage());
             }
         }
 
@@ -278,16 +291,15 @@ public class MovieApplicationService implements
 
     @Override
     public Movie addFavorite(String movieId) {
-        Movie movie = moviePort.findById(movieId)
-                .orElseThrow(() -> new MovieNotFoundException(movieId));
+        Movie movie =
+                moviePort.findById(movieId).orElseThrow(() -> new MovieNotFoundException(movieId));
 
         if (movie.isFavorite()) {
             log.info("Movie {} is already a favorite", movieId);
             return movie;
         }
 
-        Movie updatedMovie = movie.withFavorite(true)
-                .withUpdatedAt(LocalDateTime.now());
+        Movie updatedMovie = movie.withFavorite(true).withUpdatedAt(LocalDateTime.now());
 
         log.info("Added movie to favorites: {} ({})", movie.getTitle(), movieId);
         return moviePort.save(updatedMovie);
@@ -295,16 +307,15 @@ public class MovieApplicationService implements
 
     @Override
     public Movie removeFavorite(String movieId) {
-        Movie movie = moviePort.findById(movieId)
-                .orElseThrow(() -> new MovieNotFoundException(movieId));
+        Movie movie =
+                moviePort.findById(movieId).orElseThrow(() -> new MovieNotFoundException(movieId));
 
         if (!movie.isFavorite()) {
             log.info("Movie {} is not a favorite", movieId);
             return movie;
         }
 
-        Movie updatedMovie = movie.withFavorite(false)
-                .withUpdatedAt(LocalDateTime.now());
+        Movie updatedMovie = movie.withFavorite(false).withUpdatedAt(LocalDateTime.now());
 
         log.info("Removed movie from favorites: {} ({})", movie.getTitle(), movieId);
         return moviePort.save(updatedMovie);

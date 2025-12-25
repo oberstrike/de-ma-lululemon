@@ -18,48 +18,49 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
- * Unit tests for CategoryRepositoryAdapter.
- * Tests the adapter implementation that bridges domain and persistence layers.
+ * Unit tests for CategoryRepositoryAdapter. Tests the adapter implementation that bridges domain
+ * and persistence layers.
  */
 @ExtendWith(MockitoExtension.class)
 class CategoryRepositoryAdapterTest {
 
-    @Mock
-    private JpaCategoryRepository jpaCategoryRepository;
+    @Mock private JpaCategoryRepository jpaCategoryRepository;
 
-    @Mock
-    private CategoryPersistenceMapper categoryPersistenceMapper;
+    @Mock private CategoryPersistenceMapper categoryPersistenceMapper;
 
-    @InjectMocks
-    private CategoryRepositoryAdapter categoryRepositoryAdapter;
+    @InjectMocks private CategoryRepositoryAdapter categoryRepositoryAdapter;
 
     private Category domainCategory;
     private CategoryJpaEntity entityCategory;
 
     @BeforeEach
     void setUp() {
-        domainCategory = Category.builder()
-                .id("cat-1")
-                .name("Action")
-                .description("Action movies")
-                .megaPath("/Action")
-                .sortOrder(1)
-                .build();
+        domainCategory =
+                Category.builder()
+                        .id("cat-1")
+                        .name("Action")
+                        .description("Action movies")
+                        .megaPath("/Action")
+                        .sortOrder(1)
+                        .build();
 
-        entityCategory = CategoryJpaEntity.builder()
-                .id("cat-1")
-                .name("Action")
-                .description("Action movies")
-                .megaPath("/Action")
-                .sortOrder(1)
-                .build();
+        entityCategory =
+                CategoryJpaEntity.builder()
+                        .id("cat-1")
+                        .name("Action")
+                        .description("Action movies")
+                        .megaPath("/Action")
+                        .sortOrder(1)
+                        .build();
     }
 
     @Test
     void findAllOrderBySortOrder_shouldMapEntitiesToDomainModels() {
         // Given
-        when(jpaCategoryRepository.findAllByOrderBySortOrderAsc()).thenReturn(List.of(entityCategory));
-        when(categoryPersistenceMapper.toDomainList(List.of(entityCategory))).thenReturn(List.of(domainCategory));
+        when(jpaCategoryRepository.findAllByOrderBySortOrderAsc())
+                .thenReturn(List.of(entityCategory));
+        when(categoryPersistenceMapper.toDomainList(List.of(entityCategory)))
+                .thenReturn(List.of(domainCategory));
 
         // When
         List<Category> result = categoryRepositoryAdapter.findAllOrderBySortOrder();
@@ -196,17 +197,21 @@ class CategoryRepositoryAdapterTest {
         // Given
         Category categoryWithoutDescription = domainCategory.withDescription(null);
 
-        CategoryJpaEntity entityWithoutDescription = CategoryJpaEntity.builder()
-                .id("cat-1")
-                .name("Action")
-                .description(null)
-                .megaPath("/Action")
-                .sortOrder(1)
-                .build();
+        CategoryJpaEntity entityWithoutDescription =
+                CategoryJpaEntity.builder()
+                        .id("cat-1")
+                        .name("Action")
+                        .description(null)
+                        .megaPath("/Action")
+                        .sortOrder(1)
+                        .build();
 
-        when(categoryPersistenceMapper.toEntity(categoryWithoutDescription)).thenReturn(entityWithoutDescription);
-        when(jpaCategoryRepository.save(entityWithoutDescription)).thenReturn(entityWithoutDescription);
-        when(categoryPersistenceMapper.toDomain(entityWithoutDescription)).thenReturn(categoryWithoutDescription);
+        when(categoryPersistenceMapper.toEntity(categoryWithoutDescription))
+                .thenReturn(entityWithoutDescription);
+        when(jpaCategoryRepository.save(entityWithoutDescription))
+                .thenReturn(entityWithoutDescription);
+        when(categoryPersistenceMapper.toDomain(entityWithoutDescription))
+                .thenReturn(categoryWithoutDescription);
 
         // When
         Category result = categoryRepositoryAdapter.save(categoryWithoutDescription);
@@ -220,17 +225,10 @@ class CategoryRepositoryAdapterTest {
     @Test
     void findAllOrderBySortOrder_shouldPreserveOrderFromRepository() {
         // Given
-        Category category2 = Category.builder()
-                .id("cat-2")
-                .name("Drama")
-                .sortOrder(2)
-                .build();
+        Category category2 = Category.builder().id("cat-2").name("Drama").sortOrder(2).build();
 
-        CategoryJpaEntity entity2 = CategoryJpaEntity.builder()
-                .id("cat-2")
-                .name("Drama")
-                .sortOrder(2)
-                .build();
+        CategoryJpaEntity entity2 =
+                CategoryJpaEntity.builder().id("cat-2").name("Drama").sortOrder(2).build();
 
         when(jpaCategoryRepository.findAllByOrderBySortOrderAsc())
                 .thenReturn(List.of(entityCategory, entity2));

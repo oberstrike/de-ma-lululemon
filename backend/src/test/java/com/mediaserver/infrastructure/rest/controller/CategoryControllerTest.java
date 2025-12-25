@@ -30,56 +30,51 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Unit tests for CategoryController in Clean Architecture.
- * Tests the REST adapter layer that uses application services (use cases).
+ * Unit tests for CategoryController in Clean Architecture. Tests the REST adapter layer that uses
+ * application services (use cases).
  */
 @WebMvcTest(CategoryController.class)
 @Import({GlobalExceptionHandler.class, MediaProperties.class, WebConfig.class})
 @WithMockUser(username = "admin", roles = "ADMIN")
 class CategoryControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @MockitoBean
-    private GetAllCategoriesUseCase getAllCategoriesUseCase;
+    @MockitoBean private GetAllCategoriesUseCase getAllCategoriesUseCase;
 
-    @MockitoBean
-    private GetCategoryUseCase getCategoryUseCase;
+    @MockitoBean private GetCategoryUseCase getCategoryUseCase;
 
-    @MockitoBean
-    private CreateCategoryUseCase createCategoryUseCase;
+    @MockitoBean private CreateCategoryUseCase createCategoryUseCase;
 
-    @MockitoBean
-    private UpdateCategoryUseCase updateCategoryUseCase;
+    @MockitoBean private UpdateCategoryUseCase updateCategoryUseCase;
 
-    @MockitoBean
-    private DeleteCategoryUseCase deleteCategoryUseCase;
+    @MockitoBean private DeleteCategoryUseCase deleteCategoryUseCase;
 
-    @MockitoBean
-    private CategoryRestMapper categoryRestMapper;
+    @MockitoBean private CategoryRestMapper categoryRestMapper;
 
     private Category domainCategory;
     private CategoryResponseDto categoryResponseDto;
 
     @BeforeEach
     void setUp() {
-        domainCategory = Category.builder()
-                .id("cat-1")
-                .name("Action")
-                .description("Action movies")
-                .sortOrder(1)
-                .build();
+        domainCategory =
+                Category.builder()
+                        .id("cat-1")
+                        .name("Action")
+                        .description("Action movies")
+                        .sortOrder(1)
+                        .build();
 
-        categoryResponseDto = CategoryResponseDto.builder()
-                .id("cat-1")
-                .name("Action")
-                .description("Action movies")
-                .sortOrder(1)
-                .movieCount(5)
-                .build();
+        categoryResponseDto =
+                CategoryResponseDto.builder()
+                        .id("cat-1")
+                        .name("Action")
+                        .description("Action movies")
+                        .sortOrder(1)
+                        .movieCount(5)
+                        .build();
     }
 
     @Test
@@ -121,49 +116,54 @@ class CategoryControllerTest {
                 .thenThrow(new CategoryNotFoundException("nonexistent"));
 
         // When & Then
-        mockMvc.perform(get("/api/categories/nonexistent"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/categories/nonexistent")).andExpect(status().isNotFound());
     }
 
     @Test
     void createCategory_shouldReturnCreatedCategory() throws Exception {
         // Given
-        CategoryRequestDto request = CategoryRequestDto.builder()
-                .name("Comedy")
-                .description("Comedy movies")
-                .sortOrder(2)
-                .build();
+        CategoryRequestDto request =
+                CategoryRequestDto.builder()
+                        .name("Comedy")
+                        .description("Comedy movies")
+                        .sortOrder(2)
+                        .build();
 
-        CreateCategoryCommand command = CreateCategoryCommand.builder()
-                .name("Comedy")
-                .description("Comedy movies")
-                .sortOrder(2)
-                .build();
+        CreateCategoryCommand command =
+                CreateCategoryCommand.builder()
+                        .name("Comedy")
+                        .description("Comedy movies")
+                        .sortOrder(2)
+                        .build();
 
-        Category savedCategory = Category.builder()
-                .id("cat-2")
-                .name("Comedy")
-                .description("Comedy movies")
-                .sortOrder(2)
-                .build();
+        Category savedCategory =
+                Category.builder()
+                        .id("cat-2")
+                        .name("Comedy")
+                        .description("Comedy movies")
+                        .sortOrder(2)
+                        .build();
 
-        CategoryResponseDto createdDto = CategoryResponseDto.builder()
-                .id("cat-2")
-                .name("Comedy")
-                .description("Comedy movies")
-                .sortOrder(2)
-                .movieCount(0)
-                .build();
+        CategoryResponseDto createdDto =
+                CategoryResponseDto.builder()
+                        .id("cat-2")
+                        .name("Comedy")
+                        .description("Comedy movies")
+                        .sortOrder(2)
+                        .movieCount(0)
+                        .build();
 
         when(categoryRestMapper.toCreateCommand(request)).thenReturn(command);
-        when(createCategoryUseCase.createCategory(any(CreateCategoryCommand.class))).thenReturn(savedCategory);
+        when(createCategoryUseCase.createCategory(any(CreateCategoryCommand.class)))
+                .thenReturn(savedCategory);
         when(categoryRestMapper.toResponse(savedCategory)).thenReturn(createdDto);
 
         // When & Then
-        mockMvc.perform(post("/api/categories")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(
+                        post("/api/categories")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value("cat-2"))
                 .andExpect(jsonPath("$.name").value("Comedy"));
@@ -175,46 +175,50 @@ class CategoryControllerTest {
     @Test
     void createCategory_shouldReturn400_whenNameMissing() throws Exception {
         // Given
-        CategoryRequestDto request = CategoryRequestDto.builder()
-                .description("Some description")
-                .build();
+        CategoryRequestDto request =
+                CategoryRequestDto.builder().description("Some description").build();
 
         // When & Then
-        mockMvc.perform(post("/api/categories")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(
+                        post("/api/categories")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void updateCategory_shouldReturnUpdatedCategory() throws Exception {
         // Given
-        CategoryRequestDto request = CategoryRequestDto.builder()
-                .name("Updated Action")
-                .description("Updated description")
-                .sortOrder(10)
-                .build();
+        CategoryRequestDto request =
+                CategoryRequestDto.builder()
+                        .name("Updated Action")
+                        .description("Updated description")
+                        .sortOrder(10)
+                        .build();
 
-        UpdateCategoryCommand command = UpdateCategoryCommand.builder()
-                .id("cat-1")
-                .name("Updated Action")
-                .description("Updated description")
-                .sortOrder(10)
-                .build();
+        UpdateCategoryCommand command =
+                UpdateCategoryCommand.builder()
+                        .id("cat-1")
+                        .name("Updated Action")
+                        .description("Updated description")
+                        .sortOrder(10)
+                        .build();
 
-        Category updatedCategory = Category.builder()
-                .id("cat-1")
-                .name("Updated Action")
-                .description("Updated description")
-                .sortOrder(10)
-                .build();
+        Category updatedCategory =
+                Category.builder()
+                        .id("cat-1")
+                        .name("Updated Action")
+                        .description("Updated description")
+                        .sortOrder(10)
+                        .build();
 
-        CategoryResponseDto updatedDto = categoryResponseDto.toBuilder()
-                .name("Updated Action")
-                .description("Updated description")
-                .sortOrder(10)
-                .build();
+        CategoryResponseDto updatedDto =
+                categoryResponseDto.toBuilder()
+                        .name("Updated Action")
+                        .description("Updated description")
+                        .sortOrder(10)
+                        .build();
 
         when(categoryRestMapper.toUpdateCommand("cat-1", request)).thenReturn(command);
         when(updateCategoryUseCase.updateCategory(any(UpdateCategoryCommand.class)))
@@ -222,10 +226,11 @@ class CategoryControllerTest {
         when(categoryRestMapper.toResponse(updatedCategory)).thenReturn(updatedDto);
 
         // When & Then
-        mockMvc.perform(put("/api/categories/cat-1")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(
+                        put("/api/categories/cat-1")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Updated Action"));
 
@@ -238,8 +243,7 @@ class CategoryControllerTest {
         doNothing().when(deleteCategoryUseCase).deleteCategory("cat-1");
 
         // When & Then
-        mockMvc.perform(delete("/api/categories/cat-1")
-                        .with(csrf()))
+        mockMvc.perform(delete("/api/categories/cat-1").with(csrf()))
                 .andExpect(status().isNoContent());
 
         verify(deleteCategoryUseCase).deleteCategory("cat-1");
@@ -248,20 +252,18 @@ class CategoryControllerTest {
     @Test
     void getAllCategories_shouldReturnSortedCategories() throws Exception {
         // Given
-        Category category2 = Category.builder()
-                .id("cat-2")
-                .name("Drama")
-                .sortOrder(2)
-                .build();
+        Category category2 = Category.builder().id("cat-2").name("Drama").sortOrder(2).build();
 
-        CategoryResponseDto categoryResponseDto2 = CategoryResponseDto.builder()
-                .id("cat-2")
-                .name("Drama")
-                .sortOrder(2)
-                .movieCount(3)
-                .build();
+        CategoryResponseDto categoryResponseDto2 =
+                CategoryResponseDto.builder()
+                        .id("cat-2")
+                        .name("Drama")
+                        .sortOrder(2)
+                        .movieCount(3)
+                        .build();
 
-        when(getAllCategoriesUseCase.getAllCategories()).thenReturn(List.of(domainCategory, category2));
+        when(getAllCategoriesUseCase.getAllCategories())
+                .thenReturn(List.of(domainCategory, category2));
         when(categoryRestMapper.toResponse(domainCategory)).thenReturn(categoryResponseDto);
         when(categoryRestMapper.toResponse(category2)).thenReturn(categoryResponseDto2);
 
@@ -275,34 +277,31 @@ class CategoryControllerTest {
     @Test
     void createCategory_shouldHandleNullOptionalFields() throws Exception {
         // Given
-        CategoryRequestDto request = CategoryRequestDto.builder()
-                .name("Minimal Category")
-                .build();
+        CategoryRequestDto request = CategoryRequestDto.builder().name("Minimal Category").build();
 
-        CreateCategoryCommand command = CreateCategoryCommand.builder()
-                .name("Minimal Category")
-                .build();
+        CreateCategoryCommand command =
+                CreateCategoryCommand.builder().name("Minimal Category").build();
 
-        Category savedCategory = Category.builder()
-                .id("cat-3")
-                .name("Minimal Category")
-                .build();
+        Category savedCategory = Category.builder().id("cat-3").name("Minimal Category").build();
 
-        CategoryResponseDto createdDto = CategoryResponseDto.builder()
-                .id("cat-3")
-                .name("Minimal Category")
-                .movieCount(0)
-                .build();
+        CategoryResponseDto createdDto =
+                CategoryResponseDto.builder()
+                        .id("cat-3")
+                        .name("Minimal Category")
+                        .movieCount(0)
+                        .build();
 
         when(categoryRestMapper.toCreateCommand(request)).thenReturn(command);
-        when(createCategoryUseCase.createCategory(any(CreateCategoryCommand.class))).thenReturn(savedCategory);
+        when(createCategoryUseCase.createCategory(any(CreateCategoryCommand.class)))
+                .thenReturn(savedCategory);
         when(categoryRestMapper.toResponse(savedCategory)).thenReturn(createdDto);
 
         // When & Then
-        mockMvc.perform(post("/api/categories")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(
+                        post("/api/categories")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value("cat-3"))
                 .andExpect(jsonPath("$.name").value("Minimal Category"));

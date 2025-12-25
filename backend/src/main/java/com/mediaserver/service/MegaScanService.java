@@ -71,9 +71,8 @@ public class MegaScanService {
         log.info("Starting Mega folder scan: {}", folderPath);
 
         String rootPath = folderPath != null ? folderPath : properties.getMega().getRootFolder();
-        ScanResultDto.ScanResultDtoBuilder result = ScanResultDto.builder()
-                .scannedPath(rootPath)
-                .startTime(new Date());
+        ScanResultDto.ScanResultDtoBuilder result =
+                ScanResultDto.builder().scannedPath(rootPath).startTime(new Date());
 
         int categoriesCreated = 0;
         int categoriesUpdated = 0;
@@ -87,12 +86,14 @@ public class MegaScanService {
 
             for (MegaEntry entry : entries) {
                 if (entry.isDirectory()) {
-                    String categoryPath = rootPath.endsWith("/")
-                            ? rootPath + entry.name()
-                            : rootPath + "/" + entry.name();
+                    String categoryPath =
+                            rootPath.endsWith("/")
+                                    ? rootPath + entry.name()
+                                    : rootPath + "/" + entry.name();
 
                     Category category = getOrCreateCategory(entry.name(), categoryPath);
-                    if (category.getId() == null || categoryRepository.findById(category.getId()).isEmpty()) {
+                    if (category.getId() == null
+                            || categoryRepository.findById(category.getId()).isEmpty()) {
                         categoriesCreated++;
                     } else {
                         categoriesUpdated++;
@@ -137,14 +138,20 @@ public class MegaScanService {
                                 thumbnailPath = imageFiles.values().iterator().next();
                             }
 
-                            Movie movie = createMovieFromEntry(videoEntry, moviePath, category, thumbnailPath);
+                            Movie movie =
+                                    createMovieFromEntry(
+                                            videoEntry, moviePath, category, thumbnailPath);
                             movieRepository.save(movie);
                             moviesDiscovered++;
-                            log.debug("Discovered movie: {} in category: {} with thumbnail: {}",
-                                movie.getTitle(), category.getName(), thumbnailPath);
+                            log.debug(
+                                    "Discovered movie: {} in category: {} with thumbnail: {}",
+                                    movie.getTitle(),
+                                    category.getName(),
+                                    thumbnailPath);
                         }
                     } catch (Exception e) {
-                        String error = "Error scanning category " + entry.name() + ": " + e.getMessage();
+                        String error =
+                                "Error scanning category " + entry.name() + ": " + e.getMessage();
                         errors.add(error);
                         log.error(error, e);
                     }
@@ -164,17 +171,19 @@ public class MegaScanService {
                 if (isVideoFile(fileName)) {
                     rootVideoFiles.add(entry);
                 } else if (isImageFile(fileName)) {
-                    String imagePath = rootPath.endsWith("/")
-                            ? rootPath + fileName
-                            : rootPath + "/" + fileName;
+                    String imagePath =
+                            rootPath.endsWith("/")
+                                    ? rootPath + fileName
+                                    : rootPath + "/" + fileName;
                     rootImageFiles.put(baseName.toLowerCase(), imagePath);
                 }
             }
 
             for (MegaEntry videoEntry : rootVideoFiles) {
-                String moviePath = rootPath.endsWith("/")
-                        ? rootPath + videoEntry.name()
-                        : rootPath + "/" + videoEntry.name();
+                String moviePath =
+                        rootPath.endsWith("/")
+                                ? rootPath + videoEntry.name()
+                                : rootPath + "/" + videoEntry.name();
 
                 if (movieRepository.existsByMegaPath(moviePath)) {
                     moviesSkipped++;
@@ -191,8 +200,10 @@ public class MegaScanService {
                 Movie movie = createMovieFromEntry(videoEntry, moviePath, null, thumbnailPath);
                 movieRepository.save(movie);
                 moviesDiscovered++;
-                log.debug("Discovered uncategorized movie: {} with thumbnail: {}",
-                    movie.getTitle(), thumbnailPath);
+                log.debug(
+                        "Discovered uncategorized movie: {} with thumbnail: {}",
+                        movie.getTitle(),
+                        thumbnailPath);
             }
 
         } catch (Exception e) {
@@ -201,18 +212,21 @@ public class MegaScanService {
             log.error("Mega folder scan failed", e);
         }
 
-        ScanResultDto scanResult = result
-                .endTime(new Date())
-                .categoriesCreated(categoriesCreated)
-                .categoriesUpdated(categoriesUpdated)
-                .moviesDiscovered(moviesDiscovered)
-                .moviesSkipped(moviesSkipped)
-                .errors(errors)
-                .success(errors.isEmpty())
-                .build();
+        ScanResultDto scanResult =
+                result.endTime(new Date())
+                        .categoriesCreated(categoriesCreated)
+                        .categoriesUpdated(categoriesUpdated)
+                        .moviesDiscovered(moviesDiscovered)
+                        .moviesSkipped(moviesSkipped)
+                        .errors(errors)
+                        .success(errors.isEmpty())
+                        .build();
 
-        log.info("Scan completed: {} categories, {} movies discovered, {} skipped",
-                categoriesCreated + categoriesUpdated, moviesDiscovered, moviesSkipped);
+        log.info(
+                "Scan completed: {} categories, {} movies discovered, {} skipped",
+                categoriesCreated + categoriesUpdated,
+                moviesDiscovered,
+                moviesSkipped);
 
         return scanResult;
     }
@@ -227,7 +241,8 @@ public class MegaScanService {
         List<MegaEntry> entries = new ArrayList<>();
 
         try {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            try (BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.isBlank() || line.startsWith("FLAGS")) continue;
@@ -242,7 +257,8 @@ public class MegaScanService {
             boolean completed = process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             if (!completed) {
                 process.destroyForcibly();
-                throw new RuntimeException("mega-ls timed out after " + PROCESS_TIMEOUT_SECONDS + " seconds");
+                throw new RuntimeException(
+                        "mega-ls timed out after " + PROCESS_TIMEOUT_SECONDS + " seconds");
             }
 
             int exitCode = process.exitValue();
@@ -319,11 +335,11 @@ public class MegaScanService {
 
     private boolean isImageFile(String fileName) {
         String lowerName = fileName.toLowerCase();
-        return lowerName.endsWith(".png") ||
-               lowerName.endsWith(".jpg") ||
-               lowerName.endsWith(".jpeg") ||
-               lowerName.endsWith(".webp") ||
-               lowerName.endsWith(".gif");
+        return lowerName.endsWith(".png")
+                || lowerName.endsWith(".jpg")
+                || lowerName.endsWith(".jpeg")
+                || lowerName.endsWith(".webp")
+                || lowerName.endsWith(".gif");
     }
 
     private String getBaseName(String fileName) {
@@ -332,17 +348,24 @@ public class MegaScanService {
     }
 
     private Category getOrCreateCategory(String name, String megaPath) {
-        return categoryRepository.findByMegaPath(megaPath)
-                .orElseGet(() -> categoryRepository.findByName(name)
-                        .map(cat -> cat.withMegaPath(megaPath))
-                        .orElse(Category.builder()
-                                .name(name)
-                                .megaPath(megaPath)
-                                .description("Auto-discovered from Mega folder")
-                                .build()));
+        return categoryRepository
+                .findByMegaPath(megaPath)
+                .orElseGet(
+                        () ->
+                                categoryRepository
+                                        .findByName(name)
+                                        .map(cat -> cat.withMegaPath(megaPath))
+                                        .orElse(
+                                                Category.builder()
+                                                        .name(name)
+                                                        .megaPath(megaPath)
+                                                        .description(
+                                                                "Auto-discovered from Mega folder")
+                                                        .build()));
     }
 
-    private Movie createMovieFromEntry(MegaEntry entry, String megaPath, Category category, String megaThumbnailPath) {
+    private Movie createMovieFromEntry(
+            MegaEntry entry, String megaPath, Category category, String megaThumbnailPath) {
         String title = extractTitleFromFileName(entry.name());
         Integer year = extractYearFromFileName(entry.name());
         String localThumbnailUrl = null;
@@ -384,7 +407,8 @@ public class MegaScanService {
             process = pb.start();
 
             // Drain the input stream to prevent process from blocking
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            try (BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 while (reader.readLine() != null) {
                     // Just consume the output
                 }
@@ -401,7 +425,10 @@ public class MegaScanService {
                 log.debug("Downloaded thumbnail: {}", localPath);
                 return "/api/thumbnails/file/" + fileName;
             } else {
-                log.warn("Failed to download thumbnail from: {} (exit code: {})", megaPath, exitCode);
+                log.warn(
+                        "Failed to download thumbnail from: {} (exit code: {})",
+                        megaPath,
+                        exitCode);
                 return null;
             }
         } catch (Exception e) {
@@ -427,21 +454,22 @@ public class MegaScanService {
         }
 
         // Remove common patterns like (2023), [1080p], etc.
-        name = name.replaceAll("\\[.*?\\]", "")
-                   .replaceAll("\\(\\d{4}\\)", "")
-                   .replaceAll("\\d{3,4}p", "")
-                   .replaceAll("BluRay|WEB-DL|HDRip|DVDRip|BRRip|HDTV", "")
-                   .replaceAll("x264|x265|HEVC|AAC|DTS", "")
-                   .replaceAll("[._-]+", " ")
-                   .trim();
+        name =
+                name.replaceAll("\\[.*?\\]", "")
+                        .replaceAll("\\(\\d{4}\\)", "")
+                        .replaceAll("\\d{3,4}p", "")
+                        .replaceAll("BluRay|WEB-DL|HDRip|DVDRip|BRRip|HDTV", "")
+                        .replaceAll("x264|x265|HEVC|AAC|DTS", "")
+                        .replaceAll("[._-]+", " ")
+                        .trim();
 
         String[] words = name.split("\\s+");
         StringBuilder result = new StringBuilder();
         for (String word : words) {
             if (!word.isEmpty()) {
                 result.append(Character.toUpperCase(word.charAt(0)))
-                      .append(word.substring(1).toLowerCase())
-                      .append(" ");
+                        .append(word.substring(1).toLowerCase())
+                        .append(" ");
             }
         }
 

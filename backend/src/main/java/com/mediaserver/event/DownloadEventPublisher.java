@@ -14,9 +14,7 @@ public class DownloadEventPublisher {
     @EventListener
     public void handleDownloadProgress(DownloadProgressEvent event) {
         messagingTemplate.convertAndSend(
-                "/topic/downloads/" + event.getProgress().getMovieId(),
-                event.getProgress()
-        );
+                "/topic/downloads/" + event.getProgress().getMovieId(), event.getProgress());
         messagingTemplate.convertAndSend("/topic/downloads", event.getProgress());
     }
 }

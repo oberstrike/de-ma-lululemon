@@ -9,33 +9,36 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
 /**
- * Unit tests for CategoryPersistenceMapper.
- * Tests bidirectional mapping between domain Category and JPA entity CategoryJpaEntity.
+ * Unit tests for CategoryPersistenceMapper. Tests bidirectional mapping between domain Category and
+ * JPA entity CategoryJpaEntity.
  */
 class CategoryPersistenceMapperTest {
 
-    private final CategoryPersistenceMapper categoryPersistenceMapper = Mappers.getMapper(CategoryPersistenceMapper.class);
+    private final CategoryPersistenceMapper categoryPersistenceMapper =
+            Mappers.getMapper(CategoryPersistenceMapper.class);
 
     private Category domainCategory;
     private CategoryJpaEntity jpaEntity;
 
     @BeforeEach
     void setUp() {
-        domainCategory = Category.builder()
-                .id("cat-1")
-                .name("Action")
-                .description("Action movies")
-                .megaPath("/Action")
-                .sortOrder(1)
-                .build();
+        domainCategory =
+                Category.builder()
+                        .id("cat-1")
+                        .name("Action")
+                        .description("Action movies")
+                        .megaPath("/Action")
+                        .sortOrder(1)
+                        .build();
 
-        jpaEntity = CategoryJpaEntity.builder()
-                .id("cat-1")
-                .name("Action")
-                .description("Action movies")
-                .megaPath("/Action")
-                .sortOrder(1)
-                .build();
+        jpaEntity =
+                CategoryJpaEntity.builder()
+                        .id("cat-1")
+                        .name("Action")
+                        .description("Action movies")
+                        .megaPath("/Action")
+                        .sortOrder(1)
+                        .build();
     }
 
     @Test
@@ -54,10 +57,8 @@ class CategoryPersistenceMapperTest {
     @Test
     void toDomain_shouldHandleNullFields() {
         // Given
-        CategoryJpaEntity minimalEntity = CategoryJpaEntity.builder()
-                .id("cat-2")
-                .name("Drama")
-                .build();
+        CategoryJpaEntity minimalEntity =
+                CategoryJpaEntity.builder().id("cat-2").name("Drama").build();
 
         // When
         Category result = categoryPersistenceMapper.toDomain(minimalEntity);
@@ -73,11 +74,12 @@ class CategoryPersistenceMapperTest {
     @Test
     void toDomain_shouldNotIncludeMoviesList() {
         // Given - entity with movies (lazy-loaded collection)
-        CategoryJpaEntity categoryWithMovies = CategoryJpaEntity.builder()
-                .id("cat-1")
-                .name("Action")
-                .movies(java.util.List.of()) // movies collection exists
-                .build();
+        CategoryJpaEntity categoryWithMovies =
+                CategoryJpaEntity.builder()
+                        .id("cat-1")
+                        .name("Action")
+                        .movies(java.util.List.of()) // movies collection exists
+                        .build();
 
         // When
         Category result = categoryPersistenceMapper.toDomain(categoryWithMovies);
@@ -104,9 +106,7 @@ class CategoryPersistenceMapperTest {
     @Test
     void toEntity_shouldHandleNullFields() {
         // Given
-        Category minimalDomain = Category.builder()
-                .name("Comedy")
-                .build();
+        Category minimalDomain = Category.builder().name("Comedy").build();
 
         // When
         CategoryJpaEntity result = categoryPersistenceMapper.toEntity(minimalDomain);
@@ -146,13 +146,14 @@ class CategoryPersistenceMapperTest {
     @Test
     void toDomain_shouldHandleZeroSortOrder() {
         // Given
-        CategoryJpaEntity entityWithZeroSort = CategoryJpaEntity.builder()
-                .id(jpaEntity.getId())
-                .name(jpaEntity.getName())
-                .description(jpaEntity.getDescription())
-                .megaPath(jpaEntity.getMegaPath())
-                .sortOrder(0)
-                .build();
+        CategoryJpaEntity entityWithZeroSort =
+                CategoryJpaEntity.builder()
+                        .id(jpaEntity.getId())
+                        .name(jpaEntity.getName())
+                        .description(jpaEntity.getDescription())
+                        .megaPath(jpaEntity.getMegaPath())
+                        .sortOrder(0)
+                        .build();
 
         // When
         Category result = categoryPersistenceMapper.toDomain(entityWithZeroSort);
@@ -176,13 +177,14 @@ class CategoryPersistenceMapperTest {
     @Test
     void toDomain_shouldHandleNegativeSortOrder() {
         // Given
-        CategoryJpaEntity entityWithNegativeSort = CategoryJpaEntity.builder()
-                .id(jpaEntity.getId())
-                .name(jpaEntity.getName())
-                .description(jpaEntity.getDescription())
-                .megaPath(jpaEntity.getMegaPath())
-                .sortOrder(-1)
-                .build();
+        CategoryJpaEntity entityWithNegativeSort =
+                CategoryJpaEntity.builder()
+                        .id(jpaEntity.getId())
+                        .name(jpaEntity.getName())
+                        .description(jpaEntity.getDescription())
+                        .megaPath(jpaEntity.getMegaPath())
+                        .sortOrder(-1)
+                        .build();
 
         // When
         Category result = categoryPersistenceMapper.toDomain(entityWithNegativeSort);
@@ -194,13 +196,14 @@ class CategoryPersistenceMapperTest {
     @Test
     void toDomain_shouldHandleEmptyDescription() {
         // Given
-        CategoryJpaEntity entityWithEmptyDescription = CategoryJpaEntity.builder()
-                .id(jpaEntity.getId())
-                .name(jpaEntity.getName())
-                .description("")
-                .megaPath(jpaEntity.getMegaPath())
-                .sortOrder(jpaEntity.getSortOrder())
-                .build();
+        CategoryJpaEntity entityWithEmptyDescription =
+                CategoryJpaEntity.builder()
+                        .id(jpaEntity.getId())
+                        .name(jpaEntity.getName())
+                        .description("")
+                        .megaPath(jpaEntity.getMegaPath())
+                        .sortOrder(jpaEntity.getSortOrder())
+                        .build();
 
         // When
         Category result = categoryPersistenceMapper.toDomain(entityWithEmptyDescription);
@@ -225,13 +228,14 @@ class CategoryPersistenceMapperTest {
     void toDomain_shouldHandleLongDescription() {
         // Given
         String longDescription = "A".repeat(1000);
-        CategoryJpaEntity entityWithLongDescription = CategoryJpaEntity.builder()
-                .id(jpaEntity.getId())
-                .name(jpaEntity.getName())
-                .description(longDescription)
-                .megaPath(jpaEntity.getMegaPath())
-                .sortOrder(jpaEntity.getSortOrder())
-                .build();
+        CategoryJpaEntity entityWithLongDescription =
+                CategoryJpaEntity.builder()
+                        .id(jpaEntity.getId())
+                        .name(jpaEntity.getName())
+                        .description(longDescription)
+                        .megaPath(jpaEntity.getMegaPath())
+                        .sortOrder(jpaEntity.getSortOrder())
+                        .build();
 
         // When
         Category result = categoryPersistenceMapper.toDomain(entityWithLongDescription);

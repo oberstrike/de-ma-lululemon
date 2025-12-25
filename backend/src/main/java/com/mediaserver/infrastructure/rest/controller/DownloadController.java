@@ -27,7 +27,8 @@ public class DownloadController {
 
     @GetMapping("/{movieId}")
     public ResponseEntity<DownloadProgressDto> getDownloadProgress(@PathVariable String movieId) {
-        return getDownloadProgressUseCase.getDownloadProgress(movieId)
+        return getDownloadProgressUseCase
+                .getDownloadProgress(movieId)
                 .map(downloadMapper::toResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

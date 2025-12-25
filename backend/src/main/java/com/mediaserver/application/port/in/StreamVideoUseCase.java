@@ -5,14 +5,12 @@ import java.util.function.Supplier;
 import lombok.Builder;
 import lombok.Value;
 
-/**
- * Use case for streaming video content.
- * Defines the input port for video streaming operations.
- */
+/** Use case for streaming video content. Defines the input port for video streaming operations. */
 public interface StreamVideoUseCase {
 
     /**
      * Streams a video with support for range requests.
+     *
      * @param movieId the movie ID
      * @param rangeHeader the HTTP Range header (optional)
      * @return streaming response with video stream
@@ -21,9 +19,7 @@ public interface StreamVideoUseCase {
      */
     StreamingResponse streamVideo(String movieId, String rangeHeader);
 
-    /**
-     * Streaming response containing video stream and metadata.
-     */
+    /** Streaming response containing video stream and metadata. */
     @Value
     @Builder
     class StreamingResponse {

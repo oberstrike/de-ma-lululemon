@@ -53,8 +53,7 @@ public class MovieJpaEntity {
     @ToString.Exclude
     private CategoryJpaEntity category;
 
-    @Builder.Default
-    private boolean favorite = false;
+    @Builder.Default private boolean favorite = false;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

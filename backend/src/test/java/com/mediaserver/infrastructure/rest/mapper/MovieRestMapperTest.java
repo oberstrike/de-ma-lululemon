@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
 /**
- * Unit tests for MovieRestMapper.
- * Tests conversion between Movie entities, DTOs, and Commands for REST API.
+ * Unit tests for MovieRestMapper. Tests conversion between Movie entities, DTOs, and Commands for
+ * REST API.
  */
 class MovieRestMapperTest {
 
@@ -30,31 +30,33 @@ class MovieRestMapperTest {
 
         LocalDateTime now = LocalDateTime.now();
 
-        movie = Movie.builder()
-                .id("movie-1")
-                .title("Test Movie")
-                .description("A test movie description")
-                .year(2024)
-                .duration("2h 30m")
-                .megaUrl("https://mega.nz/file/test123")
-                .thumbnailUrl("https://example.com/thumb.jpg")
-                .localPath("/cache/test.mp4")
-                .fileSize(1024L * 1024 * 1024) // 1GB
-                .status(MovieStatus.READY)
-                .categoryId("cat-1")
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
+        movie =
+                Movie.builder()
+                        .id("movie-1")
+                        .title("Test Movie")
+                        .description("A test movie description")
+                        .year(2024)
+                        .duration("2h 30m")
+                        .megaUrl("https://mega.nz/file/test123")
+                        .thumbnailUrl("https://example.com/thumb.jpg")
+                        .localPath("/cache/test.mp4")
+                        .fileSize(1024L * 1024 * 1024) // 1GB
+                        .status(MovieStatus.READY)
+                        .categoryId("cat-1")
+                        .createdAt(now)
+                        .updatedAt(now)
+                        .build();
 
-        requestDto = MovieRequestDto.builder()
-                .title("New Movie")
-                .description("A new movie description")
-                .year(2024)
-                .duration("1h 45m")
-                .megaUrl("https://mega.nz/file/new123")
-                .thumbnailUrl("https://example.com/new-thumb.jpg")
-                .categoryId("cat-2")
-                .build();
+        requestDto =
+                MovieRequestDto.builder()
+                        .title("New Movie")
+                        .description("A new movie description")
+                        .year(2024)
+                        .duration("1h 45m")
+                        .megaUrl("https://mega.nz/file/new123")
+                        .thumbnailUrl("https://example.com/new-thumb.jpg")
+                        .categoryId("cat-2")
+                        .build();
     }
 
     // ========== toResponse() Tests ==========
@@ -90,9 +92,7 @@ class MovieRestMapperTest {
     @Test
     void toResponse_shouldMapCachedField_whenMovieIsCached() {
         // Given - movie with localPath and READY status
-        Movie cachedMovie = movie
-                .withLocalPath("/cache/video.mp4")
-                .withStatus(MovieStatus.READY);
+        Movie cachedMovie = movie.withLocalPath("/cache/video.mp4").withStatus(MovieStatus.READY);
 
         // When
         MovieResponseDto result = movieRestMapper.toResponse(cachedMovie);
@@ -104,9 +104,7 @@ class MovieRestMapperTest {
     @Test
     void toResponse_shouldMapCachedFieldFalse_whenNoLocalPath() {
         // Given
-        Movie notCachedMovie = movie
-                .withLocalPath(null)
-                .withStatus(MovieStatus.READY);
+        Movie notCachedMovie = movie.withLocalPath(null).withStatus(MovieStatus.READY);
 
         // When
         MovieResponseDto result = movieRestMapper.toResponse(notCachedMovie);
@@ -118,9 +116,8 @@ class MovieRestMapperTest {
     @Test
     void toResponse_shouldMapCachedFieldFalse_whenStatusNotReady() {
         // Given
-        Movie downloadingMovie = movie
-                .withLocalPath("/cache/video.mp4")
-                .withStatus(MovieStatus.DOWNLOADING);
+        Movie downloadingMovie =
+                movie.withLocalPath("/cache/video.mp4").withStatus(MovieStatus.DOWNLOADING);
 
         // When
         MovieResponseDto result = movieRestMapper.toResponse(downloadingMovie);
@@ -145,11 +142,12 @@ class MovieRestMapperTest {
     @Test
     void toResponse_shouldHandleNullOptionalFields() {
         // Given
-        Movie minimalMovie = Movie.builder()
-                .id("movie-2")
-                .title("Minimal Movie")
-                .status(MovieStatus.PENDING)
-                .build();
+        Movie minimalMovie =
+                Movie.builder()
+                        .id("movie-2")
+                        .title("Minimal Movie")
+                        .status(MovieStatus.PENDING)
+                        .build();
 
         // When
         MovieResponseDto result = movieRestMapper.toResponse(minimalMovie);
@@ -172,11 +170,13 @@ class MovieRestMapperTest {
     void toResponse_shouldHandleAllMovieStatuses() {
         // Test PENDING
         Movie pendingMovie = movie.withStatus(MovieStatus.PENDING).withLocalPath(null);
-        assertThat(movieRestMapper.toResponse(pendingMovie).getStatus()).isEqualTo(MovieStatus.PENDING);
+        assertThat(movieRestMapper.toResponse(pendingMovie).getStatus())
+                .isEqualTo(MovieStatus.PENDING);
 
         // Test DOWNLOADING
         Movie downloadingMovie = movie.withStatus(MovieStatus.DOWNLOADING);
-        assertThat(movieRestMapper.toResponse(downloadingMovie).getStatus()).isEqualTo(MovieStatus.DOWNLOADING);
+        assertThat(movieRestMapper.toResponse(downloadingMovie).getStatus())
+                .isEqualTo(MovieStatus.DOWNLOADING);
 
         // Test READY
         Movie readyMovie = movie.withStatus(MovieStatus.READY);
@@ -228,10 +228,11 @@ class MovieRestMapperTest {
     @Test
     void toCreateCommand_shouldHandleNullOptionalFields() {
         // Given
-        MovieRequestDto minimalRequest = MovieRequestDto.builder()
-                .title("Minimal Movie")
-                .megaUrl("https://mega.nz/file/minimal")
-                .build();
+        MovieRequestDto minimalRequest =
+                MovieRequestDto.builder()
+                        .title("Minimal Movie")
+                        .megaUrl("https://mega.nz/file/minimal")
+                        .build();
 
         // When
         CreateMovieCommand result = movieRestMapper.toCreateCommand(minimalRequest);
@@ -249,13 +250,14 @@ class MovieRestMapperTest {
     @Test
     void toCreateCommand_shouldMapEmptyStringsAsNull() {
         // Given
-        MovieRequestDto requestWithEmptyStrings = MovieRequestDto.builder()
-                .title("Test Movie")
-                .description("")
-                .megaUrl("https://mega.nz/file/test")
-                .thumbnailUrl("")
-                .categoryId("")
-                .build();
+        MovieRequestDto requestWithEmptyStrings =
+                MovieRequestDto.builder()
+                        .title("Test Movie")
+                        .description("")
+                        .megaUrl("https://mega.nz/file/test")
+                        .thumbnailUrl("")
+                        .categoryId("")
+                        .build();
 
         // When
         CreateMovieCommand result = movieRestMapper.toCreateCommand(requestWithEmptyStrings);
@@ -295,10 +297,11 @@ class MovieRestMapperTest {
     void toUpdateCommand_shouldHandleNullOptionalFields() {
         // Given
         String movieId = "movie-update-2";
-        MovieRequestDto minimalRequest = MovieRequestDto.builder()
-                .title("Updated Title")
-                .megaUrl("https://mega.nz/file/updated")
-                .build();
+        MovieRequestDto minimalRequest =
+                MovieRequestDto.builder()
+                        .title("Updated Title")
+                        .megaUrl("https://mega.nz/file/updated")
+                        .build();
 
         // When
         UpdateMovieCommand result = movieRestMapper.toUpdateCommand(movieId, minimalRequest);

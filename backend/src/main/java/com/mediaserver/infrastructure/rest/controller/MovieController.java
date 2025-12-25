@@ -72,8 +72,7 @@ public class MovieController {
 
     @PutMapping("/{id}")
     public MovieResponseDto updateMovie(
-            @PathVariable String id,
-            @Valid @RequestBody MovieRequestDto request) {
+            @PathVariable String id, @Valid @RequestBody MovieRequestDto request) {
         var movie = updateMovieUseCase.updateMovie(movieMapper.toUpdateCommand(id, request));
         return movieMapper.toResponse(movie);
     }
@@ -115,9 +114,7 @@ public class MovieController {
 
     @GetMapping("/favorites")
     public List<MovieResponseDto> getFavorites() {
-        return getFavoritesUseCase.getFavorites().stream()
-                .map(movieMapper::toResponse)
-                .toList();
+        return getFavoritesUseCase.getFavorites().stream().map(movieMapper::toResponse).toList();
     }
 
     @PostMapping("/{id}/favorite")

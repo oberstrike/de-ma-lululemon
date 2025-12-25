@@ -15,24 +15,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Application service implementing category-related use cases.
- * This service orchestrates the business logic and delegates to output ports.
+ * Application service implementing category-related use cases. This service orchestrates the
+ * business logic and delegates to output ports.
  */
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CategoryApplicationService implements
-        GetCategoryUseCase,
-        CreateCategoryUseCase,
-        UpdateCategoryUseCase,
-        DeleteCategoryUseCase {
+public class CategoryApplicationService
+        implements GetCategoryUseCase,
+                CreateCategoryUseCase,
+                UpdateCategoryUseCase,
+                DeleteCategoryUseCase {
 
     private final CategoryPort categoryPort;
 
     @Override
     public Category getCategory(String id) {
-        return categoryPort.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException(id));
+        return categoryPort.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
     }
 
     @Override
@@ -42,31 +41,33 @@ public class CategoryApplicationService implements
 
     @Override
     public Category createCategory(CreateCategoryCommand command) {
-        Category category = Category.builder()
-                .name(command.getName())
-                .description(command.getDescription())
-                .sortOrder(command.getSortOrder())
-                .build();
+        Category category =
+                Category.builder()
+                        .name(command.getName())
+                        .description(command.getDescription())
+                        .sortOrder(command.getSortOrder())
+                        .build();
 
         return categoryPort.save(category);
     }
 
     @Override
     public Category updateCategory(String id, UpdateCategoryCommand command) {
-        Category category = categoryPort.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException(id));
+        Category category =
+                categoryPort.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
 
-        Category updatedCategory = category.withName(command.getName())
-                .withDescription(command.getDescription())
-                .withSortOrder(command.getSortOrder());
+        Category updatedCategory =
+                category.withName(command.getName())
+                        .withDescription(command.getDescription())
+                        .withSortOrder(command.getSortOrder());
 
         return categoryPort.save(updatedCategory);
     }
 
     @Override
     public void deleteCategory(String id) {
-        Category category = categoryPort.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException(id));
+        Category category =
+                categoryPort.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
 
         categoryPort.delete(category);
     }

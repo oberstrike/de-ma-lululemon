@@ -12,15 +12,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MovieRequestDto {
 
-    @NotBlank(message = "Title is required")
-    private String title;
+    @NotBlank(message = "Title is required") private String title;
 
     private String description;
     private Integer year;
     private String duration;
 
-    @NotBlank(message = "Mega URL is required")
-    private String megaUrl;
+    @NotBlank(message = "Mega URL is required") private String megaUrl;
 
     private String thumbnailUrl;
     private String categoryId;

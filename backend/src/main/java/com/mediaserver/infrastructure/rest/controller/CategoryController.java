@@ -37,15 +37,16 @@ public class CategoryController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryResponseDto createCategory(@Valid @RequestBody CategoryRequestDto request) {
-        var category = createCategoryUseCase.createCategory(categoryMapper.toCreateCommand(request));
+        var category =
+                createCategoryUseCase.createCategory(categoryMapper.toCreateCommand(request));
         return categoryMapper.toResponse(category);
     }
 
     @PutMapping("/{id}")
     public CategoryResponseDto updateCategory(
-            @PathVariable String id,
-            @Valid @RequestBody CategoryRequestDto request) {
-        var category = updateCategoryUseCase.updateCategory(categoryMapper.toUpdateCommand(id, request));
+            @PathVariable String id, @Valid @RequestBody CategoryRequestDto request) {
+        var category =
+                updateCategoryUseCase.updateCategory(categoryMapper.toUpdateCommand(id, request));
         return categoryMapper.toResponse(category);
     }
 

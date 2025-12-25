@@ -12,8 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 /**
- * Adapter implementation of MovieRepository port.
- * Bridges the domain layer with the JPA persistence layer.
+ * Adapter implementation of MovieRepository port. Bridges the domain layer with the JPA persistence
+ * layer.
  */
 @Repository
 @RequiredArgsConstructor
@@ -25,8 +25,7 @@ public class MovieRepositoryAdapter implements MovieRepository {
 
     @Override
     public Optional<Movie> findById(String id) {
-        return jpaMovieRepository.findById(id)
-                .map(mapper::toDomain);
+        return jpaMovieRepository.findById(id).map(mapper::toDomain);
     }
 
     @Override
@@ -39,8 +38,7 @@ public class MovieRepositoryAdapter implements MovieRepository {
         var entity = mapper.toEntity(movie);
 
         if (movie.getCategoryId() != null) {
-            var category = jpaCategoryRepository.findById(movie.getCategoryId())
-                    .orElse(null);
+            var category = jpaCategoryRepository.findById(movie.getCategoryId()).orElse(null);
             entity.setCategory(category);
         }
 

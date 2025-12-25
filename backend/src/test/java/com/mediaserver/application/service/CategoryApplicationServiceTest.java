@@ -20,39 +20,33 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
- * Unit tests for CategoryApplicationService.
- * Tests use case orchestration with mocked output ports.
+ * Unit tests for CategoryApplicationService. Tests use case orchestration with mocked output ports.
  */
 @ExtendWith(MockitoExtension.class)
 class CategoryApplicationServiceTest {
 
-    @Mock
-    private CategoryPort categoryPort;
+    @Mock private CategoryPort categoryPort;
 
-    @InjectMocks
-    private CategoryApplicationService categoryApplicationService;
+    @InjectMocks private CategoryApplicationService categoryApplicationService;
 
     private Category testCategory;
 
     @BeforeEach
     void setUp() {
-        testCategory = Category.builder()
-                .id("cat-1")
-                .name("Action")
-                .description("Action movies")
-                .megaPath("/Action")
-                .sortOrder(1)
-                .build();
+        testCategory =
+                Category.builder()
+                        .id("cat-1")
+                        .name("Action")
+                        .description("Action movies")
+                        .megaPath("/Action")
+                        .sortOrder(1)
+                        .build();
     }
 
     @Test
     void getAllCategories_shouldReturnAllCategoriesSortedByOrder() {
         // Given
-        Category category2 = Category.builder()
-                .id("cat-2")
-                .name("Drama")
-                .sortOrder(2)
-                .build();
+        Category category2 = Category.builder().id("cat-2").name("Drama").sortOrder(2).build();
 
         when(categoryPort.findAllOrderedBySortOrder()).thenReturn(List.of(testCategory, category2));
 
@@ -95,18 +89,20 @@ class CategoryApplicationServiceTest {
     @Test
     void createCategory_shouldSaveAndReturnCategory() {
         // Given
-        CreateCategoryCommand command = CreateCategoryCommand.builder()
-                .name("Comedy")
-                .description("Comedy movies")
-                .sortOrder(3)
-                .build();
+        CreateCategoryCommand command =
+                CreateCategoryCommand.builder()
+                        .name("Comedy")
+                        .description("Comedy movies")
+                        .sortOrder(3)
+                        .build();
 
-        Category savedCategory = Category.builder()
-                .id("new-cat-id")
-                .name("Comedy")
-                .description("Comedy movies")
-                .sortOrder(3)
-                .build();
+        Category savedCategory =
+                Category.builder()
+                        .id("new-cat-id")
+                        .name("Comedy")
+                        .description("Comedy movies")
+                        .sortOrder(3)
+                        .build();
 
         when(categoryPort.save(any(Category.class))).thenReturn(savedCategory);
 
@@ -124,15 +120,18 @@ class CategoryApplicationServiceTest {
     @Test
     void updateCategory_shouldUpdateAndReturnCategory() {
         // Given
-        UpdateCategoryCommand command = UpdateCategoryCommand.builder()
-                .name("Updated Action")
-                .description("Updated description")
-                .sortOrder(5)
-                .build();
+        UpdateCategoryCommand command =
+                UpdateCategoryCommand.builder()
+                        .name("Updated Action")
+                        .description("Updated description")
+                        .sortOrder(5)
+                        .build();
 
-        Category updatedCategory = testCategory.withName("Updated Action")
-                .withDescription("Updated description")
-                .withSortOrder(5);
+        Category updatedCategory =
+                testCategory
+                        .withName("Updated Action")
+                        .withDescription("Updated description")
+                        .withSortOrder(5);
 
         when(categoryPort.findById("cat-1")).thenReturn(Optional.of(testCategory));
         when(categoryPort.save(any(Category.class))).thenReturn(updatedCategory);

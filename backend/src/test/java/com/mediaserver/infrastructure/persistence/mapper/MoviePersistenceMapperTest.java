@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
 /**
- * Unit tests for MoviePersistenceMapper.
- * Tests bidirectional mapping between domain Movie and JPA entity MovieJpaEntity.
+ * Unit tests for MoviePersistenceMapper. Tests bidirectional mapping between domain Movie and JPA
+ * entity MovieJpaEntity.
  */
 class MoviePersistenceMapperTest {
 
@@ -27,48 +27,47 @@ class MoviePersistenceMapperTest {
     void setUp() {
         moviePersistenceMapper = Mappers.getMapper(MoviePersistenceMapper.class);
 
-        category = CategoryJpaEntity.builder()
-                .id("cat-1")
-                .name("Action")
-                .build();
+        category = CategoryJpaEntity.builder().id("cat-1").name("Action").build();
 
         LocalDateTime now = LocalDateTime.now();
 
-        domainMovie = Movie.builder()
-                .id("movie-1")
-                .title("Test Movie")
-                .description("A test movie")
-                .year(2024)
-                .duration("2h 30m")
-                .megaUrl("https://mega.nz/file/test")
-                .megaPath("/Movies/Test")
-                .thumbnailUrl("https://example.com/thumb.jpg")
-                .localPath("/cache/test.mp4")
-                .fileSize(1024L * 1024 * 1024)
-                .contentType("video/mp4")
-                .status(MovieStatus.READY)
-                .categoryId("cat-1")
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
+        domainMovie =
+                Movie.builder()
+                        .id("movie-1")
+                        .title("Test Movie")
+                        .description("A test movie")
+                        .year(2024)
+                        .duration("2h 30m")
+                        .megaUrl("https://mega.nz/file/test")
+                        .megaPath("/Movies/Test")
+                        .thumbnailUrl("https://example.com/thumb.jpg")
+                        .localPath("/cache/test.mp4")
+                        .fileSize(1024L * 1024 * 1024)
+                        .contentType("video/mp4")
+                        .status(MovieStatus.READY)
+                        .categoryId("cat-1")
+                        .createdAt(now)
+                        .updatedAt(now)
+                        .build();
 
-        entityMovie = MovieJpaEntity.builder()
-                .id("movie-1")
-                .title("Test Movie")
-                .description("A test movie")
-                .year(2024)
-                .duration("2h 30m")
-                .megaUrl("https://mega.nz/file/test")
-                .megaPath("/Movies/Test")
-                .thumbnailUrl("https://example.com/thumb.jpg")
-                .localPath("/cache/test.mp4")
-                .fileSize(1024L * 1024 * 1024)
-                .contentType("video/mp4")
-                .status(MovieStatus.READY)
-                .category(category)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
+        entityMovie =
+                MovieJpaEntity.builder()
+                        .id("movie-1")
+                        .title("Test Movie")
+                        .description("A test movie")
+                        .year(2024)
+                        .duration("2h 30m")
+                        .megaUrl("https://mega.nz/file/test")
+                        .megaPath("/Movies/Test")
+                        .thumbnailUrl("https://example.com/thumb.jpg")
+                        .localPath("/cache/test.mp4")
+                        .fileSize(1024L * 1024 * 1024)
+                        .contentType("video/mp4")
+                        .status(MovieStatus.READY)
+                        .category(category)
+                        .createdAt(now)
+                        .updatedAt(now)
+                        .build();
     }
 
     @Test
@@ -118,11 +117,12 @@ class MoviePersistenceMapperTest {
     @Test
     void toDomain_shouldHandleNullFields() {
         // Given
-        MovieJpaEntity minimalEntity = MovieJpaEntity.builder()
-                .id("movie-2")
-                .title("Minimal Movie")
-                .status(MovieStatus.PENDING)
-                .build();
+        MovieJpaEntity minimalEntity =
+                MovieJpaEntity.builder()
+                        .id("movie-2")
+                        .title("Minimal Movie")
+                        .status(MovieStatus.PENDING)
+                        .build();
 
         // When
         Movie result = moviePersistenceMapper.toDomain(minimalEntity);
@@ -186,10 +186,8 @@ class MoviePersistenceMapperTest {
     @Test
     void toEntity_shouldHandleNullFields() {
         // Given
-        Movie minimalDomain = Movie.builder()
-                .title("Minimal Movie")
-                .status(MovieStatus.PENDING)
-                .build();
+        Movie minimalDomain =
+                Movie.builder().title("Minimal Movie").status(MovieStatus.PENDING).build();
 
         // When
         MovieJpaEntity result = moviePersistenceMapper.toEntity(minimalDomain);
@@ -224,13 +222,14 @@ class MoviePersistenceMapperTest {
     @Test
     void toDomain_shouldMapIsCachedLogicCorrectly() {
         // Given - movie with localPath and READY status (should be cached)
-        MovieJpaEntity cachedEntity = MovieJpaEntity.builder()
-                .id("movie-1")
-                .title("Test Movie")
-                .localPath("/cache/video.mp4")
-                .status(MovieStatus.READY)
-                .category(category)
-                .build();
+        MovieJpaEntity cachedEntity =
+                MovieJpaEntity.builder()
+                        .id("movie-1")
+                        .title("Test Movie")
+                        .localPath("/cache/video.mp4")
+                        .status(MovieStatus.READY)
+                        .category(category)
+                        .build();
 
         // When
         Movie result = moviePersistenceMapper.toDomain(cachedEntity);
@@ -242,13 +241,14 @@ class MoviePersistenceMapperTest {
     @Test
     void toDomain_shouldMapNotCached_whenNoLocalPath() {
         // Given
-        MovieJpaEntity notCachedEntity = MovieJpaEntity.builder()
-                .id("movie-1")
-                .title("Test Movie")
-                .localPath(null)
-                .status(MovieStatus.READY)
-                .category(category)
-                .build();
+        MovieJpaEntity notCachedEntity =
+                MovieJpaEntity.builder()
+                        .id("movie-1")
+                        .title("Test Movie")
+                        .localPath(null)
+                        .status(MovieStatus.READY)
+                        .category(category)
+                        .build();
 
         // When
         Movie result = moviePersistenceMapper.toDomain(notCachedEntity);
@@ -260,13 +260,14 @@ class MoviePersistenceMapperTest {
     @Test
     void toDomain_shouldMapNotCached_whenStatusNotReady() {
         // Given
-        MovieJpaEntity downloadingEntity = MovieJpaEntity.builder()
-                .id("movie-1")
-                .title("Test Movie")
-                .localPath("/cache/video.mp4")
-                .status(MovieStatus.DOWNLOADING)
-                .category(category)
-                .build();
+        MovieJpaEntity downloadingEntity =
+                MovieJpaEntity.builder()
+                        .id("movie-1")
+                        .title("Test Movie")
+                        .localPath("/cache/video.mp4")
+                        .status(MovieStatus.DOWNLOADING)
+                        .category(category)
+                        .build();
 
         // When
         Movie result = moviePersistenceMapper.toDomain(downloadingEntity);

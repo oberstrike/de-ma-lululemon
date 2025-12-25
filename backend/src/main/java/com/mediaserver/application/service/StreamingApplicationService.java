@@ -16,8 +16,8 @@ import org.apache.commons.io.input.BoundedInputStream;
 import org.springframework.stereotype.Service;
 
 /**
- * Application service implementing video streaming use cases.
- * This service handles HTTP range requests for video streaming.
+ * Application service implementing video streaming use cases. This service handles HTTP range
+ * requests for video streaming.
  */
 @Service
 @Slf4j
@@ -29,8 +29,8 @@ public class StreamingApplicationService implements StreamVideoUseCase {
 
     @Override
     public StreamingResponse streamVideo(String movieId, String rangeHeader) {
-        var movie = moviePort.findById(movieId)
-                .orElseThrow(() -> new MovieNotFoundException(movieId));
+        var movie =
+                moviePort.findById(movieId).orElseThrow(() -> new MovieNotFoundException(movieId));
 
         if (!movie.isCached()) {
             throw new VideoNotReadyException("Video is not yet downloaded");
@@ -72,13 +72,18 @@ public class StreamingApplicationService implements StreamVideoUseCase {
             }
 
             var start = Long.parseLong(ranges[0].trim());
-            var end = (ranges.length > 1 && !ranges[1].isEmpty())
-                    ? Long.parseLong(ranges[1].trim())
-                    : fileSize - 1;
+            var end =
+                    (ranges.length > 1 && !ranges[1].isEmpty())
+                            ? Long.parseLong(ranges[1].trim())
+                            : fileSize - 1;
 
             // Validate range values
             if (start < 0 || start >= fileSize || end < start) {
-                log.warn("Invalid range values: start={}, end={}, fileSize={}", start, end, fileSize);
+                log.warn(
+                        "Invalid range values: start={}, end={}, fileSize={}",
+                        start,
+                        end,
+                        fileSize);
                 return new HttpRange(0, fileSize - 1, fileSize);
             }
 
@@ -148,7 +153,9 @@ public class StreamingApplicationService implements StreamVideoUseCase {
                 try {
                     file.close();
                 } catch (IOException closeEx) {
-                    log.warn("Failed to close RandomAccessFile after error: {}", closeEx.getMessage());
+                    log.warn(
+                            "Failed to close RandomAccessFile after error: {}",
+                            closeEx.getMessage());
                 }
             }
             throw new RuntimeException("Failed to create range input stream for: " + path, e);

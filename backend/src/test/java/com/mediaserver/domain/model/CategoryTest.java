@@ -5,21 +5,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for Category domain entity.
- * Tests domain business logic without mocking - pure unit tests.
+ * Unit tests for Category domain entity. Tests domain business logic without mocking - pure unit
+ * tests.
  */
 class CategoryTest {
 
     @Test
     void builder_shouldCreateCategoryWithAllFields() {
         // Given & When
-        Category category = Category.builder()
-                .id("cat-1")
-                .name("Action")
-                .description("Action movies")
-                .megaPath("/Action")
-                .sortOrder(1)
-                .build();
+        Category category =
+                Category.builder()
+                        .id("cat-1")
+                        .name("Action")
+                        .description("Action movies")
+                        .megaPath("/Action")
+                        .sortOrder(1)
+                        .build();
 
         // Then
         assertThat(category.getId()).isEqualTo("cat-1");
@@ -32,10 +33,7 @@ class CategoryTest {
     @Test
     void builder_shouldCreateCategoryWithMinimalFields() {
         // Given & When
-        Category category = Category.builder()
-                .id("cat-1")
-                .name("Drama")
-                .build();
+        Category category = Category.builder().id("cat-1").name("Drama").build();
 
         // Then
         assertThat(category.getId()).isEqualTo("cat-1");
@@ -48,17 +46,14 @@ class CategoryTest {
     @Test
     void builder_shouldSupportModification() {
         // Given
-        Category original = Category.builder()
-                .id("cat-1")
-                .name("Original Name")
-                .sortOrder(5)
-                .build();
+        Category original =
+                Category.builder().id("cat-1").name("Original Name").sortOrder(5).build();
 
         // When - using @With methods
-        Category modified = original
-                .withName("Modified Name")
-                .withDescription("New description")
-                .withSortOrder(10);
+        Category modified =
+                original.withName("Modified Name")
+                        .withDescription("New description")
+                        .withSortOrder(10);
 
         // Then
         assertThat(modified.getId()).isEqualTo("cat-1");
@@ -70,15 +65,9 @@ class CategoryTest {
     @Test
     void equals_shouldReturnTrue_forSameId() {
         // Given
-        Category category1 = Category.builder()
-                .id("cat-1")
-                .name("Category A")
-                .build();
+        Category category1 = Category.builder().id("cat-1").name("Category A").build();
 
-        Category category2 = Category.builder()
-                .id("cat-1")
-                .name("Category A")
-                .build();
+        Category category2 = Category.builder().id("cat-1").name("Category A").build();
 
         // Then - @Value generates equals based on all fields
         assertThat(category1).isEqualTo(category2);
@@ -87,15 +76,9 @@ class CategoryTest {
     @Test
     void hashCode_shouldBeSame_forIdenticalObjects() {
         // Given - @Value generates hashCode based on all fields
-        Category category1 = Category.builder()
-                .id("cat-1")
-                .name("Category A")
-                .build();
+        Category category1 = Category.builder().id("cat-1").name("Category A").build();
 
-        Category category2 = Category.builder()
-                .id("cat-1")
-                .name("Category A")
-                .build();
+        Category category2 = Category.builder().id("cat-1").name("Category A").build();
 
         // Then
         assertThat(category1.hashCode()).isEqualTo(category2.hashCode());
@@ -104,11 +87,12 @@ class CategoryTest {
     @Test
     void toString_shouldNotThrowException() {
         // Given
-        Category category = Category.builder()
-                .id("cat-1")
-                .name("Test Category")
-                .description("Test description")
-                .build();
+        Category category =
+                Category.builder()
+                        .id("cat-1")
+                        .name("Test Category")
+                        .description("Test description")
+                        .build();
 
         // When & Then
         assertThat(category.toString()).isNotNull();
@@ -118,11 +102,8 @@ class CategoryTest {
     @Test
     void category_shouldBeImmutableThroughBuilder() {
         // Given
-        Category category = Category.builder()
-                .id("cat-1")
-                .name("Immutable Category")
-                .sortOrder(1)
-                .build();
+        Category category =
+                Category.builder().id("cat-1").name("Immutable Category").sortOrder(1).build();
 
         // When - attempting to create a copy with changes using @With method
         Category copy = category.withSortOrder(2);

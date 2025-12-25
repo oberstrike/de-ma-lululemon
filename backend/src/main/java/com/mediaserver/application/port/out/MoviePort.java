@@ -6,13 +6,14 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Output port for movie persistence operations.
- * This port will be implemented by the persistence adapter.
+ * Output port for movie persistence operations. This port will be implemented by the persistence
+ * adapter.
  */
 public interface MoviePort {
 
     /**
      * Finds a movie by its ID.
+     *
      * @param id the movie ID
      * @return optional containing the movie if found
      */
@@ -20,12 +21,14 @@ public interface MoviePort {
 
     /**
      * Finds all movies.
+     *
      * @return list of all movies
      */
     List<Movie> findAll();
 
     /**
      * Finds movies by status.
+     *
      * @param status the movie status
      * @return list of movies with the given status
      */
@@ -33,6 +36,7 @@ public interface MoviePort {
 
     /**
      * Finds movies by category ID.
+     *
      * @param categoryId the category ID
      * @return list of movies in the category
      */
@@ -40,6 +44,7 @@ public interface MoviePort {
 
     /**
      * Searches movies by query (title or description).
+     *
      * @param query the search query
      * @return list of matching movies
      */
@@ -47,30 +52,35 @@ public interface MoviePort {
 
     /**
      * Finds all ready movies ordered by creation date.
+     *
      * @return list of ready movies
      */
     List<Movie> findReadyMovies();
 
     /**
      * Finds all cached movies (with local path).
+     *
      * @return list of cached movies
      */
     List<Movie> findCachedMovies();
 
     /**
      * Gets total cache size in bytes.
+     *
      * @return total size of cached movies
      */
     long getTotalCacheSize();
 
     /**
      * Counts movies that have a local path (cached).
+     *
      * @return count of cached movies
      */
     long countCachedMovies();
 
     /**
      * Saves a movie.
+     *
      * @param movie the movie to save
      * @return the saved movie
      */
@@ -78,18 +88,21 @@ public interface MoviePort {
 
     /**
      * Deletes a movie.
+     *
      * @param movie the movie to delete
      */
     void delete(Movie movie);
 
     /**
      * Finds all favorite movies.
+     *
      * @return list of favorite movies
      */
     List<Movie> findFavorites();
 
     /**
      * Finds cached movies that are not favorites (for cache clearing).
+     *
      * @return list of cached non-favorite movies
      */
     List<Movie> findCachedNonFavorites();

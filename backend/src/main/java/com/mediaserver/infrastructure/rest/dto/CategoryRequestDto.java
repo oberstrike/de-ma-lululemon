@@ -12,8 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CategoryRequestDto {
 
-    @NotBlank(message = "Name is required")
-    private String name;
+    @NotBlank(message = "Name is required") private String name;
 
     private String description;
     private Integer sortOrder;

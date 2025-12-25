@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Spring Data JPA repository for DownloadTaskJpaEntity.
- * This is an infrastructure component that provides persistence operations.
+ * Spring Data JPA repository for DownloadTaskJpaEntity. This is an infrastructure component that
+ * provides persistence operations.
  */
 public interface JpaDownloadTaskRepository extends JpaRepository<DownloadTaskJpaEntity, String> {
 

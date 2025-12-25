@@ -27,16 +27,21 @@ public class ThumbnailController {
     public ResponseEntity<byte[]> getThumbnail(@PathVariable String fileName) {
         try {
             // Validate filename to prevent path traversal attacks
-            if (fileName == null || fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+            if (fileName == null
+                    || fileName.contains("..")
+                    || fileName.contains("/")
+                    || fileName.contains("\\")) {
                 log.warn("Rejected potentially malicious filename: {}", fileName);
                 return ResponseEntity.badRequest().build();
             }
 
             // Only allow valid image extensions
             String lowerName = fileName.toLowerCase();
-            if (!lowerName.endsWith(".png") && !lowerName.endsWith(".jpg") &&
-                !lowerName.endsWith(".jpeg") && !lowerName.endsWith(".gif") &&
-                !lowerName.endsWith(".webp")) {
+            if (!lowerName.endsWith(".png")
+                    && !lowerName.endsWith(".jpg")
+                    && !lowerName.endsWith(".jpeg")
+                    && !lowerName.endsWith(".gif")
+                    && !lowerName.endsWith(".webp")) {
                 log.warn("Rejected non-image file request: {}", fileName);
                 return ResponseEntity.badRequest().build();
             }

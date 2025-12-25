@@ -20,16 +20,15 @@ public class Movie {
     String localPath;
     Long fileSize;
     String contentType;
-    @Builder.Default
-    MovieStatus status = MovieStatus.PENDING;
+    @Builder.Default MovieStatus status = MovieStatus.PENDING;
     String categoryId;
-    @Builder.Default
-    boolean favorite = false;
+    @Builder.Default boolean favorite = false;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 
     /**
      * Checks if the movie is cached locally and ready to stream.
+     *
      * @return true if the movie has a local path and is in READY status
      */
     public boolean isCached() {
