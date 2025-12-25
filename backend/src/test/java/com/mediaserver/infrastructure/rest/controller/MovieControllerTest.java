@@ -16,7 +16,6 @@ import com.mediaserver.domain.model.Movie;
 import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.exception.GlobalExceptionHandler;
 import com.mediaserver.exception.MovieNotFoundException;
-import com.mediaserver.infrastructure.rest.dto.CacheStatsDto;
 import com.mediaserver.infrastructure.rest.dto.MovieRequestDto;
 import com.mediaserver.infrastructure.rest.dto.MovieResponseDto;
 import com.mediaserver.infrastructure.rest.mapper.MovieRestMapper;
@@ -326,8 +325,8 @@ class MovieControllerTest {
     @Test
     void getCacheStats_shouldReturnStats() throws Exception {
         // Given
-        CacheStatsDto cacheStats =
-                CacheStatsDto.builder()
+        var cacheStats =
+                com.mediaserver.application.port.in.CacheManagementUseCase.CacheStats.builder()
                         .totalSizeBytes(1024L * 1024 * 1024)
                         .maxSizeBytes(100L * 1024 * 1024 * 1024)
                         .usagePercent(1)

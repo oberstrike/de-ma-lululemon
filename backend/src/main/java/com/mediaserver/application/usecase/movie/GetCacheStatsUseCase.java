@@ -1,7 +1,7 @@
 package com.mediaserver.application.usecase.movie;
 
-import com.mediaserver.infrastructure.rest.dto.CacheStatsDto;
+import com.mediaserver.application.port.in.CacheManagementUseCase;
 
 public interface GetCacheStatsUseCase {
-    CacheStatsDto getCacheStats();
+    CacheManagementUseCase.CacheStats getCacheStats();
 }

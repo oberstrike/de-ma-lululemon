@@ -1,7 +1,20 @@
 package com.mediaserver.application.usecase.stream;
 
-import com.mediaserver.infrastructure.rest.dto.StreamInfoDto;
+import lombok.Builder;
+import lombok.Value;
 
 public interface GetStreamInfoUseCase {
-    StreamInfoDto getStreamInfo(String movieId);
+    StreamInfo getStreamInfo(String movieId);
+
+    /** Stream information for a movie. */
+    @Value
+    @Builder
+    class StreamInfo {
+        String movieId;
+        String title;
+        long fileSize;
+        String contentType;
+        String streamUrl;
+        boolean supportsRangeRequests;
+    }
 }

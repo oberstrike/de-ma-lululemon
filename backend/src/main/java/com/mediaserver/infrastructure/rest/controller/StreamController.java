@@ -71,6 +71,14 @@ public class StreamController {
 
     @GetMapping("/{movieId}/info")
     public StreamInfoDto getStreamInfo(@PathVariable String movieId) {
-        return getStreamInfoUseCase.getStreamInfo(movieId);
+        var info = getStreamInfoUseCase.getStreamInfo(movieId);
+        return StreamInfoDto.builder()
+                .movieId(info.getMovieId())
+                .title(info.getTitle())
+                .fileSize(info.getFileSize())
+                .contentType(info.getContentType())
+                .streamUrl(info.getStreamUrl())
+                .supportsRangeRequests(info.isSupportsRangeRequests())
+                .build();
     }
 }

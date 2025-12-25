@@ -91,7 +91,13 @@ public class MovieController {
 
     @GetMapping("/cache/stats")
     public CacheStatsDto getCacheStats() {
-        return getCacheStatsUseCase.getCacheStats();
+        var stats = getCacheStatsUseCase.getCacheStats();
+        return CacheStatsDto.builder()
+                .totalSizeBytes(stats.getTotalSizeBytes())
+                .maxSizeBytes(stats.getMaxSizeBytes())
+                .usagePercent(stats.getUsagePercent())
+                .movieCount(stats.getMovieCount())
+                .build();
     }
 
     @GetMapping("/cached")
