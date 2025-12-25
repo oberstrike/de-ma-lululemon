@@ -29,7 +29,7 @@ export class WebSocketService {
         this.connected$.next(true);
       });
 
-      this.client.subscribe('/topic/downloads', (message: IMessage) => {
+      this.client?.subscribe('/topic/downloads', (message: IMessage) => {
         this.ngZone.run(() => {
           const progress = JSON.parse(message.body) as DownloadProgress;
           this.downloadProgress$.next(progress);
