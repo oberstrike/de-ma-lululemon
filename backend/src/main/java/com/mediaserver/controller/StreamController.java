@@ -1,13 +1,13 @@
 package com.mediaserver.controller;
 
 import com.mediaserver.dto.StreamInfoDto;
-import com.mediaserver.dto.StreamInfoMapper;
 import com.mediaserver.entity.Movie;
 import com.mediaserver.exception.MovieNotFoundException;
 import com.mediaserver.repository.MovieRepository;
 import com.mediaserver.service.VideoStreamingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,7 +30,7 @@ public class StreamController {
 
     private final VideoStreamingService streamingService;
     private final MovieRepository movieRepository;
-    private final StreamInfoMapper streamInfoMapper;
+    private final ConversionService conversionService;
 
     @GetMapping("/{movieId}")
     public ResponseEntity<StreamingResponseBody> streamVideo(
@@ -80,7 +80,7 @@ public class StreamController {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException(movieId));
 
-        StreamInfoDto info = streamInfoMapper.toDto(movie);
+        StreamInfoDto info = conversionService.convert(movie, StreamInfoDto.class);
 
         return ResponseEntity.ok(info);
     }
