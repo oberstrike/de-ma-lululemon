@@ -1,8 +1,9 @@
 import { computed, inject } from '@angular/core';
-import { signalStore, withState, withComputed, withMethods, patchState } from '@ngrx/signals';
+import { tapResponse } from '@ngrx/operators';
+import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, switchMap, tap } from 'rxjs';
-import { tapResponse } from '@ngrx/operators';
+
 import { ApiService, Movie, MovieCreateRequest } from '../services/api.service';
 
 interface MoviesState {
@@ -56,7 +57,7 @@ export const MoviesStore = signalStore(
 
       for (const movie of filtered) {
         if (movie.categoryName) {
-          const existing = categorized.get(movie.categoryName) || [];
+          const existing = categorized.get(movie.categoryName) ?? [];
           existing.push(movie);
           categorized.set(movie.categoryName, existing);
         } else {
@@ -103,12 +104,18 @@ export const MoviesStore = signalStore(
   withMethods((store, api = inject(ApiService)) => ({
     loadMovies: rxMethod<void>(
       pipe(
-        tap(() => patchState(store, { loading: true, error: null })),
+        tap(() => {
+          patchState(store, { loading: true, error: null });
+        }),
         switchMap(() =>
           api.getMovies().pipe(
             tapResponse({
-              next: (movies) => patchState(store, { movies, loading: false }),
-              error: (error: Error) => patchState(store, { error: error.message, loading: false }),
+              next: (movies) => {
+                patchState(store, { movies, loading: false });
+              },
+              error: (error: Error) => {
+                patchState(store, { error: error.message, loading: false });
+              },
             })
           )
         )
@@ -120,8 +127,12 @@ export const MoviesStore = signalStore(
         switchMap((request) =>
           api.createMovie(request).pipe(
             tapResponse({
-              next: (movie) => patchState(store, { movies: [...store.movies(), movie] }),
-              error: (error: Error) => patchState(store, { error: error.message }),
+              next: (movie) => {
+                patchState(store, { movies: [...store.movies(), movie] });
+              },
+              error: (error: Error) => {
+                patchState(store, { error: error.message });
+              },
             })
           )
         )
@@ -142,7 +153,9 @@ export const MoviesStore = signalStore(
               next: () => {
                 /* Success - no action needed */
               },
-              error: (error: Error) => patchState(store, { error: error.message }),
+              error: (error: Error) => {
+                patchState(store, { error: error.message });
+              },
             })
           )
         )
@@ -166,17 +179,19 @@ export const MoviesStore = signalStore(
       pipe(
         switchMap((id) =>
           api.deleteMovie(id).pipe(
-            tap(() =>
+            tap(() => {
               patchState(store, {
                 movies: store.movies().filter((m) => m.id !== id),
                 selectedMovieId: store.selectedMovieId() === id ? null : store.selectedMovieId(),
-              })
-            ),
+              });
+            }),
             tapResponse({
               next: () => {
                 /* Success - no action needed */
               },
-              error: (error: Error) => patchState(store, { error: error.message }),
+              error: (error: Error) => {
+                patchState(store, { error: error.message });
+              },
             })
           )
         )
@@ -192,7 +207,9 @@ export const MoviesStore = signalStore(
                 const movies = store.movies().map((m) => (m.id === movieId ? movie : m));
                 patchState(store, { movies });
               },
-              error: (error: Error) => patchState(store, { error: error.message }),
+              error: (error: Error) => {
+                patchState(store, { error: error.message });
+              },
             })
           )
         )
@@ -208,7 +225,9 @@ export const MoviesStore = signalStore(
                 const movies = store.movies().map((m) => (m.id === movieId ? movie : m));
                 patchState(store, { movies });
               },
-              error: (error: Error) => patchState(store, { error: error.message }),
+              error: (error: Error) => {
+                patchState(store, { error: error.message });
+              },
             })
           )
         )

@@ -1,20 +1,21 @@
 import {
+  ChangeDetectionStrategy,
   Component,
-  OnInit,
-  OnDestroy,
-  ViewChild,
+  effect,
   ElementRef,
   inject,
-  effect,
+  OnDestroy,
+  OnInit,
   signal,
-  ChangeDetectionStrategy,
+  ViewChild,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { PlayerStore } from '../../store/player.store';
-import { ButtonModule } from 'primeng/button';
-import { Slider } from 'primeng/slider';
-import { ProgressSpinner } from 'primeng/progressspinner';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { Slider } from 'primeng/slider';
+
+import { PlayerStore } from '../../store/player.store';
 
 @Component({
   selector: 'app-video-player',
@@ -324,7 +325,9 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     if (!video) return;
 
     if (this.player.isPlaying()) {
-      video.play().catch(() => this.player.pause());
+      video.play().catch(() => {
+        this.player.pause();
+      });
     } else {
       video.pause();
     }

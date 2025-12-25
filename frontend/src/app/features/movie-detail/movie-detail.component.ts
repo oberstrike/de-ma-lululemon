@@ -1,24 +1,25 @@
 import {
-  Component,
-  inject,
-  signal,
-  computed,
-  OnInit,
-  DestroyRef,
   ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
 } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ApiService, Movie, DownloadProgress } from '../../services/api.service';
-import { MoviesStore } from '../../store/movies.store';
-import { WebSocketService } from '../../services/websocket.service';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
+import { Chip } from 'primeng/chip';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 import { ProgressBar } from 'primeng/progressbar';
 import { ProgressSpinner } from 'primeng/progressspinner';
-import { ConfirmDialog } from 'primeng/confirmdialog';
-import { ConfirmationService } from 'primeng/api';
-import { Chip } from 'primeng/chip';
+import { TagModule } from 'primeng/tag';
+
+import { ApiService, DownloadProgress, Movie } from '../../services/api.service';
+import { WebSocketService } from '../../services/websocket.service';
+import { MoviesStore } from '../../store/movies.store';
 
 @Component({
   selector: 'app-movie-detail',
@@ -296,7 +297,9 @@ export class MovieDetailComponent implements OnInit {
       .getMovie(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (movie) => this.movie.set(movie),
+        next: (movie) => {
+          this.movie.set(movie);
+        },
         error: () => this.router.navigate(['/']),
       });
 
@@ -344,7 +347,9 @@ export class MovieDetailComponent implements OnInit {
       header: 'Delete Confirmation',
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',
-      accept: () => this.deleteMovie(),
+      accept: () => {
+        this.deleteMovie();
+      },
     });
   }
 
@@ -361,7 +366,9 @@ export class MovieDetailComponent implements OnInit {
         'Remove this movie from server storage? The movie will still be available on Mega.nz for re-download.',
       header: 'Clear Cache',
       icon: 'pi pi-exclamation-triangle',
-      accept: () => this.clearCache(),
+      accept: () => {
+        this.clearCache();
+      },
     });
   }
 
@@ -382,7 +389,9 @@ export class MovieDetailComponent implements OnInit {
           });
           this.moviesStore.updateMovieStatus(currentMovie.id, 'PENDING', false);
         },
-        error: (err) => console.error('Failed to clear cache:', err),
+        error: (err) => {
+          console.error('Failed to clear cache:', err);
+        },
       });
   }
 

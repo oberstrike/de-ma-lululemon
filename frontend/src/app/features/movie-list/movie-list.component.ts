@@ -1,16 +1,17 @@
-import { Component, inject, OnInit, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MoviesStore } from '../../store/movies.store';
-import { WebSocketService } from '../../services/websocket.service';
-import { Movie } from '../../services/api.service';
-import { InputTextModule } from 'primeng/inputtext';
-import { TagModule } from 'primeng/tag';
-import { ProgressSpinner } from 'primeng/progressspinner';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
-import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { TagModule } from 'primeng/tag';
+
+import { Movie } from '../../services/api.service';
+import { WebSocketService } from '../../services/websocket.service';
+import { MoviesStore } from '../../store/movies.store';
 
 @Component({
   selector: 'app-movie-list',
@@ -707,8 +708,8 @@ export class MovieListComponent implements OnInit {
     event.stopPropagation();
     const button = event.target as HTMLElement;
     const wrapper = button.closest('.row-wrapper');
-    const row = wrapper?.querySelector('.movies-row') as HTMLElement;
-    if (row) {
+    const row = wrapper?.querySelector('.movies-row');
+    if (row !== null && row !== undefined) {
       const scrollAmount = row.clientWidth * 0.8;
       row.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
     }

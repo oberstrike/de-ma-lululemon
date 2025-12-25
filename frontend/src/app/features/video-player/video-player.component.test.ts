@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { VideoPlayerComponent } from './video-player.component';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ActivatedRoute, provideRouter } from '@angular/router';
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import { PlayerStore } from '../../store/player.store';
+import { VideoPlayerComponent } from './video-player.component';
 
 describe('VideoPlayerComponent', () => {
   let component: VideoPlayerComponent;

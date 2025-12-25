@@ -1,6 +1,7 @@
 import { computed, inject } from '@angular/core';
-import { signalStore, withState, withComputed, withMethods, patchState } from '@ngrx/signals';
+import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { firstValueFrom } from 'rxjs';
+
 import { ApiService, StreamInfo } from '../services/api.service';
 
 interface PlayerState {

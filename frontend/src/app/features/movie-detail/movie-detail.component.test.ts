@@ -1,16 +1,16 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
-import { MovieDetailComponent } from './movie-detail.component';
-import { MoviesStore } from '../../store/movies.store';
-import { WebSocketService } from '../../services/websocket.service';
 import { of, Subject } from 'rxjs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { WebSocketService } from '../../services/websocket.service';
+import { MoviesStore } from '../../store/movies.store';
+import { MovieDetailComponent } from './movie-detail.component';
 
 describe('MovieDetailComponent', () => {
   let component: MovieDetailComponent;

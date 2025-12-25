@@ -1,11 +1,12 @@
-import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { providePrimeNG } from 'primeng/config';
-import Aura from '@primeng/themes/aura';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideRouter, withViewTransitions } from '@angular/router';
 import { definePreset } from '@primeng/themes';
+import Aura from '@primeng/themes/aura';
+import { providePrimeNG } from 'primeng/config';
+
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 
@@ -42,4 +43,6 @@ bootstrapApplication(AppComponent, {
       },
     }),
   ],
-}).catch((err) => console.error(err));
+}).catch((err) => {
+  console.error(err);
+});

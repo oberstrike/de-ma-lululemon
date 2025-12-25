@@ -1,7 +1,7 @@
-import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
 import { environment } from '@env/environment';
+import { Observable } from 'rxjs';
 
 export interface Movie {
   id: string;
@@ -65,8 +65,8 @@ export interface CacheStats {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private http = inject(HttpClient);
-  private baseUrl = environment.apiUrl;
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = environment.apiUrl;
 
   // Movies
   getMovies(params?: {
