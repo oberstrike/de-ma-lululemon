@@ -19,3 +19,7 @@ media:
 
   scan:
     enabled: false
+
+  admin:
+    username: admin
+    password: test-password-for-testing-only

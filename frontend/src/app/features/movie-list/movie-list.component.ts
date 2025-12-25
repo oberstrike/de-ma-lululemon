@@ -117,9 +117,18 @@ import { ButtonModule } from 'primeng/button';
                         }
                         <div class="card-overlay">
                           <div class="overlay-content">
-                            <button class="play-icon" (click)="playOrView($event, movie)">
-                              <i class="pi" [class.pi-play]="movie.cached" [class.pi-info-circle]="!movie.cached"></i>
-                            </button>
+                            <div class="overlay-actions">
+                              <button class="play-icon" (click)="playOrView($event, movie)">
+                                <i class="pi" [class.pi-play]="movie.cached" [class.pi-info-circle]="!movie.cached"></i>
+                              </button>
+                              <button
+                                class="favorite-icon"
+                                [class.favorited]="movie.favorite"
+                                (click)="toggleFavorite($event, movie)"
+                                [title]="movie.favorite ? 'Remove from favorites' : 'Add to favorites'">
+                                <i class="pi" [class.pi-heart-fill]="movie.favorite" [class.pi-heart]="!movie.favorite"></i>
+                              </button>
+                            </div>
                             <div class="overlay-info">
                               <span class="overlay-title">{{ movie.title }}</span>
                               <div class="overlay-meta">
@@ -480,7 +489,13 @@ import { ButtonModule } from 'primeng/button';
       gap: 0.75rem;
     }
 
-    .play-icon {
+    .overlay-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .play-icon,
+    .favorite-icon {
       width: 40px;
       height: 40px;
       border-radius: 50%;
@@ -501,6 +516,18 @@ import { ButtonModule } from 'primeng/button';
 
       i {
         font-size: 1rem;
+      }
+    }
+
+    .favorite-icon.favorited {
+      background: #e50914;
+      border-color: #e50914;
+      color: #fff;
+
+      &:hover {
+        background: #b20710;
+        border-color: #b20710;
+        color: #fff;
       }
     }
 
@@ -660,5 +687,11 @@ export class MovieListComponent implements OnInit {
     } else {
       this.router.navigate(['/movie', movie.id]);
     }
+  }
+
+  toggleFavorite(event: MouseEvent, movie: Movie) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.store.toggleFavorite(movie.id);
   }
 }

@@ -1,11 +1,10 @@
 package com.mediaserver.config;
 
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.util.Arrays;
 
 @Configuration
 @RequiredArgsConstructor
@@ -27,7 +26,8 @@ public class WebConfig implements WebMvcConfigurer {
             registration.allowedOrigins().allowCredentials(true);
         }
 
-        registration.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        registration
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .maxAge(3600);
     }

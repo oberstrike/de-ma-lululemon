@@ -47,6 +47,10 @@ export const MoviesStore = signalStore(
       state.movies().filter(m => m.cached)
     ),
 
+    favoriteMovies: computed(() =>
+      state.movies().filter(m => m.favorite)
+    ),
+
     moviesByCategory: computed(() => {
       const movies = state.movies();
       const filter = state.filter().toLowerCase();
@@ -68,7 +72,13 @@ export const MoviesStore = signalStore(
         }
       }
 
-      // Add cached movies row first
+      // Add favorites row first
+      const favorites = filtered.filter(m => m.favorite);
+      if (favorites.length > 0) {
+        groups.push({ name: 'My Favorites', movies: favorites });
+      }
+
+      // Add cached movies row second
       const cached = filtered.filter(m => m.cached);
       if (cached.length > 0) {
         groups.push({ name: 'Downloaded on Server', movies: cached });
@@ -176,5 +186,50 @@ export const MoviesStore = signalStore(
         )
       )
     ),
+
+    addFavorite: rxMethod<string>(
+      pipe(
+        switchMap((movieId) =>
+          api.addFavorite(movieId).pipe(
+            tapResponse({
+              next: (movie) => {
+                const movies = store.movies().map(m =>
+                  m.id === movieId ? movie : m
+                );
+                patchState(store, { movies });
+              },
+              error: (error: Error) => patchState(store, { error: error.message }),
+            })
+          )
+        )
+      )
+    ),
+
+    removeFavorite: rxMethod<string>(
+      pipe(
+        switchMap((movieId) =>
+          api.removeFavorite(movieId).pipe(
+            tapResponse({
+              next: (movie) => {
+                const movies = store.movies().map(m =>
+                  m.id === movieId ? movie : m
+                );
+                patchState(store, { movies });
+              },
+              error: (error: Error) => patchState(store, { error: error.message }),
+            })
+          )
+        )
+      )
+    ),
+
+    toggleFavorite(movieId: string) {
+      const movie = store.movies().find(m => m.id === movieId);
+      if (movie?.favorite) {
+        this.removeFavorite(movieId);
+      } else {
+        this.addFavorite(movieId);
+      }
+    },
   }))
 );

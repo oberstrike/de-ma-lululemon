@@ -11,6 +11,7 @@ export interface Movie {
   duration?: string;
   thumbnailUrl?: string;
   cached: boolean;
+  favorite: boolean;
   status: 'PENDING' | 'DOWNLOADING' | 'READY' | 'ERROR';
   categoryId?: string;
   categoryName?: string;
@@ -134,5 +135,18 @@ export class ApiService {
 
   clearAllCache(): Observable<number> {
     return this.http.delete<number>(`${this.baseUrl}/movies/cache`);
+  }
+
+  // Favorites
+  getFavoriteMovies(): Observable<Movie[]> {
+    return this.http.get<Movie[]>(`${this.baseUrl}/movies/favorites`);
+  }
+
+  addFavorite(movieId: string): Observable<Movie> {
+    return this.http.post<Movie>(`${this.baseUrl}/movies/${movieId}/favorite`, {});
+  }
+
+  removeFavorite(movieId: string): Observable<Movie> {
+    return this.http.delete<Movie>(`${this.baseUrl}/movies/${movieId}/favorite`);
   }
 }

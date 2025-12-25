@@ -26,6 +26,12 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Check code formatting (Spotless)
+        run: mvn -B spotless:check --file pom.xml
+
+      - name: Static analysis (SpotBugs)
+        run: mvn -B compile spotbugs:check --file pom.xml
+
       - name: Run tests
         run: mvn -B test --file pom.xml
 

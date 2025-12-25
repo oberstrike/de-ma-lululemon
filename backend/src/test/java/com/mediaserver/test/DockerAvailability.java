@@ -3,8 +3,7 @@ package com.mediaserver.test;
 import org.testcontainers.DockerClientFactory;
 
 public final class DockerAvailability {
-    private DockerAvailability() {
-    }
+    private DockerAvailability() {}
 
     public static boolean isDockerAvailable() {
         try {
