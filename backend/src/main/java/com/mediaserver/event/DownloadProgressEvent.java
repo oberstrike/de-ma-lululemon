@@ -6,7 +6,8 @@ import org.springframework.context.ApplicationEvent;
 
 @Getter
 public class DownloadProgressEvent extends ApplicationEvent {
-    private final DownloadProgressDto progress;
+    private static final long serialVersionUID = 1L;
+    private final transient DownloadProgressDto progress;
 
     public DownloadProgressEvent(Object source, DownloadProgressDto progress) {
         super(source);

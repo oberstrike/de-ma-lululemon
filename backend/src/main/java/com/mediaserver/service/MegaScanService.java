@@ -9,6 +9,7 @@ import com.mediaserver.domain.repository.MovieRepository;
 import com.mediaserver.dto.ScanResultDto;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -242,7 +243,9 @@ public class MegaScanService {
 
         try {
             try (BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    process.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.isBlank() || line.startsWith("FLAGS")) continue;
@@ -285,8 +288,8 @@ public class MegaScanService {
 
         String flags = parts[0];
         String sizeStr = parts[1];
-        // parts[2] is date, we skip it
-        String name = parts.length > 3 ? parts[3] : parts[2];
+        // parts[2] is date, parts[3] is name (we already verified length >= 4)
+        String name = parts[3];
 
         // Handle date+time taking multiple parts
         if (name.matches("\\d{2}:\\d{2}:\\d{2}")) {
@@ -408,10 +411,17 @@ public class MegaScanService {
 
             // Drain the input stream to prevent process from blocking
             try (BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                while (reader.readLine() != null) {
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    process.getInputStream(), StandardCharsets.UTF_8))) {
+                // Consume and discard output
+                // spotless:off
+                @SuppressWarnings("unused")
+                String line;
+                while ((line = reader.readLine()) != null) {
                     // Just consume the output
                 }
+                // spotless:on
             }
 
             boolean completed = process.waitFor(60, TimeUnit.SECONDS);
