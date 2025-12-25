@@ -2,6 +2,8 @@ package com.mediaserver.service;
 
 import com.mediaserver.dto.CategoryCreateRequest;
 import com.mediaserver.dto.CategoryDto;
+import com.mediaserver.dto.CategoryMapper;
+import com.mediaserver.rules.CategoryRules;
 import com.mediaserver.entity.Category;
 import com.mediaserver.exception.CategoryNotFoundException;
 import com.mediaserver.repository.CategoryRepository;
@@ -17,16 +19,18 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
+    private final CategoryRules categoryRules;
 
     public List<CategoryDto> getAllCategories() {
         return categoryRepository.findAllByOrderBySortOrderAsc().stream()
-                .map(this::toDto)
+                .map(category -> categoryMapper.toDto(category, categoryRules))
                 .toList();
     }
 
     public CategoryDto getCategory(String id) {
         return categoryRepository.findById(id)
-                .map(this::toDto)
+                .map(category -> categoryMapper.toDto(category, categoryRules))
                 .orElseThrow(() -> new CategoryNotFoundException(id));
     }
 
@@ -38,7 +42,7 @@ public class CategoryService {
                 .build();
 
         category = categoryRepository.save(category);
-        return toDto(category);
+        return categoryMapper.toDto(category, categoryRules);
     }
 
     public CategoryDto updateCategory(String id, CategoryCreateRequest request) {
@@ -50,22 +54,12 @@ public class CategoryService {
         category.setSortOrder(request.getSortOrder());
 
         category = categoryRepository.save(category);
-        return toDto(category);
+        return categoryMapper.toDto(category, categoryRules);
     }
 
     public void deleteCategory(String id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException(id));
         categoryRepository.delete(category);
-    }
-
-    private CategoryDto toDto(Category category) {
-        return CategoryDto.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .description(category.getDescription())
-                .sortOrder(category.getSortOrder())
-                .movieCount((int) categoryRepository.countMoviesByCategoryId(category.getId()))
-                .build();
     }
 }
