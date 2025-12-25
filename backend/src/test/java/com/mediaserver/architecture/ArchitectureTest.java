@@ -296,7 +296,7 @@ class ArchitectureTest {
     class NamingConventionRules {
 
         @Test
-        @DisplayName("DTOs should end with Dto suffix")
+        @DisplayName("DTOs should end with DTO suffix")
         void dtosShouldHaveCorrectSuffix() {
             classes()
                     .that()
@@ -304,8 +304,8 @@ class ArchitectureTest {
                     .and()
                     .areTopLevelClasses()
                     .should()
-                    .haveSimpleNameEndingWith("Dto")
-                    .because("DTOs should have Dto suffix")
+                    .haveSimpleNameEndingWith("DTO")
+                    .because("DTOs should have DTO suffix (uppercase)")
                     .check(importedClasses);
         }
 

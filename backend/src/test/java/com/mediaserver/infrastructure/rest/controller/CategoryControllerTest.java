@@ -15,8 +15,8 @@ import com.mediaserver.config.WebConfig;
 import com.mediaserver.domain.model.Category;
 import com.mediaserver.exception.CategoryNotFoundException;
 import com.mediaserver.exception.GlobalExceptionHandler;
-import com.mediaserver.infrastructure.rest.dto.CategoryRequestDto;
-import com.mediaserver.infrastructure.rest.dto.CategoryResponseDto;
+import com.mediaserver.infrastructure.rest.dto.CategoryRequestDTO;
+import com.mediaserver.infrastructure.rest.dto.CategoryResponseDTO;
 import com.mediaserver.infrastructure.rest.mapper.CategoryRestMapper;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +55,7 @@ class CategoryControllerTest {
     @MockitoBean private CategoryRestMapper categoryRestMapper;
 
     private Category domainCategory;
-    private CategoryResponseDto categoryResponseDto;
+    private CategoryResponseDTO categoryResponseDto;
 
     @BeforeEach
     void setUp() {
@@ -68,7 +68,7 @@ class CategoryControllerTest {
                         .build();
 
         categoryResponseDto =
-                CategoryResponseDto.builder()
+                CategoryResponseDTO.builder()
                         .id("cat-1")
                         .name("Action")
                         .description("Action movies")
@@ -122,8 +122,8 @@ class CategoryControllerTest {
     @Test
     void createCategory_shouldReturnCreatedCategory() throws Exception {
         // Given
-        CategoryRequestDto request =
-                CategoryRequestDto.builder()
+        CategoryRequestDTO request =
+                CategoryRequestDTO.builder()
                         .name("Comedy")
                         .description("Comedy movies")
                         .sortOrder(2)
@@ -144,8 +144,8 @@ class CategoryControllerTest {
                         .sortOrder(2)
                         .build();
 
-        CategoryResponseDto createdDto =
-                CategoryResponseDto.builder()
+        CategoryResponseDTO createdDto =
+                CategoryResponseDTO.builder()
                         .id("cat-2")
                         .name("Comedy")
                         .description("Comedy movies")
@@ -175,8 +175,8 @@ class CategoryControllerTest {
     @Test
     void createCategory_shouldReturn400_whenNameMissing() throws Exception {
         // Given
-        CategoryRequestDto request =
-                CategoryRequestDto.builder().description("Some description").build();
+        CategoryRequestDTO request =
+                CategoryRequestDTO.builder().description("Some description").build();
 
         // When & Then
         mockMvc.perform(
@@ -190,8 +190,8 @@ class CategoryControllerTest {
     @Test
     void updateCategory_shouldReturnUpdatedCategory() throws Exception {
         // Given
-        CategoryRequestDto request =
-                CategoryRequestDto.builder()
+        CategoryRequestDTO request =
+                CategoryRequestDTO.builder()
                         .name("Updated Action")
                         .description("Updated description")
                         .sortOrder(10)
@@ -213,7 +213,7 @@ class CategoryControllerTest {
                         .sortOrder(10)
                         .build();
 
-        CategoryResponseDto updatedDto =
+        CategoryResponseDTO updatedDto =
                 categoryResponseDto.toBuilder()
                         .name("Updated Action")
                         .description("Updated description")
@@ -254,8 +254,8 @@ class CategoryControllerTest {
         // Given
         Category category2 = Category.builder().id("cat-2").name("Drama").sortOrder(2).build();
 
-        CategoryResponseDto categoryResponseDto2 =
-                CategoryResponseDto.builder()
+        CategoryResponseDTO categoryResponseDto2 =
+                CategoryResponseDTO.builder()
                         .id("cat-2")
                         .name("Drama")
                         .sortOrder(2)
@@ -277,15 +277,15 @@ class CategoryControllerTest {
     @Test
     void createCategory_shouldHandleNullOptionalFields() throws Exception {
         // Given
-        CategoryRequestDto request = CategoryRequestDto.builder().name("Minimal Category").build();
+        CategoryRequestDTO request = CategoryRequestDTO.builder().name("Minimal Category").build();
 
         CreateCategoryCommand command =
                 CreateCategoryCommand.builder().name("Minimal Category").build();
 
         Category savedCategory = Category.builder().id("cat-3").name("Minimal Category").build();
 
-        CategoryResponseDto createdDto =
-                CategoryResponseDto.builder()
+        CategoryResponseDTO createdDto =
+                CategoryResponseDTO.builder()
                         .id("cat-3")
                         .name("Minimal Category")
                         .movieCount(0)

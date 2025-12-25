@@ -1,7 +1,7 @@
 package com.mediaserver.infrastructure.rest.controller;
 
 import com.mediaserver.application.usecase.stream.GetStreamInfoUseCase;
-import com.mediaserver.infrastructure.rest.dto.StreamInfoDto;
+import com.mediaserver.infrastructure.rest.dto.StreamInfoDTO;
 import com.mediaserver.service.VideoStreamingService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,9 +70,9 @@ public class StreamController {
     }
 
     @GetMapping("/{movieId}/info")
-    public StreamInfoDto getStreamInfo(@PathVariable String movieId) {
+    public StreamInfoDTO getStreamInfo(@PathVariable String movieId) {
         var info = getStreamInfoUseCase.getStreamInfo(movieId);
-        return StreamInfoDto.builder()
+        return StreamInfoDTO.builder()
                 .movieId(info.getMovieId())
                 .title(info.getTitle())
                 .fileSize(info.getFileSize())

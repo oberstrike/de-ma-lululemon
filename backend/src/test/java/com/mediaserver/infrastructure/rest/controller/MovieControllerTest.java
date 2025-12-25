@@ -16,8 +16,8 @@ import com.mediaserver.domain.model.Movie;
 import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.exception.GlobalExceptionHandler;
 import com.mediaserver.exception.MovieNotFoundException;
-import com.mediaserver.infrastructure.rest.dto.MovieRequestDto;
-import com.mediaserver.infrastructure.rest.dto.MovieResponseDto;
+import com.mediaserver.infrastructure.rest.dto.MovieRequestDTO;
+import com.mediaserver.infrastructure.rest.dto.MovieResponseDTO;
 import com.mediaserver.infrastructure.rest.mapper.MovieRestMapper;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -79,7 +79,7 @@ class MovieControllerTest {
     @MockitoBean private MovieRestMapper movieRestMapper;
 
     private Movie entityMovie;
-    private MovieResponseDto movieResponseDto;
+    private MovieResponseDTO movieResponseDto;
 
     @BeforeEach
     void setUp() {
@@ -95,7 +95,7 @@ class MovieControllerTest {
                         .build();
 
         movieResponseDto =
-                MovieResponseDto.builder()
+                MovieResponseDTO.builder()
                         .id("movie-1")
                         .title("Test Movie")
                         .description("A test movie")
@@ -159,7 +159,7 @@ class MovieControllerTest {
         Movie readyMovie =
                 entityMovie.withStatus(MovieStatus.READY).withLocalPath("/cache/movie.mp4");
 
-        MovieResponseDto readyDto =
+        MovieResponseDTO readyDto =
                 movieResponseDto.toBuilder().status(MovieStatus.READY).cached(true).build();
 
         when(getReadyMoviesUseCase.getReadyMovies()).thenReturn(List.of(readyMovie));
@@ -201,8 +201,8 @@ class MovieControllerTest {
     @Test
     void createMovie_shouldReturnCreatedMovie() throws Exception {
         // Given
-        MovieRequestDto request =
-                MovieRequestDto.builder()
+        MovieRequestDTO request =
+                MovieRequestDTO.builder()
                         .title("New Movie")
                         .megaUrl("https://mega.nz/file/test")
                         .categoryId("cat-1")
@@ -235,8 +235,8 @@ class MovieControllerTest {
     @Test
     void createMovie_shouldReturn400_whenTitleMissing() throws Exception {
         // Given
-        MovieRequestDto request =
-                MovieRequestDto.builder().megaUrl("https://mega.nz/file/test").build();
+        MovieRequestDTO request =
+                MovieRequestDTO.builder().megaUrl("https://mega.nz/file/test").build();
 
         // When & Then
         mockMvc.perform(
@@ -250,7 +250,7 @@ class MovieControllerTest {
     @Test
     void createMovie_shouldReturn400_whenMegaUrlMissing() throws Exception {
         // Given
-        MovieRequestDto request = MovieRequestDto.builder().title("New Movie").build();
+        MovieRequestDTO request = MovieRequestDTO.builder().title("New Movie").build();
 
         // When & Then
         mockMvc.perform(
@@ -264,15 +264,15 @@ class MovieControllerTest {
     @Test
     void updateMovie_shouldReturnUpdatedMovie() throws Exception {
         // Given
-        MovieRequestDto request =
-                MovieRequestDto.builder()
+        MovieRequestDTO request =
+                MovieRequestDTO.builder()
                         .title("Updated Movie")
                         .megaUrl("https://mega.nz/file/test")
                         .build();
 
         Movie updatedMovie = entityMovie.withTitle("Updated Movie");
 
-        MovieResponseDto updatedDto = movieResponseDto.toBuilder().title("Updated Movie").build();
+        MovieResponseDTO updatedDto = movieResponseDto.toBuilder().title("Updated Movie").build();
 
         UpdateMovieCommand command =
                 UpdateMovieCommand.builder()
@@ -348,7 +348,7 @@ class MovieControllerTest {
         Movie cachedMovie =
                 entityMovie.withLocalPath("/cache/movie.mp4").withStatus(MovieStatus.READY);
 
-        MovieResponseDto cachedDto =
+        MovieResponseDTO cachedDto =
                 movieResponseDto.toBuilder().cached(true).status(MovieStatus.READY).build();
 
         when(getCachedMoviesUseCase.getCachedMovies()).thenReturn(List.of(cachedMovie));

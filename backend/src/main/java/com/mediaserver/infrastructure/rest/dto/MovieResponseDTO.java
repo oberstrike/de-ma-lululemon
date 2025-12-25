@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class MovieResponseDto {
+public class MovieResponseDTO {
     private String id;
     private String title;
     private String description;

@@ -1,7 +1,7 @@
 package com.mediaserver.infrastructure.rest.mapper;
 
 import com.mediaserver.domain.model.DownloadTask;
-import com.mediaserver.infrastructure.rest.dto.DownloadProgressDto;
+import com.mediaserver.infrastructure.rest.dto.DownloadProgressDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -9,5 +9,5 @@ import org.mapstruct.Mapping;
 public interface DownloadRestMapper {
 
     @Mapping(target = "movieTitle", ignore = true)
-    DownloadProgressDto toResponse(DownloadTask downloadTask);
+    DownloadProgressDTO toResponse(DownloadTask downloadTask);
 }

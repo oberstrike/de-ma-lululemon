@@ -9,7 +9,7 @@ import com.mediaserver.domain.repository.DownloadTaskRepository;
 import com.mediaserver.domain.repository.MovieRepository;
 import com.mediaserver.event.DownloadProgressEvent;
 import com.mediaserver.exception.DownloadException;
-import com.mediaserver.infrastructure.rest.dto.DownloadProgressDto;
+import com.mediaserver.infrastructure.rest.dto.DownloadProgressDTO;
 import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -217,8 +217,8 @@ public class MegaDownloadService {
     }
 
     private void publishProgress(Movie movie, DownloadProgress progress) {
-        DownloadProgressDto dto =
-                DownloadProgressDto.builder()
+        DownloadProgressDTO dto =
+                DownloadProgressDTO.builder()
                         .movieId(movie.getId())
                         .movieTitle(movie.getTitle())
                         .status(DownloadStatus.IN_PROGRESS)
@@ -237,8 +237,8 @@ public class MegaDownloadService {
                 task.withStatus(DownloadStatus.FAILED).withErrorMessage(e.getMessage());
         taskRepository.save(updatedTask);
 
-        DownloadProgressDto dto =
-                DownloadProgressDto.builder()
+        DownloadProgressDTO dto =
+                DownloadProgressDTO.builder()
                         .movieId(movie.getId())
                         .movieTitle(movie.getTitle())
                         .status(DownloadStatus.FAILED)

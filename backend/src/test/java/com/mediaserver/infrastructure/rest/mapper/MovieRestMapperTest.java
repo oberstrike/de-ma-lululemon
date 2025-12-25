@@ -6,8 +6,8 @@ import com.mediaserver.application.command.CreateMovieCommand;
 import com.mediaserver.application.command.UpdateMovieCommand;
 import com.mediaserver.domain.model.Movie;
 import com.mediaserver.domain.model.MovieStatus;
-import com.mediaserver.infrastructure.rest.dto.MovieRequestDto;
-import com.mediaserver.infrastructure.rest.dto.MovieResponseDto;
+import com.mediaserver.infrastructure.rest.dto.MovieRequestDTO;
+import com.mediaserver.infrastructure.rest.dto.MovieResponseDTO;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ class MovieRestMapperTest {
     private MovieRestMapper movieRestMapper;
 
     private Movie movie;
-    private MovieRequestDto requestDto;
+    private MovieRequestDTO requestDto;
 
     @BeforeEach
     void setUp() {
@@ -48,7 +48,7 @@ class MovieRestMapperTest {
                         .build();
 
         requestDto =
-                MovieRequestDto.builder()
+                MovieRequestDTO.builder()
                         .title("New Movie")
                         .description("A new movie description")
                         .year(2024)
@@ -64,7 +64,7 @@ class MovieRestMapperTest {
     @Test
     void toResponse_shouldMapAllBasicFields() {
         // When
-        MovieResponseDto result = movieRestMapper.toResponse(movie);
+        MovieResponseDTO result = movieRestMapper.toResponse(movie);
 
         // Then
         assertThat(result).isNotNull();
@@ -82,7 +82,7 @@ class MovieRestMapperTest {
     @Test
     void toResponse_shouldMapCategoryId() {
         // When
-        MovieResponseDto result = movieRestMapper.toResponse(movie);
+        MovieResponseDTO result = movieRestMapper.toResponse(movie);
 
         // Then - categoryName is ignored by mapper, only categoryId is mapped
         assertThat(result.getCategoryId()).isEqualTo("cat-1");
@@ -95,7 +95,7 @@ class MovieRestMapperTest {
         Movie cachedMovie = movie.withLocalPath("/cache/video.mp4").withStatus(MovieStatus.READY);
 
         // When
-        MovieResponseDto result = movieRestMapper.toResponse(cachedMovie);
+        MovieResponseDTO result = movieRestMapper.toResponse(cachedMovie);
 
         // Then
         assertThat(result.isCached()).isTrue();
@@ -107,7 +107,7 @@ class MovieRestMapperTest {
         Movie notCachedMovie = movie.withLocalPath(null).withStatus(MovieStatus.READY);
 
         // When
-        MovieResponseDto result = movieRestMapper.toResponse(notCachedMovie);
+        MovieResponseDTO result = movieRestMapper.toResponse(notCachedMovie);
 
         // Then
         assertThat(result.isCached()).isFalse();
@@ -120,7 +120,7 @@ class MovieRestMapperTest {
                 movie.withLocalPath("/cache/video.mp4").withStatus(MovieStatus.DOWNLOADING);
 
         // When
-        MovieResponseDto result = movieRestMapper.toResponse(downloadingMovie);
+        MovieResponseDTO result = movieRestMapper.toResponse(downloadingMovie);
 
         // Then
         assertThat(result.isCached()).isFalse();
@@ -132,7 +132,7 @@ class MovieRestMapperTest {
         Movie movieWithoutCategory = movie.withCategoryId(null);
 
         // When
-        MovieResponseDto result = movieRestMapper.toResponse(movieWithoutCategory);
+        MovieResponseDTO result = movieRestMapper.toResponse(movieWithoutCategory);
 
         // Then
         assertThat(result.getCategoryId()).isNull();
@@ -150,7 +150,7 @@ class MovieRestMapperTest {
                         .build();
 
         // When
-        MovieResponseDto result = movieRestMapper.toResponse(minimalMovie);
+        MovieResponseDTO result = movieRestMapper.toResponse(minimalMovie);
 
         // Then
         assertThat(result.getId()).isEqualTo("movie-2");
@@ -189,7 +189,7 @@ class MovieRestMapperTest {
         Movie movieWithZeroSize = movie.withFileSize(0L);
 
         // When
-        MovieResponseDto result = movieRestMapper.toResponse(movieWithZeroSize);
+        MovieResponseDTO result = movieRestMapper.toResponse(movieWithZeroSize);
 
         // Then
         assertThat(result.getFileSize()).isEqualTo(0L);
@@ -201,7 +201,7 @@ class MovieRestMapperTest {
         Movie movieWithLargeSize = movie.withFileSize(5L * 1024 * 1024 * 1024); // 5GB
 
         // When
-        MovieResponseDto result = movieRestMapper.toResponse(movieWithLargeSize);
+        MovieResponseDTO result = movieRestMapper.toResponse(movieWithLargeSize);
 
         // Then
         assertThat(result.getFileSize()).isEqualTo(5L * 1024 * 1024 * 1024);
@@ -228,8 +228,8 @@ class MovieRestMapperTest {
     @Test
     void toCreateCommand_shouldHandleNullOptionalFields() {
         // Given
-        MovieRequestDto minimalRequest =
-                MovieRequestDto.builder()
+        MovieRequestDTO minimalRequest =
+                MovieRequestDTO.builder()
                         .title("Minimal Movie")
                         .megaUrl("https://mega.nz/file/minimal")
                         .build();
@@ -250,8 +250,8 @@ class MovieRestMapperTest {
     @Test
     void toCreateCommand_shouldMapEmptyStringsAsNull() {
         // Given
-        MovieRequestDto requestWithEmptyStrings =
-                MovieRequestDto.builder()
+        MovieRequestDTO requestWithEmptyStrings =
+                MovieRequestDTO.builder()
                         .title("Test Movie")
                         .description("")
                         .megaUrl("https://mega.nz/file/test")
@@ -297,8 +297,8 @@ class MovieRestMapperTest {
     void toUpdateCommand_shouldHandleNullOptionalFields() {
         // Given
         String movieId = "movie-update-2";
-        MovieRequestDto minimalRequest =
-                MovieRequestDto.builder()
+        MovieRequestDTO minimalRequest =
+                MovieRequestDTO.builder()
                         .title("Updated Title")
                         .megaUrl("https://mega.nz/file/updated")
                         .build();

@@ -2,9 +2,9 @@ package com.mediaserver.infrastructure.rest.controller;
 
 import com.mediaserver.application.usecase.movie.*;
 import com.mediaserver.domain.model.Movie;
-import com.mediaserver.infrastructure.rest.dto.CacheStatsDto;
-import com.mediaserver.infrastructure.rest.dto.MovieRequestDto;
-import com.mediaserver.infrastructure.rest.dto.MovieResponseDto;
+import com.mediaserver.infrastructure.rest.dto.CacheStatsDTO;
+import com.mediaserver.infrastructure.rest.dto.MovieRequestDTO;
+import com.mediaserver.infrastructure.rest.dto.MovieResponseDTO;
 import com.mediaserver.infrastructure.rest.mapper.MovieRestMapper;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -36,7 +36,7 @@ public class MovieController {
     private final MovieRestMapper movieMapper;
 
     @GetMapping
-    public List<MovieResponseDto> getAllMovies(
+    public List<MovieResponseDTO> getAllMovies(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String categoryId,
             @RequestParam(defaultValue = "false") boolean readyOnly) {
@@ -59,20 +59,20 @@ public class MovieController {
     }
 
     @GetMapping("/{id}")
-    public MovieResponseDto getMovie(@PathVariable String id) {
+    public MovieResponseDTO getMovie(@PathVariable String id) {
         return movieMapper.toResponse(getMovieUseCase.getMovie(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public MovieResponseDto createMovie(@Valid @RequestBody MovieRequestDto request) {
+    public MovieResponseDTO createMovie(@Valid @RequestBody MovieRequestDTO request) {
         var movie = createMovieUseCase.createMovie(movieMapper.toCreateCommand(request));
         return movieMapper.toResponse(movie);
     }
 
     @PutMapping("/{id}")
-    public MovieResponseDto updateMovie(
-            @PathVariable String id, @Valid @RequestBody MovieRequestDto request) {
+    public MovieResponseDTO updateMovie(
+            @PathVariable String id, @Valid @RequestBody MovieRequestDTO request) {
         var movie = updateMovieUseCase.updateMovie(movieMapper.toUpdateCommand(id, request));
         return movieMapper.toResponse(movie);
     }
@@ -90,9 +90,9 @@ public class MovieController {
     }
 
     @GetMapping("/cache/stats")
-    public CacheStatsDto getCacheStats() {
+    public CacheStatsDTO getCacheStats() {
         var stats = getCacheStatsUseCase.getCacheStats();
-        return CacheStatsDto.builder()
+        return CacheStatsDTO.builder()
                 .totalSizeBytes(stats.getTotalSizeBytes())
                 .maxSizeBytes(stats.getMaxSizeBytes())
                 .usagePercent(stats.getUsagePercent())
@@ -101,7 +101,7 @@ public class MovieController {
     }
 
     @GetMapping("/cached")
-    public List<MovieResponseDto> getCachedMovies() {
+    public List<MovieResponseDTO> getCachedMovies() {
         return getCachedMoviesUseCase.getCachedMovies().stream()
                 .map(movieMapper::toResponse)
                 .toList();
@@ -119,17 +119,17 @@ public class MovieController {
     }
 
     @GetMapping("/favorites")
-    public List<MovieResponseDto> getFavorites() {
+    public List<MovieResponseDTO> getFavorites() {
         return getFavoritesUseCase.getFavorites().stream().map(movieMapper::toResponse).toList();
     }
 
     @PostMapping("/{id}/favorite")
-    public MovieResponseDto addFavorite(@PathVariable String id) {
+    public MovieResponseDTO addFavorite(@PathVariable String id) {
         return movieMapper.toResponse(addFavoriteUseCase.addFavorite(id));
     }
 
     @DeleteMapping("/{id}/favorite")
-    public MovieResponseDto removeFavorite(@PathVariable String id) {
+    public MovieResponseDTO removeFavorite(@PathVariable String id) {
         return movieMapper.toResponse(removeFavoriteUseCase.removeFavorite(id));
     }
 }

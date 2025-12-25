@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class MovieRequestDto {
+public class MovieRequestDTO {
 
     @NotBlank(message = "Title is required") private String title;
 

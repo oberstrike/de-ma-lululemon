@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DownloadProgressDto {
+public class DownloadProgressDTO {
     private String movieId;
     private String movieTitle;
     private DownloadStatus status;

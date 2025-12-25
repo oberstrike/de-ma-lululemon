@@ -1,8 +1,8 @@
 package com.mediaserver.infrastructure.rest.controller;
 
 import com.mediaserver.application.usecase.category.*;
-import com.mediaserver.infrastructure.rest.dto.CategoryRequestDto;
-import com.mediaserver.infrastructure.rest.dto.CategoryResponseDto;
+import com.mediaserver.infrastructure.rest.dto.CategoryRequestDTO;
+import com.mediaserver.infrastructure.rest.dto.CategoryResponseDTO;
 import com.mediaserver.infrastructure.rest.mapper.CategoryRestMapper;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -23,28 +23,28 @@ public class CategoryController {
     private final CategoryRestMapper categoryMapper;
 
     @GetMapping
-    public List<CategoryResponseDto> getAllCategories() {
+    public List<CategoryResponseDTO> getAllCategories() {
         return getAllCategoriesUseCase.getAllCategories().stream()
                 .map(categoryMapper::toResponse)
                 .toList();
     }
 
     @GetMapping("/{id}")
-    public CategoryResponseDto getCategory(@PathVariable String id) {
+    public CategoryResponseDTO getCategory(@PathVariable String id) {
         return categoryMapper.toResponse(getCategoryUseCase.getCategory(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CategoryResponseDto createCategory(@Valid @RequestBody CategoryRequestDto request) {
+    public CategoryResponseDTO createCategory(@Valid @RequestBody CategoryRequestDTO request) {
         var category =
                 createCategoryUseCase.createCategory(categoryMapper.toCreateCommand(request));
         return categoryMapper.toResponse(category);
     }
 
     @PutMapping("/{id}")
-    public CategoryResponseDto updateCategory(
-            @PathVariable String id, @Valid @RequestBody CategoryRequestDto request) {
+    public CategoryResponseDTO updateCategory(
+            @PathVariable String id, @Valid @RequestBody CategoryRequestDTO request) {
         var category =
                 updateCategoryUseCase.updateCategory(categoryMapper.toUpdateCommand(id, request));
         return categoryMapper.toResponse(category);

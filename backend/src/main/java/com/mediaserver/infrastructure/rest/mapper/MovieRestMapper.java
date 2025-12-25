@@ -3,8 +3,8 @@ package com.mediaserver.infrastructure.rest.mapper;
 import com.mediaserver.application.command.CreateMovieCommand;
 import com.mediaserver.application.command.UpdateMovieCommand;
 import com.mediaserver.domain.model.Movie;
-import com.mediaserver.infrastructure.rest.dto.MovieRequestDto;
-import com.mediaserver.infrastructure.rest.dto.MovieResponseDto;
+import com.mediaserver.infrastructure.rest.dto.MovieRequestDTO;
+import com.mediaserver.infrastructure.rest.dto.MovieResponseDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -13,10 +13,10 @@ public interface MovieRestMapper {
 
     @Mapping(target = "cached", expression = "java(movie.isCached())")
     @Mapping(target = "categoryName", ignore = true)
-    MovieResponseDto toResponse(Movie movie);
+    MovieResponseDTO toResponse(Movie movie);
 
-    CreateMovieCommand toCreateCommand(MovieRequestDto dto);
+    CreateMovieCommand toCreateCommand(MovieRequestDTO dto);
 
     @Mapping(target = "id", source = "id")
-    UpdateMovieCommand toUpdateCommand(String id, MovieRequestDto dto);
+    UpdateMovieCommand toUpdateCommand(String id, MovieRequestDTO dto);
 }

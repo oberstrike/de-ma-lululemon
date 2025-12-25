@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScanResultDto {
+public class ScanResultDTO {
     private String scannedPath;
     private Date startTime;
     private Date endTime;

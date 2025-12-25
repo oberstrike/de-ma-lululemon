@@ -9,11 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StreamInfoDto {
-    private String movieId;
-    private String title;
-    private long fileSize;
-    private String contentType;
-    private String streamUrl;
-    private boolean supportsRangeRequests;
+public class CacheStatsDTO {
+    private long totalSizeBytes;
+    private long maxSizeBytes;
+    private int usagePercent;
+    private long movieCount;
 }

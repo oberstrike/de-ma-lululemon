@@ -6,12 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class CacheStatsDto {
-    private long totalSizeBytes;
-    private long maxSizeBytes;
-    private int usagePercent;
-    private long movieCount;
+public class CategoryResponseDTO {
+    private String id;
+    private String name;
+    private String description;
+    private Integer sortOrder;
+    private int movieCount;
 }

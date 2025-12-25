@@ -6,7 +6,7 @@ import com.mediaserver.domain.model.Movie;
 import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.domain.repository.CategoryRepository;
 import com.mediaserver.domain.repository.MovieRepository;
-import com.mediaserver.dto.ScanResultDto;
+import com.mediaserver.dto.ScanResultDTO;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -63,17 +63,17 @@ public class MegaScanService {
     }
 
     @Async
-    public CompletableFuture<ScanResultDto> scanFolderAsync(String folderPath) {
+    public CompletableFuture<ScanResultDTO> scanFolderAsync(String folderPath) {
         return CompletableFuture.completedFuture(scanFolder(folderPath));
     }
 
     @Transactional
-    public ScanResultDto scanFolder(String folderPath) {
+    public ScanResultDTO scanFolder(String folderPath) {
         log.info("Starting Mega folder scan: {}", folderPath);
 
         String rootPath = folderPath != null ? folderPath : properties.getMega().getRootFolder();
-        ScanResultDto.ScanResultDtoBuilder result =
-                ScanResultDto.builder().scannedPath(rootPath).startTime(new Date());
+        ScanResultDTO.ScanResultDTOBuilder result =
+                ScanResultDTO.builder().scannedPath(rootPath).startTime(new Date());
 
         int categoriesCreated = 0;
         int categoriesUpdated = 0;
@@ -213,7 +213,7 @@ public class MegaScanService {
             log.error("Mega folder scan failed", e);
         }
 
-        ScanResultDto scanResult =
+        ScanResultDTO scanResult =
                 result.endTime(new Date())
                         .categoriesCreated(categoriesCreated)
                         .categoriesUpdated(categoriesUpdated)
