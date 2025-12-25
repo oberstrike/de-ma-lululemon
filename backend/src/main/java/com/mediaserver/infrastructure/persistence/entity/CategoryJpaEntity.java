@@ -1,4 +1,4 @@
-package com.mediaserver.entity;
+package com.mediaserver.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,8 +11,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
-public class Category {
+@Builder
+public class CategoryJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -32,5 +32,5 @@ public class Category {
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     @Builder.Default
     @ToString.Exclude
-    private List<Movie> movies = new ArrayList<>();
+    private List<MovieJpaEntity> movies = new ArrayList<>();
 }

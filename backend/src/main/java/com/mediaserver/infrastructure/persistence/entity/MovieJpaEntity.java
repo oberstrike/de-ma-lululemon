@@ -1,5 +1,6 @@
-package com.mediaserver.entity;
+package com.mediaserver.infrastructure.persistence.entity;
 
+import com.mediaserver.domain.model.MovieStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,8 +11,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
-public class Movie {
+@Builder
+public class MovieJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -51,7 +52,7 @@ public class Movie {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     @ToString.Exclude
-    private Category category;
+    private CategoryJpaEntity category;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

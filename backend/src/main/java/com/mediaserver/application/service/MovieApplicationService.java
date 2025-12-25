@@ -1,0 +1,241 @@
+package com.mediaserver.application.service;
+
+import com.mediaserver.application.command.CreateMovieCommand;
+import com.mediaserver.application.command.UpdateMovieCommand;
+import com.mediaserver.application.port.in.*;
+import com.mediaserver.application.port.out.CategoryPort;
+import com.mediaserver.application.port.out.DownloadServicePort;
+import com.mediaserver.application.port.out.FileStoragePort;
+import com.mediaserver.application.port.out.MoviePort;
+import com.mediaserver.config.MediaProperties;
+import com.mediaserver.domain.model.Category;
+import com.mediaserver.domain.model.Movie;
+import com.mediaserver.domain.model.MovieStatus;
+import com.mediaserver.exception.CategoryNotFoundException;
+import com.mediaserver.exception.MovieNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.util.List;
+
+/**
+ * Application service implementing movie-related use cases.
+ * This service orchestrates the business logic and delegates to output ports.
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional
+@Slf4j
+public class MovieApplicationService implements
+        GetMovieUseCase,
+        CreateMovieUseCase,
+        UpdateMovieUseCase,
+        DeleteMovieUseCase,
+        SearchMoviesUseCase,
+        DownloadMovieUseCase,
+        CacheManagementUseCase {
+
+    private final MoviePort moviePort;
+    private final CategoryPort categoryPort;
+    private final FileStoragePort fileStoragePort;
+    private final DownloadServicePort downloadServicePort;
+    private final MediaProperties properties;
+
+    @Override
+    public Movie getMovie(String id) {
+        return moviePort.findById(id)
+                .orElseThrow(() -> new MovieNotFoundException(id));
+    }
+
+    @Override
+    public List<Movie> getAllMovies() {
+        return moviePort.findAll();
+    }
+
+    @Override
+    public List<Movie> getReadyMovies() {
+        return moviePort.findReadyMovies();
+    }
+
+    @Override
+    public List<Movie> getMoviesByCategory(String categoryId) {
+        return moviePort.findByCategoryId(categoryId);
+    }
+
+    @Override
+    public List<Movie> searchMovies(String query) {
+        return moviePort.search(query);
+    }
+
+    @Override
+    public Movie createMovie(CreateMovieCommand command) {
+        Movie.MovieBuilder movieBuilder = Movie.builder()
+                .title(command.getTitle())
+                .description(command.getDescription())
+                .year(command.getYear())
+                .duration(command.getDuration())
+                .megaUrl(command.getMegaUrl())
+                .thumbnailUrl(command.getThumbnailUrl())
+                .status(MovieStatus.PENDING)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now());
+
+        // Set category if provided
+        if (command.getCategoryId() != null) {
+            Category category = categoryPort.findById(command.getCategoryId())
+                    .orElseThrow(() -> new CategoryNotFoundException(command.getCategoryId()));
+            movieBuilder.categoryId(category.getId());
+        }
+
+        Movie movie = movieBuilder.build();
+        return moviePort.save(movie);
+    }
+
+    @Override
+    public Movie updateMovie(String id, UpdateMovieCommand command) {
+        Movie movie = moviePort.findById(id)
+                .orElseThrow(() -> new MovieNotFoundException(id));
+
+        // Check if mega URL changed, if so reset download status
+        boolean megaUrlChanged = command.getMegaUrl() != null &&
+                !command.getMegaUrl().equals(movie.getMegaUrl());
+
+        String newCategoryId = movie.getCategoryId();
+        if (command.getCategoryId() != null) {
+            Category category = categoryPort.findById(command.getCategoryId())
+                    .orElseThrow(() -> new CategoryNotFoundException(command.getCategoryId()));
+            newCategoryId = category.getId();
+        }
+
+        Movie updatedMovie = movie.withTitle(command.getTitle())
+                .withDescription(command.getDescription())
+                .withYear(command.getYear())
+                .withDuration(command.getDuration())
+                .withThumbnailUrl(command.getThumbnailUrl())
+                .withCategoryId(newCategoryId)
+                .withUpdatedAt(LocalDateTime.now());
+
+        // If Mega URL changed, reset status and clear local path
+        if (megaUrlChanged) {
+            updatedMovie = updatedMovie
+                    .withMegaUrl(command.getMegaUrl())
+                    .withStatus(MovieStatus.PENDING)
+                    .withLocalPath(null);
+        }
+
+        return moviePort.save(updatedMovie);
+    }
+
+    @Override
+    public void deleteMovie(String id) {
+        Movie movie = moviePort.findById(id)
+                .orElseThrow(() -> new MovieNotFoundException(id));
+
+        // Delete local file if exists
+        if (movie.getLocalPath() != null) {
+            try {
+                fileStoragePort.deleteIfExists(Path.of(movie.getLocalPath()));
+            } catch (IOException e) {
+                log.warn("Failed to delete video file: {}", movie.getLocalPath(), e);
+            }
+        }
+
+        moviePort.delete(movie);
+    }
+
+    @Override
+    public void startDownload(String movieId) {
+        Movie movie = moviePort.findById(movieId)
+                .orElseThrow(() -> new MovieNotFoundException(movieId));
+
+        if (movie.isCached()) {
+            throw new IllegalStateException("Movie is already downloaded");
+        }
+
+        // Update status to downloading
+        Movie downloadingMovie = movie.withStatus(MovieStatus.DOWNLOADING);
+        moviePort.save(downloadingMovie);
+
+        // Start async download
+        downloadServicePort.downloadMovie(downloadingMovie);
+    }
+
+    @Override
+    public CacheStats getCacheStats() {
+        long totalSize = moviePort.getTotalCacheSize();
+        long maxSize = (long) properties.getStorage().getMaxCacheSizeGb() * 1024 * 1024 * 1024;
+
+        return CacheStats.builder()
+                .totalSizeBytes(totalSize)
+                .maxSizeBytes(maxSize)
+                .usagePercent(maxSize > 0 ? (int) ((totalSize * 100) / maxSize) : 0)
+                .movieCount(moviePort.countCachedMovies())
+                .build();
+    }
+
+    @Override
+    public List<Movie> getCachedMovies() {
+        return moviePort.findCachedMovies();
+    }
+
+    @Override
+    public void clearCache(String movieId) {
+        Movie movie = moviePort.findById(movieId)
+                .orElseThrow(() -> new MovieNotFoundException(movieId));
+
+        if (movie.getLocalPath() == null) {
+            log.info("Movie {} has no cached file", movieId);
+            return;
+        }
+
+        try {
+            Path localFile = Path.of(movie.getLocalPath());
+            if (fileStoragePort.deleteIfExists(localFile)) {
+                log.info("Deleted cached file: {}", localFile);
+            }
+        } catch (IOException e) {
+            log.error("Failed to delete cached file for movie {}: {}", movieId, e.getMessage());
+            throw new RuntimeException("Failed to delete cached file", e);
+        }
+
+        Movie clearedMovie = movie.withLocalPath(null)
+                .withFileSize(null)
+                .withStatus(MovieStatus.PENDING)
+                .withUpdatedAt(LocalDateTime.now());
+
+        moviePort.save(clearedMovie);
+        log.info("Cleared cache for movie: {} ({})", movie.getTitle(), movieId);
+    }
+
+    @Override
+    public int clearAllCache() {
+        List<Movie> cachedMovies = moviePort.findCachedMovies();
+        int cleared = 0;
+
+        for (Movie movie : cachedMovies) {
+            try {
+                if (movie.getLocalPath() != null) {
+                    fileStoragePort.deleteIfExists(Path.of(movie.getLocalPath()));
+
+                    Movie clearedMovie = movie.withLocalPath(null)
+                            .withFileSize(null)
+                            .withStatus(MovieStatus.PENDING)
+                            .withUpdatedAt(LocalDateTime.now());
+
+                    moviePort.save(clearedMovie);
+                    cleared++;
+                }
+            } catch (IOException e) {
+                log.warn("Failed to delete cached file for movie {}: {}", movie.getId(), e.getMessage());
+            }
+        }
+
+        log.info("Cleared cache for {} movies", cleared);
+        return cleared;
+    }
+}
