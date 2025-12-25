@@ -2,9 +2,11 @@ package com.mediaserver.service;
 
 import com.mediaserver.dto.CategoryCreateRequest;
 import com.mediaserver.dto.CategoryDto;
+import com.mediaserver.dto.CategoryMapper;
 import com.mediaserver.entity.Category;
 import com.mediaserver.exception.CategoryNotFoundException;
 import com.mediaserver.repository.CategoryRepository;
+import com.mediaserver.rules.CategoryRules;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,6 +29,12 @@ class CategoryServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private CategoryMapper categoryMapper;
+
+    @Mock
+    private CategoryRules categoryRules;
 
     @InjectMocks
     private CategoryService categoryService;
@@ -45,6 +54,7 @@ class CategoryServiceTest {
 
     @Test
     void getAllCategories_shouldReturnAllCategories() {
+        stubCategoryMapper();
         when(categoryRepository.findAllByOrderBySortOrderAsc()).thenReturn(List.of(testCategory));
 
         List<CategoryDto> result = categoryService.getAllCategories();
@@ -56,6 +66,7 @@ class CategoryServiceTest {
 
     @Test
     void getCategory_shouldReturnCategory_whenExists() {
+        stubCategoryMapper();
         when(categoryRepository.findById("cat-1")).thenReturn(Optional.of(testCategory));
 
         CategoryDto result = categoryService.getCategory("cat-1");
@@ -75,6 +86,7 @@ class CategoryServiceTest {
 
     @Test
     void createCategory_shouldCreateAndReturnCategory() {
+        stubCategoryMapper();
         CategoryCreateRequest request = CategoryCreateRequest.builder()
                 .name("Comedy")
                 .description("Comedy movies")
@@ -96,6 +108,7 @@ class CategoryServiceTest {
 
     @Test
     void updateCategory_shouldUpdateAndReturnCategory() {
+        stubCategoryMapper();
         CategoryCreateRequest request = CategoryCreateRequest.builder()
                 .name("Updated Action")
                 .description("Updated description")
@@ -138,5 +151,20 @@ class CategoryServiceTest {
 
         assertThatThrownBy(() -> categoryService.deleteCategory("nonexistent"))
                 .isInstanceOf(CategoryNotFoundException.class);
+    }
+
+    private CategoryDto toDto(Category category) {
+        return CategoryDto.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .description(category.getDescription())
+                .sortOrder(category.getSortOrder())
+                .movieCount(0)
+                .build();
+    }
+
+    private void stubCategoryMapper() {
+        when(categoryMapper.toDto(any(Category.class), eq(categoryRules)))
+                .thenAnswer(invocation -> toDto(invocation.getArgument(0)));
     }
 }

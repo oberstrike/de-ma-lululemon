@@ -1,6 +1,7 @@
 package com.mediaserver.controller;
 
 import com.mediaserver.dto.StreamInfoDto;
+import com.mediaserver.dto.StreamInfoMapper;
 import com.mediaserver.entity.Movie;
 import com.mediaserver.entity.MovieStatus;
 import com.mediaserver.config.MediaProperties;
@@ -9,12 +10,13 @@ import com.mediaserver.exception.GlobalExceptionHandler;
 import com.mediaserver.exception.MovieNotFoundException;
 import com.mediaserver.exception.VideoNotReadyException;
 import com.mediaserver.repository.MovieRepository;
+import com.mediaserver.rules.StreamInfoRules;
 import com.mediaserver.service.VideoStreamingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -38,11 +40,17 @@ class StreamControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private VideoStreamingService streamingService;
 
-    @MockBean
+    @MockitoBean
     private MovieRepository movieRepository;
+
+    @MockitoBean
+    private StreamInfoMapper streamInfoMapper;
+
+    @MockitoBean
+    private StreamInfoRules streamInfoRules;
 
     private Movie testMovie;
 
@@ -56,6 +64,9 @@ class StreamControllerTest {
                 .fileSize(1024L * 1024 * 100)
                 .contentType("video/mp4")
                 .build();
+
+        when(streamInfoMapper.toDto(any(Movie.class), eq(streamInfoRules)))
+                .thenAnswer(invocation -> toDto(invocation.getArgument(0)));
     }
 
     @Test
@@ -185,5 +196,18 @@ class StreamControllerTest {
                         .header("Range", "bytes=500-599"))
                 .andExpect(status().isPartialContent())
                 .andExpect(header().string("Content-Range", "bytes 500-599/1000"));
+    }
+
+    private StreamInfoDto toDto(Movie movie) {
+        long fileSize = movie.getFileSize() == null ? 0 : movie.getFileSize();
+        String contentType = movie.getContentType() == null ? "video/mp4" : movie.getContentType();
+        return StreamInfoDto.builder()
+                .movieId(movie.getId())
+                .title(movie.getTitle())
+                .fileSize(fileSize)
+                .contentType(contentType)
+                .streamUrl("/api/stream/" + movie.getId())
+                .supportsRangeRequests(true)
+                .build();
     }
 }
