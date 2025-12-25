@@ -1,6 +1,7 @@
 package com.mediaserver.controller;
 
 import com.mediaserver.dto.DownloadProgressDto;
+import com.mediaserver.dto.DownloadTaskMapperDelegate;
 import com.mediaserver.entity.DownloadStatus;
 import com.mediaserver.entity.DownloadTask;
 import com.mediaserver.entity.Movie;
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -34,6 +36,9 @@ class DownloadControllerTest {
 
     @MockitoBean
     private DownloadTaskRepository taskRepository;
+
+    @MockitoBean
+    private DownloadTaskMapperDelegate downloadTaskMapper;
 
     private DownloadTask testTask;
     private Movie testMovie;
@@ -53,6 +58,9 @@ class DownloadControllerTest {
                 .totalBytes(1024L * 1024 * 1024)
                 .progress(50)
                 .build();
+
+        when(downloadTaskMapper.toDto(any(DownloadTask.class)))
+                .thenAnswer(invocation -> toDto(invocation.getArgument(0)));
     }
 
     @Test
@@ -109,5 +117,23 @@ class DownloadControllerTest {
                 .andExpect(jsonPath("$.bytesDownloaded").value(0))
                 .andExpect(jsonPath("$.totalBytes").value(0))
                 .andExpect(jsonPath("$.progress").value(0));
+    }
+
+    private DownloadProgressDto toDto(DownloadTask task) {
+        long bytesDownloaded = task.getBytesDownloaded() == null ? 0 : task.getBytesDownloaded();
+        long totalBytes = task.getTotalBytes() == null ? 0 : task.getTotalBytes();
+        int progress = task.getProgress() == null ? 0 : task.getProgress();
+        Movie movie = task.getMovie();
+        String movieId = movie == null ? null : movie.getId();
+        String movieTitle = movie == null ? null : movie.getTitle();
+        return DownloadProgressDto.builder()
+                .movieId(movieId)
+                .movieTitle(movieTitle)
+                .status(task.getStatus())
+                .bytesDownloaded(bytesDownloaded)
+                .totalBytes(totalBytes)
+                .progress(progress)
+                .errorMessage(task.getErrorMessage())
+                .build();
     }
 }

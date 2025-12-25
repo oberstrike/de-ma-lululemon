@@ -1,7 +1,7 @@
 package com.mediaserver.controller;
 
 import com.mediaserver.dto.DownloadProgressDto;
-import com.mediaserver.dto.DownloadTaskMapper;
+import com.mediaserver.dto.DownloadTaskMapperDelegate;
 import com.mediaserver.repository.DownloadTaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import java.util.List;
 public class DownloadController {
 
     private final DownloadTaskRepository taskRepository;
-    private final DownloadTaskMapper downloadTaskMapper;
+    private final DownloadTaskMapperDelegate downloadTaskMapper;
 
     @GetMapping
     public ResponseEntity<List<DownloadProgressDto>> getActiveDownloads() {

@@ -1,6 +1,7 @@
 package com.mediaserver.controller;
 
 import com.mediaserver.dto.StreamInfoDto;
+import com.mediaserver.dto.StreamInfoMapper;
 import com.mediaserver.entity.Movie;
 import com.mediaserver.entity.MovieStatus;
 import com.mediaserver.config.MediaProperties;
@@ -44,6 +45,9 @@ class StreamControllerTest {
     @MockitoBean
     private MovieRepository movieRepository;
 
+    @MockitoBean
+    private StreamInfoMapper streamInfoMapper;
+
     private Movie testMovie;
 
     @BeforeEach
@@ -56,6 +60,9 @@ class StreamControllerTest {
                 .fileSize(1024L * 1024 * 100)
                 .contentType("video/mp4")
                 .build();
+
+        when(streamInfoMapper.toDto(any(Movie.class)))
+                .thenAnswer(invocation -> toDto(invocation.getArgument(0)));
     }
 
     @Test
@@ -185,5 +192,18 @@ class StreamControllerTest {
                         .header("Range", "bytes=500-599"))
                 .andExpect(status().isPartialContent())
                 .andExpect(header().string("Content-Range", "bytes 500-599/1000"));
+    }
+
+    private StreamInfoDto toDto(Movie movie) {
+        long fileSize = movie.getFileSize() == null ? 0 : movie.getFileSize();
+        String contentType = movie.getContentType() == null ? "video/mp4" : movie.getContentType();
+        return StreamInfoDto.builder()
+                .movieId(movie.getId())
+                .title(movie.getTitle())
+                .fileSize(fileSize)
+                .contentType(contentType)
+                .streamUrl("/api/stream/" + movie.getId())
+                .supportsRangeRequests(true)
+                .build();
     }
 }
