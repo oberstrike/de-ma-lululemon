@@ -139,6 +139,13 @@ import { Chip } from 'primeng/chip';
               }
 
               <p-button
+                [icon]="m.favorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
+                [label]="m.favorite ? 'Remove Favorite' : 'Add Favorite'"
+                [severity]="m.favorite ? 'danger' : 'secondary'"
+                [outlined]="true"
+                (click)="toggleFavorite()"
+              />
+              <p-button
                 icon="pi pi-trash"
                 label="Delete"
                 severity="danger"
@@ -321,6 +328,20 @@ export class MovieDetailComponent implements OnInit {
     if (!currentMovie) return;
     this.movie.set({ ...currentMovie, status: 'DOWNLOADING' });
     this.moviesStore.startDownload(currentMovie.id);
+  }
+
+  toggleFavorite() {
+    const currentMovie = this.movie();
+    if (!currentMovie) return;
+
+    const newFavorite = !currentMovie.favorite;
+    this.movie.set({ ...currentMovie, favorite: newFavorite });
+
+    if (newFavorite) {
+      this.moviesStore.addFavorite(currentMovie.id);
+    } else {
+      this.moviesStore.removeFavorite(currentMovie.id);
+    }
   }
 
   confirmDelete() {
