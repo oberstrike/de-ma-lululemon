@@ -63,6 +63,14 @@ export interface CacheStats {
   movieCount: number;
 }
 
+export interface MovieGroup {
+  name: string;
+  categoryId?: string;
+  special: boolean;
+  sortOrder: number;
+  movies: Movie[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
@@ -77,6 +85,15 @@ export class ApiService {
     return this.http.get<Movie[]>(`${this.baseUrl}/movies`, {
       params: params as Record<string, string>,
     });
+  }
+
+  getMoviesGrouped(search?: string): Observable<MovieGroup[]> {
+    if (search) {
+      return this.http.get<MovieGroup[]>(`${this.baseUrl}/movies/grouped`, {
+        params: { search },
+      });
+    }
+    return this.http.get<MovieGroup[]>(`${this.baseUrl}/movies/grouped`);
   }
 
   getMovie(id: string): Observable<Movie> {
