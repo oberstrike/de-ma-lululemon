@@ -98,4 +98,14 @@ public class MovieRepositoryAdapter implements MovieRepository {
     public boolean existsByMegaPath(String megaPath) {
         return jpaMovieRepository.existsByMegaPath(megaPath);
     }
+
+    @Override
+    public List<Movie> findFavorites() {
+        return mapper.toDomainList(jpaMovieRepository.findByFavoriteTrue());
+    }
+
+    @Override
+    public List<Movie> findCachedNonFavorites() {
+        return mapper.toDomainList(jpaMovieRepository.findCachedNonFavoriteMovies());
+    }
 }

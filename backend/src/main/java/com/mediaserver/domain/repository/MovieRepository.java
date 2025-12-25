@@ -89,4 +89,16 @@ public interface MovieRepository {
      * @return true if a movie exists with the given path
      */
     boolean existsByMegaPath(String megaPath);
+
+    /**
+     * Find all favorite movies.
+     * @return list of favorite movies
+     */
+    List<Movie> findFavorites();
+
+    /**
+     * Find cached movies that are not favorites (for cache clearing).
+     * @return list of cached non-favorite movies
+     */
+    List<Movie> findCachedNonFavorites();
 }

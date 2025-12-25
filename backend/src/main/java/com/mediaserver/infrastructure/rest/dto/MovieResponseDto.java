@@ -20,6 +20,7 @@ public class MovieResponseDto {
     private String duration;
     private String thumbnailUrl;
     private boolean cached;
+    private boolean favorite;
     private MovieStatus status;
     private String categoryId;
     private String categoryName;

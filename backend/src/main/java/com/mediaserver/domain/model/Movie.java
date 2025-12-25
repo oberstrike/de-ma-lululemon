@@ -24,6 +24,8 @@ public class Movie {
     @Builder.Default
     MovieStatus status = MovieStatus.PENDING;
     String categoryId;
+    @Builder.Default
+    boolean favorite = false;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 

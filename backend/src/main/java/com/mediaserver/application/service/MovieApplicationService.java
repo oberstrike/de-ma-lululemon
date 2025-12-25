@@ -7,6 +7,9 @@ import com.mediaserver.application.port.out.CategoryPort;
 import com.mediaserver.application.port.out.DownloadServicePort;
 import com.mediaserver.application.port.out.FileStoragePort;
 import com.mediaserver.application.port.out.MoviePort;
+import com.mediaserver.application.usecase.movie.AddFavoriteUseCase;
+import com.mediaserver.application.usecase.movie.GetFavoritesUseCase;
+import com.mediaserver.application.usecase.movie.RemoveFavoriteUseCase;
 import com.mediaserver.config.MediaProperties;
 import com.mediaserver.domain.model.Category;
 import com.mediaserver.domain.model.Movie;
@@ -40,7 +43,11 @@ public class MovieApplicationService implements
         DeleteMovieUseCase,
         SearchMoviesUseCase,
         DownloadMovieUseCase,
-        CacheManagementUseCase {
+        CacheManagementUseCase,
+        FavoriteMovieUseCase,
+        AddFavoriteUseCase,
+        RemoveFavoriteUseCase,
+        GetFavoritesUseCase {
 
     private final MoviePort moviePort;
     private final CategoryPort categoryPort;
@@ -240,7 +247,8 @@ public class MovieApplicationService implements
 
     @Override
     public int clearAllCache() {
-        List<Movie> cachedMovies = moviePort.findCachedMovies();
+        // Only clear non-favorite movies
+        List<Movie> cachedMovies = moviePort.findCachedNonFavorites();
         int cleared = 0;
 
         for (Movie movie : cachedMovies) {
@@ -263,7 +271,48 @@ public class MovieApplicationService implements
             }
         }
 
-        log.info("Cleared cache for {} movies", cleared);
+        log.info("Cleared cache for {} movies (favorites preserved)", cleared);
         return cleared;
+    }
+
+    // FavoriteMovieUseCase implementation
+
+    @Override
+    public Movie addFavorite(String movieId) {
+        Movie movie = moviePort.findById(movieId)
+                .orElseThrow(() -> new MovieNotFoundException(movieId));
+
+        if (movie.isFavorite()) {
+            log.info("Movie {} is already a favorite", movieId);
+            return movie;
+        }
+
+        Movie updatedMovie = movie.withFavorite(true)
+                .withUpdatedAt(LocalDateTime.now());
+
+        log.info("Added movie to favorites: {} ({})", movie.getTitle(), movieId);
+        return moviePort.save(updatedMovie);
+    }
+
+    @Override
+    public Movie removeFavorite(String movieId) {
+        Movie movie = moviePort.findById(movieId)
+                .orElseThrow(() -> new MovieNotFoundException(movieId));
+
+        if (!movie.isFavorite()) {
+            log.info("Movie {} is not a favorite", movieId);
+            return movie;
+        }
+
+        Movie updatedMovie = movie.withFavorite(false)
+                .withUpdatedAt(LocalDateTime.now());
+
+        log.info("Removed movie from favorites: {} ({})", movie.getTitle(), movieId);
+        return moviePort.save(updatedMovie);
+    }
+
+    @Override
+    public List<Movie> getFavorites() {
+        return moviePort.findFavorites();
     }
 }

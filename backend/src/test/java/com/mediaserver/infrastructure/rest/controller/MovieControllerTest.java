@@ -89,6 +89,15 @@ class MovieControllerTest {
     private ClearAllCacheUseCase clearAllCacheUseCase;
 
     @MockitoBean
+    private AddFavoriteUseCase addFavoriteUseCase;
+
+    @MockitoBean
+    private RemoveFavoriteUseCase removeFavoriteUseCase;
+
+    @MockitoBean
+    private GetFavoritesUseCase getFavoritesUseCase;
+
+    @MockitoBean
     private MovieRestMapper movieRestMapper;
 
     private Movie entityMovie;

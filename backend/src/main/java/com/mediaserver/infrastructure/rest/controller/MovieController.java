@@ -32,6 +32,9 @@ public class MovieController {
     private final GetCachedMoviesUseCase getCachedMoviesUseCase;
     private final ClearMovieCacheUseCase clearMovieCacheUseCase;
     private final ClearAllCacheUseCase clearAllCacheUseCase;
+    private final AddFavoriteUseCase addFavoriteUseCase;
+    private final RemoveFavoriteUseCase removeFavoriteUseCase;
+    private final GetFavoritesUseCase getFavoritesUseCase;
     private final MovieRestMapper movieMapper;
 
     @GetMapping
@@ -117,5 +120,26 @@ public class MovieController {
     public ResponseEntity<Integer> clearAllCache() {
         int cleared = clearAllCacheUseCase.clearAllCache();
         return ResponseEntity.ok(cleared);
+    }
+
+    @GetMapping("/favorites")
+    public ResponseEntity<List<MovieResponseDto>> getFavorites() {
+        var movies = getFavoritesUseCase.getFavorites();
+        var response = movies.stream()
+                .map(movieMapper::toResponse)
+                .toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/favorite")
+    public ResponseEntity<MovieResponseDto> addFavorite(@PathVariable String id) {
+        var movie = addFavoriteUseCase.addFavorite(id);
+        return ResponseEntity.ok(movieMapper.toResponse(movie));
+    }
+
+    @DeleteMapping("/{id}/favorite")
+    public ResponseEntity<MovieResponseDto> removeFavorite(@PathVariable String id) {
+        var movie = removeFavoriteUseCase.removeFavorite(id);
+        return ResponseEntity.ok(movieMapper.toResponse(movie));
     }
 }

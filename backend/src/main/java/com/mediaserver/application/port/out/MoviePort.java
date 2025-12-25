@@ -82,4 +82,16 @@ public interface MoviePort {
      * @param movie the movie to delete
      */
     void delete(Movie movie);
+
+    /**
+     * Finds all favorite movies.
+     * @return list of favorite movies
+     */
+    List<Movie> findFavorites();
+
+    /**
+     * Finds cached movies that are not favorites (for cache clearing).
+     * @return list of cached non-favorite movies
+     */
+    List<Movie> findCachedNonFavorites();
 }
