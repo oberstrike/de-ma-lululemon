@@ -7,9 +7,11 @@ import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.domain.repository.MovieRepository;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +44,8 @@ class RepositoryIntegrationTest {
     }
 
     @Autowired private MovieRepository movieRepository;
+
+    @Autowired private JdbcTemplate jdbcTemplate;
 
     @Test
     void shouldSaveAndRetrieveMovie() {
@@ -128,7 +132,6 @@ class RepositoryIntegrationTest {
 
     @Test
     void shouldFindFavoriteMovies() {
-        // Given
         Movie favoriteMovie =
                 Movie.builder()
                         .title("Favorite Movie")
@@ -148,12 +151,55 @@ class RepositoryIntegrationTest {
         movieRepository.save(favoriteMovie);
         movieRepository.save(regularMovie);
 
-        // When
         List<Movie> favorites = movieRepository.findFavorites();
 
-        // Then
         assertThat(favorites).hasSize(1);
         assertThat(favorites.get(0).getTitle()).isEqualTo("Favorite Movie");
+    }
+
+    @Test
+    void shouldFindFavoriteMoviesByUser() {
+        String userId = UUID.randomUUID().toString();
+        String otherUserId = UUID.randomUUID().toString();
+
+        jdbcTemplate.update("INSERT INTO users (id, name) VALUES (?, ?)", userId, "User A");
+        jdbcTemplate.update("INSERT INTO users (id, name) VALUES (?, ?)", otherUserId, "User B");
+
+        Movie userFavorite =
+                Movie.builder()
+                        .title("User Favorite")
+                        .megaPath("/path/user-favorite")
+                        .favorite(true)
+                        .userId(userId)
+                        .status(MovieStatus.PENDING)
+                        .build();
+
+        Movie otherFavorite =
+                Movie.builder()
+                        .title("Other Favorite")
+                        .megaPath("/path/other-favorite")
+                        .favorite(true)
+                        .userId(otherUserId)
+                        .status(MovieStatus.PENDING)
+                        .build();
+
+        Movie nonFavorite =
+                Movie.builder()
+                        .title("Non Favorite")
+                        .megaPath("/path/non-favorite")
+                        .favorite(false)
+                        .userId(userId)
+                        .status(MovieStatus.PENDING)
+                        .build();
+
+        movieRepository.save(userFavorite);
+        movieRepository.save(otherFavorite);
+        movieRepository.save(nonFavorite);
+
+        List<Movie> favorites = movieRepository.findFavoritesByUserId(userId);
+
+        assertThat(favorites).hasSize(1);
+        assertThat(favorites.get(0).getTitle()).isEqualTo("User Favorite");
     }
 
     @Test

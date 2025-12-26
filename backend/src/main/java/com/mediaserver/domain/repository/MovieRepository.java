@@ -108,6 +108,8 @@ public interface MovieRepository {
      */
     List<Movie> findFavorites();
 
+    List<Movie> findFavoritesByUserId(String userId);
+
     /**
      * Find cached movies that are not favorites (for cache clearing).
      *
