@@ -2,6 +2,8 @@ package com.mediaserver.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import com.mediaserver.infrastructure.security.MockAuthenticationFilter;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
@@ -25,6 +28,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 public class SecurityConfig {
 
     private final MediaProperties properties;
+    private final Optional<MockAuthenticationFilter> mockAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -52,6 +56,9 @@ public class SecurityConfig {
                                         .anyRequest()
                                         .authenticated())
                 .httpBasic(withDefaults());
+
+        mockAuthenticationFilter.ifPresent(
+                filter -> http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class));
 
         return http.build();
     }
