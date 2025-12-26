@@ -46,7 +46,7 @@ public class MovieGroupingService implements GetMoviesGroupedUseCase {
 
         // Get all categories for name lookup
         Map<String, Category> categoriesById =
-                categoryPort.findAllOrderBySortOrder().stream()
+                categoryPort.findAllOrderedBySortOrder().stream()
                         .collect(
                                 Collectors.toMap(
                                         Category::getId, c -> c, (a, b) -> a, LinkedHashMap::new));

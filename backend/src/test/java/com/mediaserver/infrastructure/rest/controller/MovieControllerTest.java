@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mediaserver.application.command.CreateMovieCommand;
 import com.mediaserver.application.command.UpdateMovieCommand;
+import com.mediaserver.application.usecase.category.GetAllCategoriesUseCase;
 import com.mediaserver.application.usecase.movie.*;
 import com.mediaserver.config.MediaProperties;
 import com.mediaserver.config.WebConfig;
@@ -75,6 +76,10 @@ class MovieControllerTest {
     @MockitoBean private RemoveFavoriteUseCase removeFavoriteUseCase;
 
     @MockitoBean private GetFavoritesUseCase getFavoritesUseCase;
+
+    @MockitoBean private GetMoviesGroupedUseCase getMoviesGroupedUseCase;
+
+    @MockitoBean private GetAllCategoriesUseCase getAllCategoriesUseCase;
 
     @MockitoBean private MovieRestMapper movieRestMapper;
 
