@@ -128,12 +128,11 @@ class RepositoryIntegrationTest {
 
     @Test
     void shouldFindFavoriteMovies() {
-        // Given
+        String userId = "user-1";
         Movie favoriteMovie =
                 Movie.builder()
                         .title("Favorite Movie")
                         .megaPath("/path/favorite")
-                        .favorite(true)
                         .status(MovieStatus.PENDING)
                         .build();
 
@@ -141,17 +140,16 @@ class RepositoryIntegrationTest {
                 Movie.builder()
                         .title("Regular Movie")
                         .megaPath("/path/regular")
-                        .favorite(false)
                         .status(MovieStatus.PENDING)
                         .build();
 
         movieRepository.save(favoriteMovie);
         movieRepository.save(regularMovie);
+        movieRepository.addFavorite(favoriteMovie.getId(), userId);
+        movieRepository.addFavorite(regularMovie.getId(), "user-2");
 
-        // When
-        List<Movie> favorites = movieRepository.findFavorites();
+        List<Movie> favorites = movieRepository.findFavorites(userId);
 
-        // Then
         assertThat(favorites).hasSize(1);
         assertThat(favorites.get(0).getTitle()).isEqualTo("Favorite Movie");
     }

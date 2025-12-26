@@ -391,4 +391,40 @@ class MovieControllerTest {
 
         verify(clearAllCacheUseCase).clearAllCache();
     }
+
+    @Test
+    void getFavorites_shouldReturnFavoriteMovies() throws Exception {
+        when(getFavoritesUseCase.getFavorites()).thenReturn(List.of(entityMovie));
+        when(movieRestMapper.toResponse(entityMovie)).thenReturn(movieResponseDto);
+
+        mockMvc.perform(get("/api/movies/favorites"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value("movie-1"));
+
+        verify(getFavoritesUseCase).getFavorites();
+    }
+
+    @Test
+    void addFavorite_shouldReturnUpdatedMovie() throws Exception {
+        when(addFavoriteUseCase.addFavorite("movie-1")).thenReturn(entityMovie);
+        when(movieRestMapper.toResponse(entityMovie)).thenReturn(movieResponseDto);
+
+        mockMvc.perform(post("/api/movies/movie-1/favorite").with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("movie-1"));
+
+        verify(addFavoriteUseCase).addFavorite("movie-1");
+    }
+
+    @Test
+    void removeFavorite_shouldReturnUpdatedMovie() throws Exception {
+        when(removeFavoriteUseCase.removeFavorite("movie-1")).thenReturn(entityMovie);
+        when(movieRestMapper.toResponse(entityMovie)).thenReturn(movieResponseDto);
+
+        mockMvc.perform(delete("/api/movies/movie-1/favorite").with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("movie-1"));
+
+        verify(removeFavoriteUseCase).removeFavorite("movie-1");
+    }
 }

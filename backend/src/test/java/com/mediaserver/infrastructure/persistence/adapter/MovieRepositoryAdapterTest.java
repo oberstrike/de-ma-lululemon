@@ -6,9 +6,11 @@ import static org.mockito.Mockito.*;
 
 import com.mediaserver.domain.model.Movie;
 import com.mediaserver.domain.model.MovieStatus;
+import com.mediaserver.infrastructure.persistence.entity.MovieFavoriteJpaEntity;
 import com.mediaserver.infrastructure.persistence.entity.MovieJpaEntity;
 import com.mediaserver.infrastructure.persistence.mapper.MoviePersistenceMapper;
 import com.mediaserver.infrastructure.persistence.repository.JpaCategoryRepository;
+import com.mediaserver.infrastructure.persistence.repository.JpaMovieFavoriteRepository;
 import com.mediaserver.infrastructure.persistence.repository.JpaMovieRepository;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +32,8 @@ class MovieRepositoryAdapterTest {
     @Mock private JpaMovieRepository jpaMovieRepository;
 
     @Mock private JpaCategoryRepository jpaCategoryRepository;
+
+    @Mock private JpaMovieFavoriteRepository jpaMovieFavoriteRepository;
 
     @Mock private MoviePersistenceMapper mapper;
 
@@ -283,5 +287,48 @@ class MovieRepositoryAdapterTest {
         assertThat(result.getCategoryId()).isNull();
         verify(mapper).toEntity(movieWithoutCategory);
         verify(jpaMovieRepository).save(any(MovieJpaEntity.class));
+    }
+
+    @Test
+    void findFavorites_shouldReturnFavoriteMoviesForUser() {
+        Movie favoriteMovie = domainMovie.withFavorite(false);
+        when(jpaMovieRepository.findFavoritesByUserId("user-1")).thenReturn(List.of(entityMovie));
+        when(mapper.toDomainList(List.of(entityMovie))).thenReturn(List.of(favoriteMovie));
+
+        List<Movie> result = movieRepositoryAdapter.findFavorites("user-1");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).isFavorite()).isTrue();
+        verify(jpaMovieRepository).findFavoritesByUserId("user-1");
+        verify(mapper).toDomainList(List.of(entityMovie));
+    }
+
+    @Test
+    void addFavorite_shouldPersistFavoriteWhenMissing() {
+        when(jpaMovieFavoriteRepository.existsByMovie_IdAndUserId("movie-1", "user-1"))
+                .thenReturn(false);
+        when(jpaMovieRepository.getReferenceById("movie-1")).thenReturn(entityMovie);
+
+        movieRepositoryAdapter.addFavorite("movie-1", "user-1");
+
+        verify(jpaMovieFavoriteRepository).save(any(MovieFavoriteJpaEntity.class));
+    }
+
+    @Test
+    void removeFavorite_shouldDeleteFavoriteByUser() {
+        movieRepositoryAdapter.removeFavorite("movie-1", "user-1");
+
+        verify(jpaMovieFavoriteRepository).deleteByMovie_IdAndUserId("movie-1", "user-1");
+    }
+
+    @Test
+    void isFavorite_shouldReturnFavoriteState() {
+        when(jpaMovieFavoriteRepository.existsByMovie_IdAndUserId("movie-1", "user-1"))
+                .thenReturn(true);
+
+        boolean result = movieRepositoryAdapter.isFavorite("movie-1", "user-1");
+
+        assertThat(result).isTrue();
+        verify(jpaMovieFavoriteRepository).existsByMovie_IdAndUserId("movie-1", "user-1");
     }
 }
