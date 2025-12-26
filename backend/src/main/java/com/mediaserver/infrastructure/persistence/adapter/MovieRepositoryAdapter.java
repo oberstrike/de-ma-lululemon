@@ -100,6 +100,11 @@ public class MovieRepositoryAdapter implements MovieRepository {
     }
 
     @Override
+    public List<Movie> findFavoritesByUserId(String userId) {
+        return mapper.toDomainList(jpaMovieRepository.findByFavoriteTrueAndUserId(userId));
+    }
+
+    @Override
     public List<Movie> findCachedNonFavorites() {
         return mapper.toDomainList(jpaMovieRepository.findCachedNonFavoriteMovies());
     }

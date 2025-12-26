@@ -47,6 +47,8 @@ public interface JpaMovieRepository extends JpaRepository<MovieJpaEntity, String
     /** Find all favorite movies. */
     List<MovieJpaEntity> findByFavoriteTrue();
 
+    List<MovieJpaEntity> findByFavoriteTrueAndUserId(String userId);
+
     /** Find cached movies that are not favorites (for cache clearing). */
     @Query(
             "SELECT m FROM MovieJpaEntity m WHERE m.localPath IS NOT NULL AND m.favorite = false"

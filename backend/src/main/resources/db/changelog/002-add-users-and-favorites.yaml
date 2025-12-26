@@ -1,0 +1,48 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-users-table
+      author: mediaserver
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 002-add-user-id-to-movies
+      author: mediaserver
+      changes:
+        - addColumn:
+            tableName: movies
+            columns:
+              - column:
+                  name: user_id
+                  type: varchar(36)
+        - addForeignKeyConstraint:
+            baseTableName: movies
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_movies_user
+            onDelete: SET NULL
+
+  - changeSet:
+      id: 002-create-user-indexes
+      author: mediaserver
+      changes:
+        - createIndex:
+            tableName: movies
+            indexName: idx_movies_user_id
+            columns:
+              - column:
+                  name: user_id
