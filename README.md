@@ -1,6 +1,6 @@
 # Media Server
 
-Full-stack media streaming application with Angular frontend and Spring Boot backend.
+Full-stack media streaming application with Angular 18 frontend and Spring Boot 4 backend.
 
 ## Architecture
 
