@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mediaserver.domain.model.Category;
 import com.mediaserver.infrastructure.persistence.entity.CategoryJpaEntity;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -78,7 +79,7 @@ class CategoryPersistenceMapperTest {
                 CategoryJpaEntity.builder()
                         .id("cat-1")
                         .name("Action")
-                        .movies(java.util.List.of()) // movies collection exists
+                        .movies(List.of()) // movies collection exists
                         .build();
 
         // When

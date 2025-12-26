@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Architecture tests to validate Clean Architecture / Hexagonal Architecture structure.
@@ -202,7 +204,7 @@ class ArchitectureTest {
                     .and()
                     .haveSimpleNameEndingWith("Service")
                     .should()
-                    .beAnnotatedWith(org.springframework.stereotype.Service.class)
+                    .beAnnotatedWith(Service.class)
                     .because("Application services should be Spring services")
                     .check(importedClasses);
         }
@@ -233,7 +235,7 @@ class ArchitectureTest {
                     .and()
                     .haveSimpleNameEndingWith("Controller")
                     .should()
-                    .beAnnotatedWith(org.springframework.web.bind.annotation.RestController.class)
+                    .beAnnotatedWith(RestController.class)
                     .because("Controllers should be REST controllers")
                     .check(importedClasses);
         }

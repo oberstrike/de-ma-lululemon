@@ -1,3 +1,3 @@
-package com.mediaserver.application.port.out;
+package com.mediaserver.application.model;
 
 public record CurrentUser(String userId, String username) {}

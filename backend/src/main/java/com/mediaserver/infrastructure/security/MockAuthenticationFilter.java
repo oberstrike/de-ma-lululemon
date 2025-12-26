@@ -1,6 +1,6 @@
 package com.mediaserver.infrastructure.security;
 
-import com.mediaserver.application.port.out.CurrentUser;
+import com.mediaserver.application.model.CurrentUser;
 import com.mediaserver.config.MediaProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -33,9 +33,7 @@ public class MockAuthenticationFilter extends OncePerRequestFilter {
             var currentUser = new CurrentUser(userId, username);
             var authentication =
                     new UsernamePasswordAuthenticationToken(
-                            currentUser,
-                            null,
-                            List.of(new SimpleGrantedAuthority("ROLE_USER")));
+                            currentUser, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
             context.setAuthentication(authentication);
         }
         filterChain.doFilter(request, response);

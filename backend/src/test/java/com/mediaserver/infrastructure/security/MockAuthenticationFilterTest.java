@@ -1,64 +1,93 @@
 package com.mediaserver.infrastructure.security;
 
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.mediaserver.application.port.out.CurrentUserProvider;
+import com.mediaserver.application.model.CurrentUser;
+import com.mediaserver.config.MediaProperties;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import java.io.IOException;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-@SpringBootTest(properties = {"media.auth.provider=mock"})
-@AutoConfigureMockMvc
-@Import(MockAuthenticationFilterTest.TestController.class)
 class MockAuthenticationFilterTest {
 
-    @Autowired private MockMvc mockMvc;
+    private MockAuthenticationFilter filter;
+    private MediaProperties properties;
 
-    @RestController
-    static class TestController {
-        private final CurrentUserProvider currentUserProvider;
+    @BeforeEach
+    void setUp() {
+        SecurityContextHolder.clearContext();
 
-        TestController(CurrentUserProvider currentUserProvider) {
-            this.currentUserProvider = currentUserProvider;
-        }
+        properties = new MediaProperties();
+        var auth = new MediaProperties.Auth();
+        var mock = new MediaProperties.Auth.Mock();
+        mock.setUserId("default-user");
+        mock.setUsername("default-name");
+        auth.setMock(mock);
+        properties.setAuth(auth);
 
-        @GetMapping
-        @RequestMapping("/test/current-user")
-        public CurrentUserResponse currentUser() {
-            var currentUser = currentUserProvider.getCurrentUser();
-            return new CurrentUserResponse(currentUser.userId(), currentUser.username());
-        }
-    }
-
-    record CurrentUserResponse(String userId, String username) {}
-
-    @Test
-    void usesHeadersForMockUser() throws Exception {
-        mockMvc.perform(
-                        get("/test/current-user")
-                                .header("X-Mock-UserId", "user-123")
-                                .header("X-Mock-Username", "mock-user")
-                                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId", is("user-123")))
-                .andExpect(jsonPath("$.username", is("mock-user")));
+        filter = new MockAuthenticationFilter(properties);
     }
 
     @Test
-    void fallsBackToConfiguredMockUser() throws Exception {
-        mockMvc.perform(get("/test/current-user").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId", is("mock-user")))
-                .andExpect(jsonPath("$.username", is("mock")));
+    void usesHeadersForMockUser() throws ServletException, IOException {
+        var request = new MockHttpServletRequest();
+        request.addHeader("X-Mock-UserId", "user-123");
+        request.addHeader("X-Mock-Username", "mock-user");
+
+        var response = new MockHttpServletResponse();
+        FilterChain chain = (req, res) -> {};
+
+        filter.doFilter(request, response, chain);
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        assertThat(authentication).isNotNull();
+        assertThat(authentication.isAuthenticated()).isTrue();
+        assertThat(authentication.getPrincipal()).isInstanceOf(CurrentUser.class);
+
+        var currentUser = (CurrentUser) authentication.getPrincipal();
+        assertThat(currentUser.userId()).isEqualTo("user-123");
+        assertThat(currentUser.username()).isEqualTo("mock-user");
+    }
+
+    @Test
+    void fallsBackToConfiguredMockUser() throws ServletException, IOException {
+        var request = new MockHttpServletRequest();
+        var response = new MockHttpServletResponse();
+        FilterChain chain = (req, res) -> {};
+
+        filter.doFilter(request, response, chain);
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        assertThat(authentication).isNotNull();
+        assertThat(authentication.isAuthenticated()).isTrue();
+
+        var currentUser = (CurrentUser) authentication.getPrincipal();
+        assertThat(currentUser.userId()).isEqualTo("default-user");
+        assertThat(currentUser.username()).isEqualTo("default-name");
+    }
+
+    @Test
+    void doesNotOverrideExistingAuthentication() throws ServletException, IOException {
+        var existingUser = new CurrentUser("existing-id", "existing-name");
+        var existingAuth = new UsernamePasswordAuthenticationToken(existingUser, null, List.of());
+        SecurityContextHolder.getContext().setAuthentication(existingAuth);
+
+        var request = new MockHttpServletRequest();
+        request.addHeader("X-Mock-UserId", "new-user");
+        var response = new MockHttpServletResponse();
+        FilterChain chain = (req, res) -> {};
+
+        filter.doFilter(request, response, chain);
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var currentUser = (CurrentUser) authentication.getPrincipal();
+        assertThat(currentUser.userId()).isEqualTo("existing-id");
     }
 }

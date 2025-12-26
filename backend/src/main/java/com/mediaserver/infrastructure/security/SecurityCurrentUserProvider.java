@@ -1,6 +1,6 @@
 package com.mediaserver.infrastructure.security;
 
-import com.mediaserver.application.port.out.CurrentUser;
+import com.mediaserver.application.model.CurrentUser;
 import com.mediaserver.application.port.out.CurrentUserProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

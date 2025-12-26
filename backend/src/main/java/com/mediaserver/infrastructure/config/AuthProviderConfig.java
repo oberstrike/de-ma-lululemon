@@ -13,7 +13,10 @@ import org.springframework.context.annotation.Configuration;
 public class AuthProviderConfig {
 
     @Bean
-    @ConditionalOnProperty(name = "media.auth.provider", havingValue = "mock", matchIfMissing = true)
+    @ConditionalOnProperty(
+            name = "media.auth.provider",
+            havingValue = "mock",
+            matchIfMissing = true)
     public CurrentUserProvider mockCurrentUserProvider() {
         return new MockCurrentUserProvider();
     }
@@ -25,7 +28,10 @@ public class AuthProviderConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "media.auth.provider", havingValue = "mock", matchIfMissing = true)
+    @ConditionalOnProperty(
+            name = "media.auth.provider",
+            havingValue = "mock",
+            matchIfMissing = true)
     public MockAuthenticationFilter mockAuthenticationFilter(MediaProperties properties) {
         return new MockAuthenticationFilter(properties);
     }

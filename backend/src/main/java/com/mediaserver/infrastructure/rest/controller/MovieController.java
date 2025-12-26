@@ -10,7 +10,6 @@ import com.mediaserver.infrastructure.rest.dto.MovieRequestDTO;
 import com.mediaserver.infrastructure.rest.dto.MovieResponseDTO;
 import com.mediaserver.infrastructure.rest.mapper.MovieRestMapper;
 import jakarta.validation.Valid;
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -141,20 +140,17 @@ public class MovieController {
     }
 
     @GetMapping("/favorites")
-    public List<MovieResponseDTO> getFavorites(Principal principal) {
-        principal.getName();
+    public List<MovieResponseDTO> getFavorites() {
         return getFavoritesUseCase.getFavorites().stream().map(movieMapper::toResponse).toList();
     }
 
     @PostMapping("/{id}/favorite")
-    public MovieResponseDTO addFavorite(@PathVariable String id, Principal principal) {
-        principal.getName();
+    public MovieResponseDTO addFavorite(@PathVariable String id) {
         return movieMapper.toResponse(addFavoriteUseCase.addFavorite(id));
     }
 
     @DeleteMapping("/{id}/favorite")
-    public MovieResponseDTO removeFavorite(@PathVariable String id, Principal principal) {
-        principal.getName();
+    public MovieResponseDTO removeFavorite(@PathVariable String id) {
         return movieMapper.toResponse(removeFavoriteUseCase.removeFavorite(id));
     }
 }

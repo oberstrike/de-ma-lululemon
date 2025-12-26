@@ -80,11 +80,7 @@ class UserPersistenceMapperTest {
 
     @Test
     void toEntity_shouldHandleNullOptionalFields() {
-        User user =
-                User.builder()
-                        .username("ckent")
-                        .email("ckent@example.com")
-                        .build();
+        User user = User.builder().username("ckent").email("ckent@example.com").build();
 
         UserJpaEntity result = userPersistenceMapper.toEntity(user);
 

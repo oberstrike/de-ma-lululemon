@@ -79,7 +79,7 @@ export class ApiService {
   private readonly currentUser = inject(CurrentUserService);
 
   private userHeaders(): { headers: Record<string, string> } {
-    return { headers: { 'X-User-Id': this.currentUser.userId() } };
+    return { headers: { 'X-Mock-UserId': this.currentUser.userId() } };
   }
 
   getMovies(params?: {

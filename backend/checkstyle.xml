@@ -25,6 +25,14 @@
         <property name="message" value="Line has trailing whitespace"/>
     </module>
 
+    <!-- Forbid inline fully qualified class names (use imports instead) -->
+    <!-- Catches: new org.example.Class(), (org.example.Class) cast, extends org.example.Class -->
+    <module name="RegexpSingleline">
+        <property name="format" value="(?&lt;!import\s)(?&lt;!import\sstatic\s)(?&lt;!package\s)(new\s+|extends\s+|implements\s+|\(\s*)(java|javax|jakarta|org|com|io)\.[a-z]+(\.[a-z]+)*\.[A-Z]"/>
+        <property name="message" value="Avoid inline fully qualified class names. Use imports instead."/>
+        <property name="severity" value="error"/>
+    </module>
+
     <!-- Newline at end of file -->
     <module name="NewlineAtEndOfFile"/>
 

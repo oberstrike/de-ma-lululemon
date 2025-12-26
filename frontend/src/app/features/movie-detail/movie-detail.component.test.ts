@@ -86,11 +86,11 @@ describe('MovieDetailComponent', () => {
     expect(mockWebSocketService.connect).toHaveBeenCalled();
   });
 
-  it('should reload movie details when user changes', () => {
+  it('should reload movie details when user changes', async () => {
     fixture.detectChanges();
 
     const firstReq = httpMock.expectOne('/api/movies/movie-1');
-    expect(firstReq.request.headers.get('X-User-Id')).toBe('user-1');
+    expect(firstReq.request.headers.get('X-Mock-UserId')).toBe('user-1');
     firstReq.flush({
       id: 'movie-1',
       title: 'User One Movie',
@@ -100,8 +100,12 @@ describe('MovieDetailComponent', () => {
 
     currentUser.setUserId('user-2');
 
+    // Allow signal change to propagate through toObservable()
+    await fixture.whenStable();
+    fixture.detectChanges();
+
     const secondReq = httpMock.expectOne('/api/movies/movie-1');
-    expect(secondReq.request.headers.get('X-User-Id')).toBe('user-2');
+    expect(secondReq.request.headers.get('X-Mock-UserId')).toBe('user-2');
     secondReq.flush({
       id: 'movie-1',
       title: 'User Two Movie',

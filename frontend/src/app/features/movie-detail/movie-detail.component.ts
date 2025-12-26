@@ -292,6 +292,10 @@ export class MovieDetailComponent implements OnInit {
   readonly downloadProgress = signal<DownloadProgress | null>(null);
   private readonly movieId = signal<string | null>(null);
 
+  // Create observables in field initializers (injection context)
+  private readonly userId$ = toObservable(this.currentUser.userId);
+  private readonly movieId$ = toObservable(this.movieId);
+
   readonly isDownloading = computed(() => this.movie()?.status === 'DOWNLOADING');
 
   ngOnInit(): void {
@@ -302,7 +306,7 @@ export class MovieDetailComponent implements OnInit {
     }
 
     this.movieId.set(id);
-    combineLatest([toObservable(this.currentUser.userId), toObservable(this.movieId)])
+    combineLatest([this.userId$, this.movieId$])
       .pipe(
         filter(([userId, movieId]) => Boolean(userId) && Boolean(movieId)),
         switchMap(([, movieId]) => this.api.getMovie(movieId ?? '')),

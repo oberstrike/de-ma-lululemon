@@ -54,7 +54,10 @@ public class UserApplicationService
 
     @Override
     public User updateUser(UpdateUserCommand command) {
-        User user = userRepository.findById(command.getId()).orElseThrow(() -> new UserNotFoundException(command.getId()));
+        User user =
+                userRepository
+                        .findById(command.getId())
+                        .orElseThrow(() -> new UserNotFoundException(command.getId()));
 
         User updatedUser =
                 user.withUsername(command.getUsername())

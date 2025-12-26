@@ -45,7 +45,7 @@ describe('ApiService', (): void => {
 
       const req = httpMock.expectOne('/api/movies');
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('X-User-Id')).toBe('user-1');
+      expect(req.request.headers.get('X-Mock-UserId')).toBe('user-1');
       req.flush(mockMovies);
 
       const movies = await moviesPromise;
@@ -80,7 +80,7 @@ describe('ApiService', (): void => {
 
       const req = httpMock.expectOne('/api/movies/favorites');
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.get('X-User-Id')).toBe('user-1');
+      expect(req.request.headers.get('X-Mock-UserId')).toBe('user-1');
       req.flush([]);
 
       await favoritesPromise;
@@ -91,7 +91,7 @@ describe('ApiService', (): void => {
 
       const updatedReq = httpMock.expectOne('/api/movies/favorites');
       expect(updatedReq.request.method).toBe('GET');
-      expect(updatedReq.request.headers.get('X-User-Id')).toBe('user-2');
+      expect(updatedReq.request.headers.get('X-Mock-UserId')).toBe('user-2');
       updatedReq.flush([]);
 
       await updatedPromise;

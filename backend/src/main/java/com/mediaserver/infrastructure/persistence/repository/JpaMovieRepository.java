@@ -45,11 +45,12 @@ public interface JpaMovieRepository extends JpaRepository<MovieJpaEntity, String
     long countByLocalPathIsNotNull();
 
     @Query(
-            "SELECT m FROM MovieJpaEntity m JOIN MovieFavoriteJpaEntity f ON f.movie = m WHERE f.userId = :userId")
+            "SELECT m FROM MovieJpaEntity m JOIN MovieFavoriteJpaEntity f ON f.movie = m WHERE"
+                    + " f.userId = :userId")
     List<MovieJpaEntity> findFavoritesByUserId(@Param("userId") String userId);
 
     @Query(
-            "SELECT m FROM MovieJpaEntity m WHERE m.localPath IS NOT NULL AND NOT EXISTS (SELECT 1 FROM MovieFavoriteJpaEntity f WHERE f.movie = m)"
-                    + " ORDER BY m.updatedAt DESC")
+            "SELECT m FROM MovieJpaEntity m WHERE m.localPath IS NOT NULL AND NOT EXISTS (SELECT 1"
+                    + " FROM MovieFavoriteJpaEntity f WHERE f.movie = m) ORDER BY m.updatedAt DESC")
     List<MovieJpaEntity> findCachedNonFavoriteMovies();
 }
