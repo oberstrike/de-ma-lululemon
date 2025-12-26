@@ -46,7 +46,7 @@ jobs:
           path: backend/target/surefire-reports/
 
       - name: Test Report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         if: always()
         with:
           name: Backend Test Results
