@@ -69,7 +69,7 @@ public interface MoviePort {
      *
      * @return total size of cached movies
      */
-    long getTotalCacheSize();
+    Long getTotalCacheSize();
 
     /**
      * Counts movies that have a local path (cached).
@@ -93,12 +93,13 @@ public interface MoviePort {
      */
     void delete(Movie movie);
 
-    /**
-     * Finds all favorite movies.
-     *
-     * @return list of favorite movies
-     */
-    List<Movie> findFavorites();
+    List<Movie> findFavorites(String userId);
+
+    void addFavorite(String movieId, String userId);
+
+    void removeFavorite(String movieId, String userId);
+
+    boolean isFavorite(String movieId, String userId);
 
     /**
      * Finds cached movies that are not favorites (for cache clearing).

@@ -106,7 +106,13 @@ public interface MovieRepository {
      *
      * @return list of favorite movies
      */
-    List<Movie> findFavorites();
+    List<Movie> findFavorites(String userId);
+
+    void addFavorite(String movieId, String userId);
+
+    void removeFavorite(String movieId, String userId);
+
+    boolean isFavorite(String movieId, String userId);
 
     List<Movie> findFavoritesByUserId(String userId);
 

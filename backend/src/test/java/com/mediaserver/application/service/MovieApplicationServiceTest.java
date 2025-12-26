@@ -3,12 +3,14 @@ package com.mediaserver.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import com.mediaserver.application.command.CreateMovieCommand;
 import com.mediaserver.application.command.UpdateMovieCommand;
 import com.mediaserver.application.port.in.CacheManagementUseCase.CacheStats;
 import com.mediaserver.application.port.out.CategoryPort;
+import com.mediaserver.application.port.out.CurrentUserProvider;
 import com.mediaserver.application.port.out.DownloadServicePort;
 import com.mediaserver.application.port.out.FileStoragePort;
 import com.mediaserver.application.port.out.MoviePort;
@@ -41,6 +43,8 @@ class MovieApplicationServiceTest {
 
     @Mock private DownloadServicePort downloadServicePort;
 
+    @Mock private CurrentUserProvider currentUserProvider;
+
     @Mock private MediaProperties properties;
 
     @InjectMocks private MovieApplicationService movieApplicationService;
@@ -62,6 +66,9 @@ class MovieApplicationServiceTest {
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())
                         .build();
+        lenient().when(currentUserProvider.getCurrentUserId()).thenReturn("user-1");
+        lenient().when(moviePort.findFavorites("user-1")).thenReturn(List.of());
+        lenient().when(moviePort.isFavorite(anyString(), anyString())).thenReturn(false);
     }
 
     @Test
@@ -77,6 +84,7 @@ class MovieApplicationServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle()).isEqualTo("Test Movie");
         verify(moviePort).findAll();
+        verify(moviePort).findFavorites("user-1");
     }
 
     @Test
@@ -91,6 +99,7 @@ class MovieApplicationServiceTest {
         assertThat(result.getId()).isEqualTo("movie-1");
         assertThat(result.getTitle()).isEqualTo("Test Movie");
         verify(moviePort).findById("movie-1");
+        verify(moviePort).isFavorite("movie-1", "user-1");
     }
 
     @Test
@@ -229,6 +238,7 @@ class MovieApplicationServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle()).isEqualTo("Test Movie");
         verify(moviePort).search("test");
+        verify(moviePort).findFavorites("user-1");
     }
 
     @Test
@@ -247,6 +257,7 @@ class MovieApplicationServiceTest {
         assertThat(result.get(0).getStatus()).isEqualTo(MovieStatus.READY);
         assertThat(result.get(0).isCached()).isTrue();
         verify(moviePort).findReadyMovies();
+        verify(moviePort).findFavorites("user-1");
     }
 
     @Test
@@ -261,6 +272,7 @@ class MovieApplicationServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getCategoryId()).isEqualTo("cat-1");
         verify(moviePort).findByCategoryId("cat-1");
+        verify(moviePort).findFavorites("user-1");
     }
 
     @Test
@@ -278,6 +290,7 @@ class MovieApplicationServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).isCached()).isTrue();
         verify(moviePort).findCachedMovies();
+        verify(moviePort).findFavorites("user-1");
     }
 
     @Test
@@ -300,6 +313,40 @@ class MovieApplicationServiceTest {
         verify(moviePort).findById("movie-1");
         verify(moviePort).save(argThat(movie -> movie.getStatus() == MovieStatus.DOWNLOADING));
         verify(downloadServicePort).downloadMovie(any(Movie.class));
+    }
+
+    @Test
+    void addFavorite_shouldPersistFavoriteForUser() {
+        when(moviePort.findById("movie-1")).thenReturn(Optional.of(testMovie));
+        when(moviePort.isFavorite("movie-1", "user-1")).thenReturn(false);
+
+        Movie result = movieApplicationService.addFavorite("movie-1");
+
+        assertThat(result.isFavorite()).isTrue();
+        verify(moviePort).addFavorite("movie-1", "user-1");
+    }
+
+    @Test
+    void removeFavorite_shouldRemoveFavoriteForUser() {
+        when(moviePort.findById("movie-1")).thenReturn(Optional.of(testMovie));
+        when(moviePort.isFavorite("movie-1", "user-1")).thenReturn(true);
+
+        Movie result = movieApplicationService.removeFavorite("movie-1");
+
+        assertThat(result.isFavorite()).isFalse();
+        verify(moviePort).removeFavorite("movie-1", "user-1");
+    }
+
+    @Test
+    void getFavorites_shouldReturnFavoritesForUser() {
+        Movie favoriteMovie = testMovie.withFavorite(true);
+        when(moviePort.findFavorites("user-1")).thenReturn(List.of(favoriteMovie));
+
+        List<Movie> result = movieApplicationService.getFavorites();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).isFavorite()).isTrue();
+        verify(moviePort).findFavorites("user-1");
     }
 
     @Test

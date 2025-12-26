@@ -4,6 +4,7 @@ import com.mediaserver.application.command.CreateMovieCommand;
 import com.mediaserver.application.command.UpdateMovieCommand;
 import com.mediaserver.application.port.in.*;
 import com.mediaserver.application.port.out.CategoryPort;
+import com.mediaserver.application.port.out.CurrentUserProvider;
 import com.mediaserver.application.port.out.DownloadServicePort;
 import com.mediaserver.application.port.out.FileStoragePort;
 import com.mediaserver.application.port.out.MoviePort;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -52,6 +54,7 @@ public class MovieApplicationService
     private final CategoryPort categoryPort;
     private final FileStoragePort fileStoragePort;
     private final DownloadServicePort downloadServicePort;
+    private final CurrentUserProvider currentUserProvider;
     private final MediaProperties properties;
 
     // Thread-safe set to track movies currently being downloaded
@@ -59,27 +62,30 @@ public class MovieApplicationService
 
     @Override
     public Movie getMovie(String id) {
-        return moviePort.findById(id).orElseThrow(() -> new MovieNotFoundException(id));
+        Movie movie = moviePort.findById(id).orElseThrow(() -> new MovieNotFoundException(id));
+        String userId = currentUserProvider.getCurrentUserId();
+        boolean isFavorite = moviePort.isFavorite(movie.getId(), userId);
+        return movie.withFavorite(isFavorite);
     }
 
     @Override
     public List<Movie> getAllMovies() {
-        return moviePort.findAll();
+        return applyFavorites(moviePort.findAll());
     }
 
     @Override
     public List<Movie> getReadyMovies() {
-        return moviePort.findReadyMovies();
+        return applyFavorites(moviePort.findReadyMovies());
     }
 
     @Override
     public List<Movie> getMoviesByCategory(String categoryId) {
-        return moviePort.findByCategoryId(categoryId);
+        return applyFavorites(moviePort.findByCategoryId(categoryId));
     }
 
     @Override
     public List<Movie> searchMovies(String query) {
-        return moviePort.search(query);
+        return applyFavorites(moviePort.search(query));
     }
 
     @Override
@@ -220,7 +226,7 @@ public class MovieApplicationService
 
     @Override
     public List<Movie> getCachedMovies() {
-        return moviePort.findCachedMovies();
+        return applyFavorites(moviePort.findCachedMovies());
     }
 
     @Override
@@ -291,38 +297,57 @@ public class MovieApplicationService
 
     @Override
     public Movie addFavorite(String movieId) {
+        String userId = currentUserProvider.getCurrentUserId();
         Movie movie =
                 moviePort.findById(movieId).orElseThrow(() -> new MovieNotFoundException(movieId));
 
-        if (movie.isFavorite()) {
+        if (moviePort.isFavorite(movieId, userId)) {
             log.info("Movie {} is already a favorite", movieId);
-            return movie;
+            return movie.withFavorite(true);
         }
 
-        Movie updatedMovie = movie.withFavorite(true).withUpdatedAt(LocalDateTime.now());
-
         log.info("Added movie to favorites: {} ({})", movie.getTitle(), movieId);
-        return moviePort.save(updatedMovie);
+        moviePort.addFavorite(movieId, userId);
+        return movie.withFavorite(true);
     }
 
     @Override
     public Movie removeFavorite(String movieId) {
+        String userId = currentUserProvider.getCurrentUserId();
         Movie movie =
                 moviePort.findById(movieId).orElseThrow(() -> new MovieNotFoundException(movieId));
 
-        if (!movie.isFavorite()) {
+        if (!moviePort.isFavorite(movieId, userId)) {
             log.info("Movie {} is not a favorite", movieId);
-            return movie;
+            return movie.withFavorite(false);
         }
 
-        Movie updatedMovie = movie.withFavorite(false).withUpdatedAt(LocalDateTime.now());
-
         log.info("Removed movie from favorites: {} ({})", movie.getTitle(), movieId);
-        return moviePort.save(updatedMovie);
+        moviePort.removeFavorite(movieId, userId);
+        return movie.withFavorite(false);
     }
 
     @Override
     public List<Movie> getFavorites() {
-        return moviePort.findFavorites();
+        String userId = currentUserProvider.getCurrentUserId();
+        return moviePort.findFavorites(userId);
+    }
+
+    private List<Movie> applyFavorites(List<Movie> movies) {
+        if (movies.isEmpty()) {
+            return movies;
+        }
+        String userId = currentUserProvider.getCurrentUserId();
+        Set<String> favoriteIds =
+                moviePort.findFavorites(userId).stream()
+                        .map(Movie::getId)
+                        .collect(Collectors.toSet());
+        return movies.stream()
+                .map(
+                        movie ->
+                                favoriteIds.contains(movie.getId())
+                                        ? movie.withFavorite(true)
+                                        : movie.withFavorite(false))
+                .toList();
     }
 }

@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-movie-favorites-table
+      author: mediaserver
+      changes:
+        - createTable:
+            tableName: movie_favorites
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: movie_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: movie_favorites
+            baseColumnNames: movie_id
+            referencedTableName: movies
+            referencedColumnNames: id
+            constraintName: fk_movie_favorites_movie
+            onDelete: CASCADE
+        - addUniqueConstraint:
+            tableName: movie_favorites
+            columnNames: movie_id, user_id
+            constraintName: uq_movie_favorites_movie_user
+        - createIndex:
+            tableName: movie_favorites
+            indexName: idx_movie_favorites_user
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: movie_favorites
+            indexName: idx_movie_favorites_movie
+            columns:
+              - column:
+                  name: movie_id

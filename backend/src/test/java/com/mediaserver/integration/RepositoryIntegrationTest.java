@@ -132,11 +132,11 @@ class RepositoryIntegrationTest {
 
     @Test
     void shouldFindFavoriteMovies() {
+        String userId = "user-1";
         Movie favoriteMovie =
                 Movie.builder()
                         .title("Favorite Movie")
                         .megaPath("/path/favorite")
-                        .favorite(true)
                         .status(MovieStatus.PENDING)
                         .build();
 
@@ -144,14 +144,15 @@ class RepositoryIntegrationTest {
                 Movie.builder()
                         .title("Regular Movie")
                         .megaPath("/path/regular")
-                        .favorite(false)
                         .status(MovieStatus.PENDING)
                         .build();
 
         movieRepository.save(favoriteMovie);
         movieRepository.save(regularMovie);
+        movieRepository.addFavorite(favoriteMovie.getId(), userId);
+        movieRepository.addFavorite(regularMovie.getId(), "user-2");
 
-        List<Movie> favorites = movieRepository.findFavorites();
+        List<Movie> favorites = movieRepository.findFavorites(userId);
 
         assertThat(favorites).hasSize(1);
         assertThat(favorites.get(0).getTitle()).isEqualTo("Favorite Movie");
@@ -162,14 +163,22 @@ class RepositoryIntegrationTest {
         String userId = UUID.randomUUID().toString();
         String otherUserId = UUID.randomUUID().toString();
 
-        jdbcTemplate.update("INSERT INTO users (id, name) VALUES (?, ?)", userId, "User A");
-        jdbcTemplate.update("INSERT INTO users (id, name) VALUES (?, ?)", otherUserId, "User B");
+        // Create users with proper columns
+        jdbcTemplate.update(
+                "INSERT INTO users (id, username, email) VALUES (?, ?, ?)",
+                userId,
+                "userA",
+                "userA@example.com");
+        jdbcTemplate.update(
+                "INSERT INTO users (id, username, email) VALUES (?, ?, ?)",
+                otherUserId,
+                "userB",
+                "userB@example.com");
 
         Movie userFavorite =
                 Movie.builder()
                         .title("User Favorite")
                         .megaPath("/path/user-favorite")
-                        .favorite(true)
                         .userId(userId)
                         .status(MovieStatus.PENDING)
                         .build();
@@ -178,7 +187,6 @@ class RepositoryIntegrationTest {
                 Movie.builder()
                         .title("Other Favorite")
                         .megaPath("/path/other-favorite")
-                        .favorite(true)
                         .userId(otherUserId)
                         .status(MovieStatus.PENDING)
                         .build();
@@ -187,7 +195,6 @@ class RepositoryIntegrationTest {
                 Movie.builder()
                         .title("Non Favorite")
                         .megaPath("/path/non-favorite")
-                        .favorite(false)
                         .userId(userId)
                         .status(MovieStatus.PENDING)
                         .build();
@@ -196,7 +203,11 @@ class RepositoryIntegrationTest {
         movieRepository.save(otherFavorite);
         movieRepository.save(nonFavorite);
 
-        List<Movie> favorites = movieRepository.findFavoritesByUserId(userId);
+        // Add favorites via the join table
+        movieRepository.addFavorite(userFavorite.getId(), userId);
+        movieRepository.addFavorite(otherFavorite.getId(), otherUserId);
+
+        List<Movie> favorites = movieRepository.findFavorites(userId);
 
         assertThat(favorites).hasSize(1);
         assertThat(favorites.get(0).getTitle()).isEqualTo("User Favorite");
