@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service responsible for grouping movies by category and creating special groups for favorites
- * and cached movies.
+ * Service responsible for grouping movies by category and creating special groups for favorites and
+ * cached movies.
  */
 @Service
 @RequiredArgsConstructor

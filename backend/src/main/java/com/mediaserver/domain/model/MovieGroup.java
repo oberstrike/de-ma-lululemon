@@ -18,12 +18,10 @@ public class MovieGroup {
     String categoryId;
 
     /** Whether this is a special group (Favorites, Downloaded) vs a category. */
-    @Builder.Default
-    boolean special = false;
+    @Builder.Default boolean special = false;
 
     /** The sort order for display purposes. */
-    @Builder.Default
-    int sortOrder = 0;
+    @Builder.Default int sortOrder = 0;
 
     /** The movies in this group. */
     List<Movie> movies;
