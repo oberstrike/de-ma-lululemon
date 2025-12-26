@@ -1,99 +1,103 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { firstValueFrom } from 'rxjs';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { ApiService, Movie, MovieCreateRequest } from './api.service';
 
-describe('ApiService', () => {
+describe('ApiService', (): void => {
   let service: ApiService;
   let httpMock: HttpTestingController;
 
-  beforeEach(() => {
+  beforeEach((): void => {
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        ApiService
-      ]
+      providers: [provideHttpClient(), provideHttpClientTesting(), ApiService],
     });
     service = TestBed.inject(ApiService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => {
+  afterEach((): void => {
     httpMock.verify();
   });
 
-  it('should be created', () => {
+  it('should be created', (): void => {
     expect(service).toBeTruthy();
   });
 
-  describe('getMovies', () => {
-    it('should return movies', () => {
+  describe('getMovies', (): void => {
+    it('should return movies', async (): Promise<void> => {
       const mockMovies: Movie[] = [
         {
           id: '1',
           title: 'Test Movie',
           cached: false,
           status: 'PENDING',
-          createdAt: '2024-01-01'
-        }
+          createdAt: '2024-01-01',
+        },
       ];
 
-      service.getMovies().subscribe(movies => {
-        expect(movies.length).toBe(1);
-        expect(movies[0].title).toBe('Test Movie');
-      });
+      const moviesPromise = firstValueFrom(service.getMovies());
 
       const req = httpMock.expectOne('/api/movies');
       expect(req.request.method).toBe('GET');
       req.flush(mockMovies);
+
+      const movies = await moviesPromise;
+      expect(movies.length).toBe(1);
+      expect(movies[0].title).toBe('Test Movie');
     });
 
-    it('should handle search parameter', () => {
-      service.getMovies({ search: 'test' }).subscribe();
+    it('should handle search parameter', async (): Promise<void> => {
+      const moviesPromise = firstValueFrom(service.getMovies({ search: 'test' }));
 
       const req = httpMock.expectOne('/api/movies?search=test');
       expect(req.request.method).toBe('GET');
       req.flush([]);
+
+      await moviesPromise;
     });
 
-    it('should handle readyOnly parameter', () => {
-      service.getMovies({ readyOnly: true }).subscribe();
+    it('should handle readyOnly parameter', async (): Promise<void> => {
+      const moviesPromise = firstValueFrom(service.getMovies({ readyOnly: true }));
 
       const req = httpMock.expectOne('/api/movies?readyOnly=true');
       expect(req.request.method).toBe('GET');
       req.flush([]);
+
+      await moviesPromise;
     });
   });
 
-  describe('getMovie', () => {
-    it('should return a single movie', () => {
+  describe('getMovie', (): void => {
+    it('should return a single movie', async (): Promise<void> => {
       const mockMovie: Movie = {
         id: '1',
         title: 'Test Movie',
         description: 'A test',
         cached: true,
         status: 'READY',
-        createdAt: '2024-01-01'
+        createdAt: '2024-01-01',
       };
 
-      service.getMovie('1').subscribe(movie => {
-        expect(movie.id).toBe('1');
-        expect(movie.title).toBe('Test Movie');
-      });
+      const moviePromise = firstValueFrom(service.getMovie('1'));
 
       const req = httpMock.expectOne('/api/movies/1');
       expect(req.request.method).toBe('GET');
       req.flush(mockMovie);
+
+      const movie = await moviePromise;
+      expect(movie.id).toBe('1');
+      expect(movie.title).toBe('Test Movie');
     });
   });
 
-  describe('createMovie', () => {
-    it('should create a movie', () => {
+  describe('createMovie', (): void => {
+    it('should create a movie', async (): Promise<void> => {
       const request: MovieCreateRequest = {
         title: 'New Movie',
-        megaUrl: 'https://mega.nz/file/test'
+        megaUrl: 'https://mega.nz/file/test',
       };
 
       const mockResponse: Movie = {
@@ -101,26 +105,27 @@ describe('ApiService', () => {
         title: 'New Movie',
         cached: false,
         status: 'PENDING',
-        createdAt: '2024-01-01'
+        createdAt: '2024-01-01',
       };
 
-      service.createMovie(request).subscribe(movie => {
-        expect(movie.id).toBe('2');
-        expect(movie.title).toBe('New Movie');
-      });
+      const moviePromise = firstValueFrom(service.createMovie(request));
 
       const req = httpMock.expectOne('/api/movies');
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(request);
       req.flush(mockResponse);
+
+      const movie = await moviePromise;
+      expect(movie.id).toBe('2');
+      expect(movie.title).toBe('New Movie');
     });
   });
 
-  describe('updateMovie', () => {
-    it('should update a movie', () => {
+  describe('updateMovie', (): void => {
+    it('should update a movie', async (): Promise<void> => {
       const request: MovieCreateRequest = {
         title: 'Updated Movie',
-        megaUrl: 'https://mega.nz/file/test'
+        megaUrl: 'https://mega.nz/file/test',
       };
 
       const mockResponse: Movie = {
@@ -128,101 +133,110 @@ describe('ApiService', () => {
         title: 'Updated Movie',
         cached: false,
         status: 'PENDING',
-        createdAt: '2024-01-01'
+        createdAt: '2024-01-01',
       };
 
-      service.updateMovie('1', request).subscribe(movie => {
-        expect(movie.title).toBe('Updated Movie');
-      });
+      const moviePromise = firstValueFrom(service.updateMovie('1', request));
 
       const req = httpMock.expectOne('/api/movies/1');
       expect(req.request.method).toBe('PUT');
       req.flush(mockResponse);
+
+      const movie = await moviePromise;
+      expect(movie.title).toBe('Updated Movie');
     });
   });
 
-  describe('deleteMovie', () => {
-    it('should delete a movie', () => {
-      service.deleteMovie('1').subscribe();
+  describe('deleteMovie', (): void => {
+    it('should delete a movie', async (): Promise<void> => {
+      const deletePromise = firstValueFrom(service.deleteMovie('1'));
 
       const req = httpMock.expectOne('/api/movies/1');
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
+
+      await deletePromise;
     });
   });
 
-  describe('startDownload', () => {
-    it('should start a download', () => {
-      service.startDownload('1').subscribe();
+  describe('startDownload', (): void => {
+    it('should start a download', async (): Promise<void> => {
+      const downloadPromise = firstValueFrom(service.startDownload('1'));
 
       const req = httpMock.expectOne('/api/movies/1/download');
       expect(req.request.method).toBe('POST');
       req.flush(null);
+
+      await downloadPromise;
     });
   });
 
-  describe('getStreamUrl', () => {
-    it('should return the stream URL', () => {
+  describe('getStreamUrl', (): void => {
+    it('should return the stream URL', (): void => {
       const url = service.getStreamUrl('1');
       expect(url).toBe('/api/stream/1');
     });
   });
 
-  describe('getStreamInfo', () => {
-    it('should return stream info', () => {
+  describe('getStreamInfo', (): void => {
+    it('should return stream info', async (): Promise<void> => {
       const mockInfo = {
         movieId: '1',
         title: 'Test',
         fileSize: 1000,
         contentType: 'video/mp4',
         streamUrl: '/api/stream/1',
-        supportsRangeRequests: true
+        supportsRangeRequests: true,
       };
 
-      service.getStreamInfo('1').subscribe(info => {
-        expect(info.movieId).toBe('1');
-        expect(info.supportsRangeRequests).toBe(true);
-      });
+      const infoPromise = firstValueFrom(service.getStreamInfo('1'));
 
       const req = httpMock.expectOne('/api/stream/1/info');
       expect(req.request.method).toBe('GET');
       req.flush(mockInfo);
+
+      const info = await infoPromise;
+      expect(info.movieId).toBe('1');
+      expect(info.supportsRangeRequests).toBe(true);
     });
   });
 
-  describe('getCategories', () => {
-    it('should return categories', () => {
-      service.getCategories().subscribe(categories => {
-        expect(categories.length).toBe(1);
-      });
+  describe('getCategories', (): void => {
+    it('should return categories', async (): Promise<void> => {
+      const categoriesPromise = firstValueFrom(service.getCategories());
 
       const req = httpMock.expectOne('/api/categories');
       expect(req.request.method).toBe('GET');
       req.flush([{ id: '1', name: 'Action', movieCount: 5 }]);
+
+      const categories = await categoriesPromise;
+      expect(categories.length).toBe(1);
     });
   });
 
-  describe('getActiveDownloads', () => {
-    it('should return active downloads', () => {
-      service.getActiveDownloads().subscribe(downloads => {
-        expect(downloads.length).toBe(1);
-      });
+  describe('getActiveDownloads', (): void => {
+    it('should return active downloads', async (): Promise<void> => {
+      const downloadsPromise = firstValueFrom(service.getActiveDownloads());
 
       const req = httpMock.expectOne('/api/downloads');
       expect(req.request.method).toBe('GET');
       req.flush([{ movieId: '1', progress: 50, status: 'IN_PROGRESS' }]);
+
+      const downloads = await downloadsPromise;
+      expect(downloads.length).toBe(1);
     });
   });
 
-  describe('getCacheStats', () => {
-    it('should return cache stats', () => {
-      service.getCacheStats().subscribe(stats => {
-        expect(stats.movieCount).toBe(5);
-      });
+  describe('getCacheStats', (): void => {
+    it('should return cache stats', async (): Promise<void> => {
+      const statsPromise = firstValueFrom(service.getCacheStats());
 
       const req = httpMock.expectOne('/api/movies/cache/stats');
       expect(req.request.method).toBe('GET');
       req.flush({ totalSizeBytes: 1000, maxSizeBytes: 10000, usagePercent: 10, movieCount: 5 });
+
+      const stats = await statsPromise;
+      expect(stats.movieCount).toBe(5);
     });
   });
 });

@@ -13,7 +13,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: ['src/app/**/*.ts'],
-      exclude: ['src/app/**/*.test.ts', 'src/main.ts']
-    }
-  }
+      exclude: ['src/app/**/*.test.ts', 'src/main.ts'],
+    },
+  },
 });

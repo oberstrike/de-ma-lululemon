@@ -1,11 +1,17 @@
 package com.mediaserver.infrastructure.rest.controller;
 
+import com.mediaserver.application.usecase.category.GetAllCategoriesUseCase;
 import com.mediaserver.application.usecase.movie.*;
+import com.mediaserver.domain.model.Category;
 import com.mediaserver.domain.model.Movie;
 import com.mediaserver.infrastructure.rest.dto.CacheStatsDTO;
+import com.mediaserver.infrastructure.rest.dto.MovieGroupResponseDTO;
 import com.mediaserver.infrastructure.rest.dto.MovieRequestDTO;
 import com.mediaserver.infrastructure.rest.dto.MovieResponseDTO;
 import com.mediaserver.infrastructure.rest.mapper.MovieRestMapper;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +28,7 @@ public class MovieController {
     private final SearchMoviesUseCase searchMoviesUseCase;
     private final GetMoviesByCategoryUseCase getMoviesByCategoryUseCase;
     private final GetReadyMoviesUseCase getReadyMoviesUseCase;
+    private final GetMoviesGroupedUseCase getMoviesGroupedUseCase;
     private final CreateMovieUseCase createMovieUseCase;
     private final UpdateMovieUseCase updateMovieUseCase;
     private final DeleteMovieUseCase deleteMovieUseCase;
@@ -33,6 +40,7 @@ public class MovieController {
     private final AddFavoriteUseCase addFavoriteUseCase;
     private final RemoveFavoriteUseCase removeFavoriteUseCase;
     private final GetFavoritesUseCase getFavoritesUseCase;
+    private final GetAllCategoriesUseCase getAllCategoriesUseCase;
     private final MovieRestMapper movieMapper;
 
     @GetMapping
@@ -56,6 +64,19 @@ public class MovieController {
             return getReadyMoviesUseCase.getReadyMovies();
         }
         return getAllMoviesUseCase.getAllMovies();
+    }
+
+    @GetMapping("/grouped")
+    public List<MovieGroupResponseDTO> getMoviesGrouped(
+            @RequestParam(required = false) String search) {
+        var groups =
+                (search != null && !search.isBlank())
+                        ? getMoviesGroupedUseCase.getMoviesGrouped(search)
+                        : getMoviesGroupedUseCase.getMoviesGrouped();
+        Map<String, Category> categoriesById =
+                getAllCategoriesUseCase.getAllCategories().stream()
+                        .collect(Collectors.toMap(Category::getId, Function.identity()));
+        return movieMapper.toGroupResponseList(groups, categoriesById);
     }
 
     @GetMapping("/{id}")

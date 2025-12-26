@@ -1,7 +1,7 @@
-import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
 import { environment } from '@env/environment';
+import { Observable } from 'rxjs';
 
 export interface Movie {
   id: string;
@@ -63,14 +63,37 @@ export interface CacheStats {
   movieCount: number;
 }
 
+export interface MovieGroup {
+  name: string;
+  categoryId?: string;
+  special: boolean;
+  sortOrder: number;
+  movies: Movie[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private http = inject(HttpClient);
-  private baseUrl = environment.apiUrl;
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = environment.apiUrl;
 
   // Movies
-  getMovies(params?: { search?: string; readyOnly?: boolean; categoryId?: string }): Observable<Movie[]> {
-    return this.http.get<Movie[]>(`${this.baseUrl}/movies`, { params: params as Record<string, string> });
+  getMovies(params?: {
+    search?: string;
+    readyOnly?: boolean;
+    categoryId?: string;
+  }): Observable<Movie[]> {
+    return this.http.get<Movie[]>(`${this.baseUrl}/movies`, {
+      params: params as Record<string, string>,
+    });
+  }
+
+  getMoviesGrouped(search?: string): Observable<MovieGroup[]> {
+    if (search) {
+      return this.http.get<MovieGroup[]>(`${this.baseUrl}/movies/grouped`, {
+        params: { search },
+      });
+    }
+    return this.http.get<MovieGroup[]>(`${this.baseUrl}/movies/grouped`);
   }
 
   getMovie(id: string): Observable<Movie> {

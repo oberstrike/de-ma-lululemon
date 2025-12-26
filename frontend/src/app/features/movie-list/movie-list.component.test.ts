@@ -1,14 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { MovieListComponent } from './movie-list.component';
-import { MoviesStore } from '../../store/movies.store';
-import { WebSocketService } from '../../services/websocket.service';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { WebSocketService } from '../../services/websocket.service';
+import { MoviesStore } from '../../store/movies.store';
+import { MovieListComponent } from './movie-list.component';
 
 describe('MovieListComponent', () => {
   let component: MovieListComponent;
@@ -21,22 +22,20 @@ describe('MovieListComponent', () => {
   beforeEach(async () => {
     mockWebSocketService = {
       connect: vi.fn(),
-      getDownloadProgress: vi.fn().mockReturnValue(of())
+      getDownloadProgress: vi.fn().mockReturnValue(of()),
     };
 
     await TestBed.configureTestingModule({
-      imports: [
-        MovieListComponent,
-        NoopAnimationsModule
-      ],
+      imports: [MovieListComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideNoopAnimations(),
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
         MoviesStore,
-        { provide: WebSocketService, useValue: mockWebSocketService }
-      ]
+        { provide: WebSocketService, useValue: mockWebSocketService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MovieListComponent);

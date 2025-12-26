@@ -1,16 +1,16 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
-import { MovieDetailComponent } from './movie-detail.component';
-import { MoviesStore } from '../../store/movies.store';
-import { WebSocketService } from '../../services/websocket.service';
 import { of, Subject } from 'rxjs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { WebSocketService } from '../../services/websocket.service';
+import { MoviesStore } from '../../store/movies.store';
+import { MovieDetailComponent } from './movie-detail.component';
 
 describe('MovieDetailComponent', () => {
   let component: MovieDetailComponent;
@@ -24,16 +24,14 @@ describe('MovieDetailComponent', () => {
   beforeEach(async () => {
     mockWebSocketService = {
       connect: vi.fn(),
-      getDownloadProgress: vi.fn().mockReturnValue(of())
+      getDownloadProgress: vi.fn().mockReturnValue(of()),
     };
 
     await TestBed.configureTestingModule({
-      imports: [
-        MovieDetailComponent,
-        NoopAnimationsModule
-      ],
+      imports: [MovieDetailComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideNoopAnimations(),
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
@@ -45,12 +43,12 @@ describe('MovieDetailComponent', () => {
           useValue: {
             snapshot: {
               paramMap: {
-                get: () => 'movie-1'
-              }
-            }
-          }
-        }
-      ]
+                get: () => 'movie-1',
+              },
+            },
+          },
+        },
+      ],
     }).compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);
@@ -71,7 +69,7 @@ describe('MovieDetailComponent', () => {
       id: 'movie-1',
       title: 'Test Movie',
       status: 'READY',
-      cached: true
+      cached: true,
     });
 
     expect(component.movie()).toBeTruthy();
@@ -100,7 +98,7 @@ describe('MovieDetailComponent', () => {
     httpMock.expectOne('/api/movies/movie-1').flush({
       id: 'movie-1',
       title: 'Test Movie',
-      status: 'DOWNLOADING'
+      status: 'DOWNLOADING',
     });
 
     // Emit progress after movie is loaded
@@ -110,7 +108,7 @@ describe('MovieDetailComponent', () => {
       status: 'IN_PROGRESS' as const,
       bytesDownloaded: 500,
       totalBytes: 1000,
-      movieTitle: 'Test'
+      movieTitle: 'Test',
     });
 
     expect(component.downloadProgress()?.progress).toBe(50);

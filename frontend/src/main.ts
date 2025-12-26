@@ -1,11 +1,12 @@
-import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { providePrimeNG } from 'primeng/config';
-import Aura from '@primeng/themes/aura';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideRouter, withViewTransitions } from '@angular/router';
 import { definePreset } from '@primeng/themes';
+import Aura from '@primeng/themes/aura';
+import { providePrimeNG } from 'primeng/config';
+
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 
@@ -22,9 +23,9 @@ const MediaPreset = definePreset(Aura, {
       700: '{red.700}',
       800: '{red.800}',
       900: '{red.900}',
-      950: '{red.950}'
-    }
-  }
+      950: '{red.950}',
+    },
+  },
 });
 
 bootstrapApplication(AppComponent, {
@@ -32,14 +33,16 @@ bootstrapApplication(AppComponent, {
     provideZonelessChangeDetection(),
     provideRouter(routes, withViewTransitions()),
     provideHttpClient(withFetch()),
-    provideAnimationsAsync(),
+    provideAnimations(),
     providePrimeNG({
       theme: {
         preset: MediaPreset,
         options: {
-          darkModeSelector: '.dark-mode'
-        }
-      }
-    })
-  ]
-}).catch(err => console.error(err));
+          darkModeSelector: '.dark-mode',
+        },
+      },
+    }),
+  ],
+}).catch((err) => {
+  console.error(err);
+});
