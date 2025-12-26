@@ -1,47 +1,53 @@
 # Media Server
 
-Full-stack media streaming application with Angular frontend and Spring Boot backend.
+Full-stack media streaming application with Angular 18 frontend and Spring Boot 4 backend.
 
 ## Architecture
 
 ```
-┌─────────────────┐         ┌─────────────────┐         ┌─────────────┐
-│  Angular App    │  HTTP   │  Spring Boot    │  SDK    │  Mega.nz    │
-│  (Frontend)     │ ◄─────► │  (Backend)      │ ◄─────► │  Cloud      │
-└─────────────────┘         └────────┬────────┘         └─────────────┘
-                                     │
-                                     ▼
-                            ┌─────────────────┐
-                            │  PostgreSQL     │
-                            │  + File Storage │
-                            └─────────────────┘
+┌────────────────────┐  HTTP/WebSocket  ┌─────────────────┐         ┌─────────────┐
+│  Angular App       │ ◄──────────────► │  Spring Boot    │  SDK    │  Mega.nz    │
+│  (Frontend)        │                  │  (Backend)      │ ◄─────► │  Cloud      │
+└────────────────────┘                  └────────┬────────┘         └─────────────┘
+                                                 │
+                                                 ▼
+                                        ┌─────────────────┐
+                                        │  PostgreSQL     │
+                                        │  + File Storage │
+                                        └─────────────────┘
 ```
 
 ## Project Structure
 
 ```
-├── frontend/          # Angular 18 app
+├── frontend/          Angular 18 app
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── features/      # Movie list, detail, video player
-│   │   │   ├── services/      # API, WebSocket
-│   │   │   └── store/         # NgRx signals stores
+│   │   │   ├── features/      Movie list, detail, video player
+│   │   │   ├── services/      API, WebSocket
+│   │   │   └── store/         NgRx signals stores
 │   │   └── environments/
 │   └── Dockerfile
-├── backend/           # Spring Boot 3 app
+├── backend/           Spring Boot 4 app
 │   ├── src/main/java/com/mediaserver/
-│   │   ├── controller/        # REST endpoints
-│   │   ├── service/           # Business logic
-│   │   ├── entity/            # JPA entities
-│   │   └── repository/        # Data access
+│   │   ├── application/       Use cases and orchestration
+│   │   ├── config/            Spring configuration
+│   │   ├── domain/            Domain models
+│   │   ├── dto/               Shared DTOs
+│   │   ├── event/             Domain and progress events
+│   │   ├── exception/         Exception types
+│   │   ├── infrastructure/
+│   │   │   ├── persistence/   JPA adapters
+│   │   │   └── rest/          REST controllers, mappers
+│   │   └── service/           Application services
 │   └── Dockerfile
 └── docker-compose.yml
 ```
 
 ## Features
 
-- Video streaming with HTTP range requests (seeking support)
-- Mega.nz downloads (server-side, no CORS issues)
+- Video streaming with HTTP range requests
+- Mega.nz downloads
 - Real-time download progress via WebSocket
 - PostgreSQL database for movie metadata
 - Centralized video cache
@@ -49,11 +55,10 @@ Full-stack media streaming application with Angular frontend and Spring Boot bac
 ## Quick Start
 
 ```bash
-# Run everything with Docker
 docker-compose up
-
-# Access the app at http://localhost
 ```
+
+Access the app at http://localhost.
 
 ## Development
 
@@ -61,11 +66,7 @@ docker-compose up
 
 ```bash
 cd backend
-
-# Start PostgreSQL
 docker-compose up -d db
-
-# Run Spring Boot
 ./mvnw spring-boot:run
 ```
 
@@ -73,15 +74,11 @@ docker-compose up -d db
 
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start dev server (proxies to backend at :8080)
 npm start
-
-# Access at http://localhost:4200
 ```
+
+Access the app at http://localhost:4200.
 
 ## API Endpoints
 
@@ -101,4 +98,4 @@ npm start
 Environment variables:
 - `DB_USERNAME` / `DB_PASSWORD` - Database credentials
 - `MEDIA_STORAGE_PATH` - Video storage path
-- `MEGA_EMAIL` / `MEGA_PASSWORD` - Mega.nz credentials (optional)
+- `MEGA_EMAIL` / `MEGA_PASSWORD` - Mega.nz credentials

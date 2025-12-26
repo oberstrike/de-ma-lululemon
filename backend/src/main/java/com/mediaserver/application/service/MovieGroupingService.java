@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service responsible for grouping movies by category and creating special groups for favorites
- * and cached movies.
+ * Service responsible for grouping movies by category and creating special groups for favorites and
+ * cached movies.
  */
 @Service
 @RequiredArgsConstructor
@@ -46,7 +46,7 @@ public class MovieGroupingService implements GetMoviesGroupedUseCase {
 
         // Get all categories for name lookup
         Map<String, Category> categoriesById =
-                categoryPort.findAllOrderBySortOrder().stream()
+                categoryPort.findAllOrderedBySortOrder().stream()
                         .collect(
                                 Collectors.toMap(
                                         Category::getId, c -> c, (a, b) -> a, LinkedHashMap::new));
