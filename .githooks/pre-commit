@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -e
+cd backend
+mvn spotless:check checkstyle:check spotbugs:check
