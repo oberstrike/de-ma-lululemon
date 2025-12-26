@@ -13,10 +13,31 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: name
+                  name: username
                   type: varchar(255)
                   constraints:
                     nullable: false
+                    unique: true
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: external_id
+                  type: varchar(255)
+                  constraints:
+                    unique: true
+              - column:
+                  name: display_name
+                  type: varchar(255)
+              - column:
+                  name: created_at
+                  type: timestamp
+              - column:
+                  name: updated_at
+                  type: timestamp
 
   - changeSet:
       id: 002-add-user-id-to-movies

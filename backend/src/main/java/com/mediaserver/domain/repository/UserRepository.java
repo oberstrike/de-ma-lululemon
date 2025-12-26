@@ -11,6 +11,8 @@ public interface UserRepository {
 
     Optional<User> findByExternalId(String externalId);
 
+    Optional<User> findByEmail(String email);
+
     List<User> findAll();
 
     User save(User user);
