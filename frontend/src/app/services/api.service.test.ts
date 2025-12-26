@@ -5,10 +5,12 @@ import { firstValueFrom } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { ApiService, Movie, MovieCreateRequest } from './api.service';
+import { CurrentUserService } from './current-user.service';
 
 describe('ApiService', (): void => {
   let service: ApiService;
   let httpMock: HttpTestingController;
+  let currentUser: CurrentUserService;
 
   beforeEach((): void => {
     TestBed.configureTestingModule({
@@ -16,6 +18,7 @@ describe('ApiService', (): void => {
     });
     service = TestBed.inject(ApiService);
     httpMock = TestBed.inject(HttpTestingController);
+    currentUser = TestBed.inject(CurrentUserService);
   });
 
   afterEach((): void => {
@@ -42,6 +45,7 @@ describe('ApiService', (): void => {
 
       const req = httpMock.expectOne('/api/movies');
       expect(req.request.method).toBe('GET');
+      expect(req.request.headers.get('X-User-Id')).toBe('user-1');
       req.flush(mockMovies);
 
       const movies = await moviesPromise;
@@ -67,6 +71,30 @@ describe('ApiService', (): void => {
       req.flush([]);
 
       await moviesPromise;
+    });
+  });
+
+  describe('getFavoriteMovies', (): void => {
+    it('should use current user headers', async (): Promise<void> => {
+      const favoritesPromise = firstValueFrom(service.getFavoriteMovies());
+
+      const req = httpMock.expectOne('/api/movies/favorites');
+      expect(req.request.method).toBe('GET');
+      expect(req.request.headers.get('X-User-Id')).toBe('user-1');
+      req.flush([]);
+
+      await favoritesPromise;
+
+      currentUser.setUserId('user-2');
+
+      const updatedPromise = firstValueFrom(service.getFavoriteMovies());
+
+      const updatedReq = httpMock.expectOne('/api/movies/favorites');
+      expect(updatedReq.request.method).toBe('GET');
+      expect(updatedReq.request.headers.get('X-User-Id')).toBe('user-2');
+      updatedReq.flush([]);
+
+      await updatedPromise;
     });
   });
 
