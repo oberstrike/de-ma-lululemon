@@ -14,6 +14,7 @@ public class MediaProperties {
     private Cors cors = new Cors();
     private Download download = new Download();
     private Admin admin = new Admin();
+    private Auth auth = new Auth();
 
     @Data
     public static class Storage {
@@ -53,5 +54,17 @@ public class MediaProperties {
     public static class Admin {
         private String username = "admin";
         private String password; // Must be set via environment variable MEDIA_ADMIN_PASSWORD
+    }
+
+    @Data
+    public static class Auth {
+        private String provider = "mock";
+        private Mock mock = new Mock();
+
+        @Data
+        public static class Mock {
+            private String userId = "mock-user";
+            private String username = "mock";
+        }
     }
 }
