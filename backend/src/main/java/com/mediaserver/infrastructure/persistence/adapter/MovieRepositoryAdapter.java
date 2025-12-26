@@ -11,6 +11,7 @@ import com.mediaserver.infrastructure.persistence.repository.JpaMovieFavoriteRep
 import com.mediaserver.infrastructure.persistence.repository.JpaMovieRepository;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -91,7 +92,7 @@ public class MovieRepositoryAdapter implements MovieRepository, MoviePort {
     }
 
     @Override
-    public Long getTotalCacheSize() {
+    public long getTotalCacheSize() {
         Long size = jpaMovieRepository.getTotalCacheSize();
         return size != null ? size : 0L;
     }
@@ -140,8 +141,17 @@ public class MovieRepositoryAdapter implements MovieRepository, MoviePort {
     }
 
     @Override
-    public List<Movie> findFavoritesByUserId(String userId) {
-        return mapper.toDomainList(jpaMovieRepository.findFavoritesByUserId(userId));
+    public List<Movie> applyFavoriteStatus(List<Movie> movies, String userId) {
+        if (movies.isEmpty()) {
+            return movies;
+        }
+        Set<String> favoriteIds =
+                jpaMovieRepository.findFavoritesByUserId(userId).stream()
+                        .map(entity -> entity.getId())
+                        .collect(Collectors.toSet());
+        return movies.stream()
+                .map(movie -> movie.withFavorite(favoriteIds.contains(movie.getId())))
+                .toList();
     }
 
     @Override

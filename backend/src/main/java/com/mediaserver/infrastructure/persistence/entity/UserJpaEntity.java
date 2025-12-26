@@ -29,7 +29,7 @@ public class UserJpaEntity {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String email;
 
     @Column(name = "external_id", unique = true)

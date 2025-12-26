@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -70,22 +69,26 @@ public class MovieApplicationService
 
     @Override
     public List<Movie> getAllMovies() {
-        return applyFavorites(moviePort.findAll());
+        String userId = currentUserProvider.getCurrentUserId();
+        return moviePort.applyFavoriteStatus(moviePort.findAll(), userId);
     }
 
     @Override
     public List<Movie> getReadyMovies() {
-        return applyFavorites(moviePort.findReadyMovies());
+        String userId = currentUserProvider.getCurrentUserId();
+        return moviePort.applyFavoriteStatus(moviePort.findReadyMovies(), userId);
     }
 
     @Override
     public List<Movie> getMoviesByCategory(String categoryId) {
-        return applyFavorites(moviePort.findByCategoryId(categoryId));
+        String userId = currentUserProvider.getCurrentUserId();
+        return moviePort.applyFavoriteStatus(moviePort.findByCategoryId(categoryId), userId);
     }
 
     @Override
     public List<Movie> searchMovies(String query) {
-        return applyFavorites(moviePort.search(query));
+        String userId = currentUserProvider.getCurrentUserId();
+        return moviePort.applyFavoriteStatus(moviePort.search(query), userId);
     }
 
     @Override
@@ -226,7 +229,8 @@ public class MovieApplicationService
 
     @Override
     public List<Movie> getCachedMovies() {
-        return applyFavorites(moviePort.findCachedMovies());
+        String userId = currentUserProvider.getCurrentUserId();
+        return moviePort.applyFavoriteStatus(moviePort.findCachedMovies(), userId);
     }
 
     @Override
@@ -331,23 +335,5 @@ public class MovieApplicationService
     public List<Movie> getFavorites() {
         String userId = currentUserProvider.getCurrentUserId();
         return moviePort.findFavorites(userId);
-    }
-
-    private List<Movie> applyFavorites(List<Movie> movies) {
-        if (movies.isEmpty()) {
-            return movies;
-        }
-        String userId = currentUserProvider.getCurrentUserId();
-        Set<String> favoriteIds =
-                moviePort.findFavorites(userId).stream()
-                        .map(Movie::getId)
-                        .collect(Collectors.toSet());
-        return movies.stream()
-                .map(
-                        movie ->
-                                favoriteIds.contains(movie.getId())
-                                        ? movie.withFavorite(true)
-                                        : movie.withFavorite(false))
-                .toList();
     }
 }

@@ -69,7 +69,7 @@ public interface MoviePort {
      *
      * @return total size of cached movies
      */
-    Long getTotalCacheSize();
+    long getTotalCacheSize();
 
     /**
      * Counts movies that have a local path (cached).
@@ -100,6 +100,15 @@ public interface MoviePort {
     void removeFavorite(String movieId, String userId);
 
     boolean isFavorite(String movieId, String userId);
+
+    /**
+     * Applies favorite status to a list of movies for the given user.
+     *
+     * @param movies the movies to update
+     * @param userId the user ID to check favorites for
+     * @return movies with favorite flag set appropriately
+     */
+    List<Movie> applyFavoriteStatus(List<Movie> movies, String userId);
 
     /**
      * Finds cached movies that are not favorites (for cache clearing).

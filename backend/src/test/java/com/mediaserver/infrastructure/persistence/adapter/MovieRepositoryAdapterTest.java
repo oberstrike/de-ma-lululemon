@@ -226,7 +226,7 @@ class MovieRepositoryAdapterTest {
         when(jpaMovieRepository.getTotalCacheSize()).thenReturn(5L * 1024 * 1024 * 1024);
 
         // When
-        Long result = movieRepositoryAdapter.getTotalCacheSize();
+        long result = movieRepositoryAdapter.getTotalCacheSize();
 
         // Then
         assertThat(result).isEqualTo(5L * 1024 * 1024 * 1024);

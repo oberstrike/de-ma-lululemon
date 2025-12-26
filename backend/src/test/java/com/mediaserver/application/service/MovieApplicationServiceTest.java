@@ -69,6 +69,9 @@ class MovieApplicationServiceTest {
         lenient().when(currentUserProvider.getCurrentUserId()).thenReturn("user-1");
         lenient().when(moviePort.findFavorites("user-1")).thenReturn(List.of());
         lenient().when(moviePort.isFavorite(anyString(), anyString())).thenReturn(false);
+        lenient()
+                .when(moviePort.applyFavoriteStatus(any(), anyString()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -84,7 +87,7 @@ class MovieApplicationServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle()).isEqualTo("Test Movie");
         verify(moviePort).findAll();
-        verify(moviePort).findFavorites("user-1");
+        verify(moviePort).applyFavoriteStatus(movies, "user-1");
     }
 
     @Test
@@ -238,7 +241,7 @@ class MovieApplicationServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle()).isEqualTo("Test Movie");
         verify(moviePort).search("test");
-        verify(moviePort).findFavorites("user-1");
+        verify(moviePort).applyFavoriteStatus(movies, "user-1");
     }
 
     @Test
@@ -246,8 +249,9 @@ class MovieApplicationServiceTest {
         // Given
         Movie readyMovie =
                 testMovie.withStatus(MovieStatus.READY).withLocalPath("/path/to/video.mp4");
+        List<Movie> movies = List.of(readyMovie);
 
-        when(moviePort.findReadyMovies()).thenReturn(List.of(readyMovie));
+        when(moviePort.findReadyMovies()).thenReturn(movies);
 
         // When
         List<Movie> result = movieApplicationService.getReadyMovies();
@@ -257,13 +261,14 @@ class MovieApplicationServiceTest {
         assertThat(result.get(0).getStatus()).isEqualTo(MovieStatus.READY);
         assertThat(result.get(0).isCached()).isTrue();
         verify(moviePort).findReadyMovies();
-        verify(moviePort).findFavorites("user-1");
+        verify(moviePort).applyFavoriteStatus(movies, "user-1");
     }
 
     @Test
     void getMoviesByCategory_shouldReturnMoviesInCategory() {
         // Given
-        when(moviePort.findByCategoryId("cat-1")).thenReturn(List.of(testMovie));
+        List<Movie> movies = List.of(testMovie);
+        when(moviePort.findByCategoryId("cat-1")).thenReturn(movies);
 
         // When
         List<Movie> result = movieApplicationService.getMoviesByCategory("cat-1");
@@ -272,7 +277,7 @@ class MovieApplicationServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getCategoryId()).isEqualTo("cat-1");
         verify(moviePort).findByCategoryId("cat-1");
-        verify(moviePort).findFavorites("user-1");
+        verify(moviePort).applyFavoriteStatus(movies, "user-1");
     }
 
     @Test
@@ -280,8 +285,9 @@ class MovieApplicationServiceTest {
         // Given
         Movie cachedMovie =
                 testMovie.withStatus(MovieStatus.READY).withLocalPath("/cache/movie.mp4");
+        List<Movie> movies = List.of(cachedMovie);
 
-        when(moviePort.findCachedMovies()).thenReturn(List.of(cachedMovie));
+        when(moviePort.findCachedMovies()).thenReturn(movies);
 
         // When
         List<Movie> result = movieApplicationService.getCachedMovies();
@@ -290,7 +296,7 @@ class MovieApplicationServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).isCached()).isTrue();
         verify(moviePort).findCachedMovies();
-        verify(moviePort).findFavorites("user-1");
+        verify(moviePort).applyFavoriteStatus(movies, "user-1");
     }
 
     @Test

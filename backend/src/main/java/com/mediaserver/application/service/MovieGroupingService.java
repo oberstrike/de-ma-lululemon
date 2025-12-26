@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,11 +41,12 @@ public class MovieGroupingService implements GetMoviesGroupedUseCase {
     @Override
     public List<MovieGroup> getMoviesGrouped(String search) {
         // Get all movies, optionally filtered by search
+        String userId = currentUserProvider.getCurrentUserId();
         List<Movie> allMovies =
                 (search != null && !search.isBlank())
                         ? moviePort.search(search)
                         : moviePort.findAll();
-        allMovies = applyFavorites(allMovies);
+        allMovies = moviePort.applyFavoriteStatus(allMovies, userId);
 
         // Get all categories for name lookup
         Map<String, Category> categoriesById =
@@ -117,23 +117,5 @@ public class MovieGroupingService implements GetMoviesGroupedUseCase {
         }
 
         return groups;
-    }
-
-    private List<Movie> applyFavorites(List<Movie> movies) {
-        if (movies.isEmpty()) {
-            return movies;
-        }
-        String userId = currentUserProvider.getCurrentUserId();
-        Set<String> favoriteIds =
-                moviePort.findFavorites(userId).stream()
-                        .map(Movie::getId)
-                        .collect(Collectors.toSet());
-        return movies.stream()
-                .map(
-                        movie ->
-                                favoriteIds.contains(movie.getId())
-                                        ? movie.withFavorite(true)
-                                        : movie.withFavorite(false))
-                .toList();
     }
 }

@@ -238,7 +238,7 @@ class RepositoryIntegrationTest {
         movieRepository.save(movie2);
 
         // When
-        Long totalSize = movieRepository.getTotalCacheSize();
+        long totalSize = movieRepository.getTotalCacheSize();
 
         // Then
         assertThat(totalSize).isEqualTo(3000L);
