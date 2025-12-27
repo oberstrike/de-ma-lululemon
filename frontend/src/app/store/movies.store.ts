@@ -21,11 +21,11 @@ import { CurrentUserService } from '../services/current-user.service';
 
 interface MoviesState {
   movieGroups: MovieGroup[];
-  selectedMovieId: string | null;
   filter: string;
   loading: boolean;
   error: string | null;
   currentUserId: string;
+  selectedMovieId: string | null;
 }
 
 function filterGroupsBySearch(groups: MovieGroup[], filter: string): MovieGroup[] {
@@ -54,11 +54,11 @@ export const MoviesStore = signalStore(
 
   withState<MoviesState>({
     movieGroups: [],
-    selectedMovieId: null,
     filter: '',
     loading: false,
     error: null,
     currentUserId: '',
+    selectedMovieId: null,
   }),
 
   withComputed((state) => ({
@@ -69,10 +69,6 @@ export const MoviesStore = signalStore(
       if (!filter) return state.entities();
       return state.entities().filter((m) => m.title.toLowerCase().includes(filter));
     }),
-
-    selectedMovie: computed(
-      () => state.entities().find((m) => m.id === state.selectedMovieId()) ?? null
-    ),
 
     readyMovies: computed(() => state.entities().filter((m) => m.status === 'READY')),
 
@@ -87,7 +83,6 @@ export const MoviesStore = signalStore(
     featuredMovie: computed(() => selectFeaturedMovie(state.entities())),
 
     isLoading: computed(() => state.loading()),
-    hasError: computed(() => state.error() !== null),
   })),
 
   withMethods((store, api = inject(ApiService), currentUser = inject(CurrentUserService)) => {

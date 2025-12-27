@@ -64,7 +64,6 @@ export const PlayerStore = signalStore(
     }),
 
     isLoading: computed(() => state.loading()),
-    hasError: computed(() => state.error() !== null),
   })),
 
   withMethods((store, api = inject(ApiService)) => ({
@@ -106,15 +105,6 @@ export const PlayerStore = signalStore(
       patchState(store, { buffered });
     },
 
-    seekTo(time: number): void {
-      patchState(store, { currentTime: Math.max(0, Math.min(store.duration(), time)) });
-    },
-
-    seekRelative(seconds: number): void {
-      const newTime = Math.max(0, Math.min(store.duration(), store.currentTime() + seconds));
-      patchState(store, { currentTime: newTime });
-    },
-
     setVolume(volume: number): void {
       patchState(store, { volume: Math.max(0, Math.min(1, volume)), muted: false });
     },
@@ -147,10 +137,6 @@ export const PlayerStore = signalStore(
         controlsVisible: true,
         error: null,
       });
-    },
-
-    clearError(): void {
-      patchState(store, { error: null });
     },
   }))
 );
