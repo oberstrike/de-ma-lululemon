@@ -117,6 +117,64 @@ Or disable it for specific files using ESLint comments:
 export const loadMovies$ = createEffect(() => ..., { functional: true });
 ```
 
+## Testing
+
+The custom rules are tested using ESLint's built-in `RuleTester`. Tests ensure the rules correctly identify violations and allow valid usage patterns.
+
+### Running Tests
+
+```bash
+# Run all ESLint rule tests
+npm run test:eslint-rules
+
+# Or run directly
+node eslint-local-rules/rules/create-effect-in-service.test.js
+```
+
+### Test Coverage
+
+The `create-effect-in-service` rule includes tests for:
+
+**Valid usage:**
+- ✅ createEffect as property in @Injectable class
+- ✅ createEffect with @Injectable decorator (with/without parentheses)
+- ✅ createEffect in class expressions with @Injectable
+- ✅ Multiple effects in same class
+- ✅ createEffect with arrow function properties
+
+**Invalid usage:**
+- ❌ createEffect in @Component classes
+- ❌ createEffect in classes without decorators
+- ❌ createEffect outside any class (functional effects)
+- ❌ createEffect called in methods (ngOnInit, constructor, custom methods)
+- ❌ createEffect in class expressions without @Injectable
+- ❌ createEffect with member expression syntax
+
+### Writing Tests for New Rules
+
+When adding a new rule, create a corresponding test file:
+
+```javascript
+const { RuleTester } = require('eslint');
+const tsParser = require('@typescript-eslint/parser');
+const rule = require('./your-rule-name');
+
+const ruleTester = new RuleTester({
+  languageOptions: {
+    parser: tsParser,
+    parserOptions: {
+      ecmaVersion: 2020,
+      sourceType: 'module',
+    },
+  },
+});
+
+ruleTester.run('your-rule-name', rule, {
+  valid: [/* valid test cases */],
+  invalid: [/* invalid test cases with expected errors */],
+});
+```
+
 ## Adding New Custom Rules
 
 To add a new custom rule:

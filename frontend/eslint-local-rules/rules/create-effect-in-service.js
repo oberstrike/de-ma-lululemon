@@ -19,8 +19,6 @@ module.exports = {
       recommended: true,
     },
     messages: {
-      invalidCreateEffectUsage:
-        '`createEffect` should only be called in an @Injectable service class as a property initializer, not in methods or lifecycle hooks.',
       createEffectOutsideClass:
         '`createEffect` must be defined inside a class. Consider creating an @Injectable effects service.',
       createEffectInNonInjectableClass:
@@ -87,14 +85,15 @@ module.exports = {
     }
 
     /**
-     * Find the closest ancestor class declaration
+     * Find the closest ancestor class (declaration or expression)
      * @param {import('eslint').Rule.Node[]} ancestors
      * @returns {import('eslint').Rule.Node | null}
      */
     function findEnclosingClass(ancestors) {
       for (let i = ancestors.length - 1; i >= 0; i--) {
-        if (ancestors[i].type === 'ClassDeclaration') {
-          return ancestors[i];
+        const node = ancestors[i];
+        if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
+          return node;
         }
       }
       return null;

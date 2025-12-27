@@ -10,6 +10,7 @@
     "test": "vitest",
     "test:ci": "vitest run --coverage",
     "test:watch": "vitest watch",
+    "test:eslint-rules": "node eslint-local-rules/rules/create-effect-in-service.test.js",
     "lint": "ng lint",
     "lint:styles": "stylelint 'src/**/*.scss'",
     "lint:styles:fix": "stylelint 'src/**/*.scss' --fix",
