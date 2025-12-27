@@ -76,7 +76,6 @@ export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiUrl;
 
-  // Movies
   getMovies(params?: {
     search?: string;
     readyOnly?: boolean;
@@ -112,7 +111,6 @@ export class ApiService {
     return this.http.delete<void>(`${this.baseUrl}/movies/${id}`);
   }
 
-  // Downloads
   startDownload(movieId: string): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/movies/${movieId}/download`, {});
   }
@@ -125,7 +123,6 @@ export class ApiService {
     return this.http.get<DownloadProgress[]>(`${this.baseUrl}/downloads`);
   }
 
-  // Streaming
   getStreamInfo(movieId: string): Observable<StreamInfo> {
     return this.http.get<StreamInfo>(`${this.baseUrl}/stream/${movieId}/info`);
   }
@@ -138,12 +135,10 @@ export class ApiService {
     return `${this.baseUrl}/thumbnails/${movieId}`;
   }
 
-  // Categories
   getCategories(): Observable<Category[]> {
     return this.http.get<Category[]>(`${this.baseUrl}/categories`);
   }
 
-  // Cache
   getCacheStats(): Observable<CacheStats> {
     return this.http.get<CacheStats>(`${this.baseUrl}/movies/cache/stats`);
   }
@@ -160,7 +155,6 @@ export class ApiService {
     return this.http.delete<number>(`${this.baseUrl}/movies/cache`);
   }
 
-  // Favorites
   getFavoriteMovies(): Observable<Movie[]> {
     return this.http.get<Movie[]>(`${this.baseUrl}/movies/favorites`);
   }

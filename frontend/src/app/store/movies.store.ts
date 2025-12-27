@@ -20,7 +20,6 @@ import { ApiService, Movie, MovieCreateRequest, MovieGroup } from '../services/a
 
 interface MoviesState {
   movieGroups: MovieGroup[];
-  selectedMovieId: string | null;
   filter: string;
   loading: boolean;
   error: string | null;
@@ -48,20 +47,16 @@ function selectFeaturedMovie(movies: Movie[]): Movie | null {
 export const MoviesStore = signalStore(
   { providedIn: 'root' },
 
-  // Entity management for movies collection
   withEntities<Movie>(),
 
-  // State
   withState<MoviesState>({
     movieGroups: [],
-    selectedMovieId: null,
     filter: '',
     loading: false,
     error: null,
   }),
 
   withComputed((state) => ({
-    // Alias for entities
     movies: computed(() => state.entities()),
 
     filteredMovies: computed(() => {
@@ -69,10 +64,6 @@ export const MoviesStore = signalStore(
       if (!filter) return state.entities();
       return state.entities().filter((m) => m.title.toLowerCase().includes(filter));
     }),
-
-    selectedMovie: computed(
-      () => state.entities().find((m) => m.id === state.selectedMovieId()) ?? null
-    ),
 
     readyMovies: computed(() => state.entities().filter((m) => m.status === 'READY')),
 
@@ -87,7 +78,6 @@ export const MoviesStore = signalStore(
     featuredMovie: computed(() => selectFeaturedMovie(state.entities())),
 
     isLoading: computed(() => state.loading()),
-    hasError: computed(() => state.error() !== null),
   })),
 
   withMethods((store, api = inject(ApiService)) => ({
@@ -117,12 +107,10 @@ export const MoviesStore = signalStore(
     },
 
     async startDownload(movieId: string): Promise<void> {
-      // Optimistic update
       patchState(store, updateEntity({ id: movieId, changes: { status: 'DOWNLOADING' as const } }));
       try {
         await firstValueFrom(api.startDownload(movieId));
       } catch (err) {
-        // Revert on error
         patchState(store, updateEntity({ id: movieId, changes: { status: 'PENDING' as const } }));
         patchState(store, {
           error: err instanceof Error ? err.message : 'Failed to start download',
@@ -134,9 +122,6 @@ export const MoviesStore = signalStore(
       try {
         await firstValueFrom(api.deleteMovie(id));
         patchState(store, removeEntity(id));
-        if (store.selectedMovieId() === id) {
-          patchState(store, { selectedMovieId: null });
-        }
       } catch (err) {
         patchState(store, {
           error: err instanceof Error ? err.message : 'Failed to delete movie',
@@ -170,10 +155,6 @@ export const MoviesStore = signalStore(
       patchState(store, updateEntity({ id: movieId, changes: { status, cached } }));
     },
 
-    selectMovie(id: string | null): void {
-      patchState(store, { selectedMovieId: id });
-    },
-
     setFilter(filter: string): void {
       patchState(store, { filter });
     },
@@ -186,13 +167,8 @@ export const MoviesStore = signalStore(
         void this.addFavorite(movieId);
       }
     },
-
-    clearError(): void {
-      patchState(store, { error: null });
-    },
   })),
 
-  // Lifecycle hooks - auto-load on store initialization
   withHooks({
     onInit(store) {
       void store.loadMovies();

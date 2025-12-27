@@ -101,7 +101,6 @@ describe('MovieDetailComponent', () => {
       status: 'DOWNLOADING',
     });
 
-    // Emit progress after movie is loaded
     progressSubject.next({
       movieId: 'movie-1',
       progress: 50,

@@ -392,10 +392,9 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
 
   seekRelative(seconds: number): void {
     const newTime = this.player.currentTime() + seconds;
-    this.videoRef.nativeElement.currentTime = Math.max(
-      0,
-      Math.min(this.player.duration(), newTime)
-    );
+    const clampedTime = Math.max(0, Math.min(this.player.duration(), newTime));
+    this.videoRef.nativeElement.currentTime = clampedTime;
+    this.player.setCurrentTime(clampedTime);
   }
 
   onVolumeSliderChange(event: { value?: number }): void {

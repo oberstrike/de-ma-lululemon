@@ -6,6 +6,8 @@ const prettier = require('eslint-config-prettier');
 const simpleImportSort = require('eslint-plugin-simple-import-sort');
 const unusedImports = require('eslint-plugin-unused-imports');
 const rxjsX = require('eslint-plugin-rxjs-x');
+const ngrx = require('@ngrx/eslint-plugin');
+const localRules = require('./eslint-local-rules');
 
 module.exports = tseslint.config(
   {
@@ -26,6 +28,8 @@ module.exports = tseslint.config(
       'simple-import-sort': simpleImportSort,
       'unused-imports': unusedImports,
       'rxjs-x': rxjsX,
+      '@ngrx': ngrx,
+      'local-rules': localRules,
     },
     processor: angular.processInlineTemplates,
     rules: {
@@ -71,6 +75,25 @@ module.exports = tseslint.config(
       'rxjs-x/no-ignored-notifier': 'error',
       'rxjs-x/throw-error': 'error',
       'rxjs-x/prefer-observer': 'warn',
+
+      // NgRx Effects best practices
+      '@ngrx/no-dispatch-in-effects': 'error',
+      '@ngrx/no-effects-in-providers': 'error',
+      '@ngrx/prefer-action-creator-in-of-type': 'error',
+      '@ngrx/prefer-effect-callback-in-block-statement': 'error',
+      '@ngrx/use-effects-lifecycle-interface': 'error',
+      '@ngrx/prefer-concat-latest-from': 'error',
+
+      // NgRx Signal Store best practices
+      '@ngrx/signal-store-feature-should-use-generic-type': 'error',
+      '@ngrx/avoid-combining-component-store-selectors': 'error',
+      '@ngrx/avoid-mapping-component-store-selectors': 'error',
+
+      // Custom NgRx rules
+      'local-rules/create-effect-in-service': 'error',
+
+      // Custom code quality rules
+      'local-rules/no-comments-except-todo': 'error',
 
       // Code complexity
       complexity: ['warn', { max: 15 }],

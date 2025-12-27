@@ -82,6 +82,12 @@ jobs:
       - name: Lint SCSS (Stylelint)
         run: npm run lint:styles
 
+      - name: Test custom ESLint rules
+        run: npm run test:eslint-rules
+
+      - name: Check for unused SignalStore methods
+        run: npm run check:signalstore-methods
+
       - name: Run tests
         run: npm run test:ci
 
