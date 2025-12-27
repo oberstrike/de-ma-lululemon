@@ -292,7 +292,6 @@ export class MovieDetailComponent implements OnInit {
   readonly downloadProgress = signal<DownloadProgress | null>(null);
   private readonly movieId = signal<string | null>(null);
 
-  // Create observables in field initializers (injection context)
   private readonly userId$ = toObservable(this.currentUser.userId);
   private readonly movieId$ = toObservable(this.movieId);
 

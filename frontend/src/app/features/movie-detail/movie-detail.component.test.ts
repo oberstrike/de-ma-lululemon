@@ -100,7 +100,6 @@ describe('MovieDetailComponent', () => {
 
     currentUser.setUserId('user-2');
 
-    // Allow signal change to propagate through toObservable()
     await fixture.whenStable();
     fixture.detectChanges();
 
