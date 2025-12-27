@@ -1,15 +1,31 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
 # Backend
-backend/target/
+apps/backend/build/
+apps/backend/target/
 *.class
 *.jar
+!gradle/wrapper/*.jar
 *.war
 
 # Frontend
-frontend/node_modules/
-frontend/dist/
-frontend/.angular/
-frontend/coverage/
-frontend/test-results/
+apps/frontend/node_modules/
+apps/frontend/dist/
+apps/frontend/.angular/
+apps/frontend/coverage/
+apps/frontend/test-results/
+
+# E2E
+apps/e2e/test-results/
+apps/e2e/playwright-report/
+
+# Nx
+.nx/
+node_modules/
+dist/
 
 # IDE
 *.iml
@@ -27,3 +43,4 @@ frontend/test-results/
 # Environment
 .env
 *.local
+!.claude/settings.local.json

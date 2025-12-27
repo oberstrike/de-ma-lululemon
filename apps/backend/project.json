@@ -1,0 +1,82 @@
+{
+  "name": "backend",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/backend/src",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./gradlew :apps:backend:build -x test -x spotbugsMain -x spotbugsTest",
+        "cwd": "."
+      },
+      "cache": true,
+      "inputs": ["default", "^default"],
+      "outputs": ["{projectRoot}/build"]
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./gradlew :apps:backend:bootRun",
+        "cwd": "."
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./gradlew :apps:backend:test",
+        "cwd": "."
+      },
+      "cache": true,
+      "inputs": ["default", "^default"],
+      "outputs": ["{projectRoot}/build/test-results", "{projectRoot}/build/reports/tests"]
+    },
+    "spotlessCheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./gradlew :apps:backend:spotlessCheck",
+        "cwd": "."
+      },
+      "cache": true,
+      "inputs": ["default"]
+    },
+    "spotlessApply": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./gradlew :apps:backend:spotlessApply",
+        "cwd": "."
+      }
+    },
+    "spotbugsMain": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./gradlew :apps:backend:spotbugsMain",
+        "cwd": "."
+      },
+      "cache": true,
+      "inputs": ["default"],
+      "outputs": ["{projectRoot}/build/reports/spotbugs"]
+    },
+    "checkstyleMain": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./gradlew :apps:backend:checkstyleMain",
+        "cwd": "."
+      },
+      "cache": true,
+      "inputs": ["default"],
+      "outputs": ["{projectRoot}/build/reports/checkstyle"]
+    },
+    "bootJar": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./gradlew :apps:backend:bootJar",
+        "cwd": "."
+      },
+      "cache": true,
+      "inputs": ["default", "^default"],
+      "outputs": ["{projectRoot}/build/libs"]
+    }
+  },
+  "tags": ["scope:backend", "type:app"]
+}

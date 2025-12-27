@@ -6,16 +6,50 @@ A Spring Boot 4.0 media server with Mega.nz integration for video streaming and 
 
 **Tech Stack:**
 - Java 21, Spring Boot 4.0, PostgreSQL
+- Gradle (Kotlin DSL) for build automation
 - Liquibase for database migrations
 - Testcontainers for integration testing
 - Frontend: Angular 21, TypeScript, NgRx Signal Store
+- E2E: Playwright with hybrid testing (mocked + real backend)
+- Monorepo: Nx with @nx/gradle plugin
 
-## Architecture
+## Monorepo Structure
+
+```
+de-ma-lululemon/
+├── apps/
+│   ├── frontend/              # Angular 21 application
+│   │   ├── src/
+│   │   ├── project.json       # Nx project config
+│   │   └── package.json
+│   ├── backend/               # Spring Boot 4.0 API
+│   │   ├── src/main/java/
+│   │   ├── build.gradle.kts   # Gradle build file
+│   │   └── project.json       # Nx project config
+│   └── e2e/                   # Playwright E2E tests
+│       ├── tests/
+│       │   ├── smoke/         # Mocked backend tests (@smoke)
+│       │   └── critical/      # Real backend tests (@critical)
+│       ├── fixtures/          # Test fixtures
+│       ├── pages/             # Page Object Models
+│       └── playwright.config.ts
+├── docker/
+│   └── compose.ci.yml         # CI Docker Compose
+├── gradle/
+│   └── wrapper/               # Gradle wrapper
+├── nx.json                    # Nx workspace config
+├── package.json               # Root dependencies
+├── settings.gradle.kts        # Gradle settings
+├── gradlew, gradlew.bat       # Gradle wrapper scripts
+└── tsconfig.base.json         # Base TypeScript config
+```
+
+## Backend Architecture
 
 This project follows **Clean Architecture** (Hexagonal Architecture) with strict layer separation:
 
 ```
-backend/src/main/java/com/mediaserver/
+apps/backend/src/main/java/com/mediaserver/
 ├── domain/           # Core business logic (innermost layer)
 │   ├── model/        # Domain entities (Movie, Category, DownloadTask)
 │   ├── repository/   # Repository interfaces (ports)
@@ -55,10 +89,10 @@ Code is formatted using **Google Java Format** (AOSP variant with 4-space indent
 
 ```bash
 # Check formatting
-mvn spotless:check
+npx nx spotlessCheck backend
 
 # Apply formatting
-mvn spotless:apply
+npx nx spotlessApply backend
 ```
 
 ### Naming Conventions
@@ -77,7 +111,7 @@ mvn spotless:apply
 **SpotBugs** with **Find Security Bugs** plugin runs on all code:
 
 ```bash
-mvn compile spotbugs:check
+npx nx spotbugsMain backend
 ```
 
 Exclusions are configured in `spotbugs-exclude.xml` for documented false positives.
@@ -87,7 +121,7 @@ Exclusions are configured in `spotbugs-exclude.xml` for documented false positiv
 ### Test Structure
 
 ```
-backend/src/test/java/com/mediaserver/
+apps/backend/src/test/java/com/mediaserver/
 ├── architecture/     # ArchUnit architecture tests
 ├── domain/           # Domain model unit tests
 ├── application/      # Use case unit tests
@@ -99,11 +133,17 @@ backend/src/test/java/com/mediaserver/
 ### Running Tests
 
 ```bash
-# All tests
-mvn test
+# Backend tests
+npx nx test backend
 
-# Integration tests require Docker (skipped if unavailable)
-# Uses Testcontainers with PostgreSQL 15
+# Frontend tests
+npx nx test frontend
+
+# E2E smoke tests (mocked backend)
+npx nx e2e e2e -- --grep "@smoke"
+
+# E2E critical tests (real backend)
+USE_REAL_BACKEND=true npx nx e2e e2e -- --grep "@critical"
 ```
 
 ### Test Guidelines
@@ -112,6 +152,34 @@ mvn test
 2. Integration tests use `@Testcontainers` with PostgreSQL
 3. Controller tests use `@WebMvcTest` with mocked services
 4. Architecture tests validate Clean Architecture rules
+5. E2E smoke tests use mocked API responses for speed
+6. E2E critical tests use real backend via Testcontainers
+
+## E2E Testing
+
+### Hybrid Testing Strategy
+
+- **@smoke tests** - Run with mocked backend (fast, CI-friendly)
+- **@critical tests** - Run with real backend via Testcontainers
+
+### Page Object Model
+
+Page objects are in `apps/e2e/pages/`:
+- `MovieListPage` - Movie list/grid operations
+- `MovieDetailPage` - Movie detail view
+- `VideoPlayerPage` - Video player controls
+
+### Running E2E Tests
+
+```bash
+# Smoke tests (mocked)
+npx nx e2e e2e -- --grep "@smoke"
+
+# Critical tests (with Docker Compose)
+docker compose -f docker/compose.ci.yml up -d
+USE_REAL_BACKEND=true npx nx e2e e2e -- --grep "@critical"
+docker compose -f docker/compose.ci.yml down
+```
 
 ## Database
 
@@ -119,8 +187,8 @@ mvn test
 
 Database schema is managed with **Liquibase**:
 
-- Master file: `src/main/resources/db/changelog-master.yaml`
-- Changesets: `src/main/resources/db/changelog/001-initial-schema.yaml`
+- Master file: `apps/backend/src/main/resources/db/changelog-master.yaml`
+- Changesets: `apps/backend/src/main/resources/db/changelog/001-initial-schema.yaml`
 
 When adding new columns/tables:
 1. Create a new changeset with incremental ID prefix (e.g., `002-`)
@@ -136,36 +204,43 @@ When adding new columns/tables:
 ## Common Commands
 
 ```bash
-# Build
-mvn clean package
+# Nx Commands (recommended)
+npx nx build backend          # Build backend
+npx nx build frontend         # Build frontend
+npx nx serve frontend         # Start frontend dev server
+npx nx serve backend          # Start backend (bootRun)
+npx nx test backend           # Run backend tests
+npx nx test frontend          # Run frontend tests
+npx nx e2e e2e                # Run all E2E tests
 
-# Run with Testcontainers (local dev)
-mvn spring-boot:test-run
+# Gradle Commands (alternative)
+./gradlew :apps:backend:build         # Build backend
+./gradlew :apps:backend:test          # Run tests
+./gradlew :apps:backend:spotlessApply # Format code
+./gradlew :apps:backend:spotbugsMain  # Static analysis
 
-# Format code
-mvn spotless:apply
-
-# Static analysis
-mvn compile spotbugs:check
-
-# Run all checks
-mvn verify
+# Docker
+docker compose -f docker/compose.ci.yml up -d   # Start services
+docker compose -f docker/compose.ci.yml down    # Stop services
 ```
 
 ## CI/CD
 
 GitHub Actions pipeline (`.github/workflows/ci.yml`) runs:
-1. Spotless formatting check
-2. SpotBugs static analysis
-3. Unit and integration tests
-4. Docker image build
+1. **Backend Lint** - Spotless formatting + SpotBugs analysis
+2. **Backend Test** - Unit and integration tests
+3. **Frontend Lint** - Prettier, ESLint, Stylelint
+4. **Frontend Test** - Unit tests with coverage
+5. **E2E Smoke** - Mocked backend Playwright tests
+6. **E2E Critical** - Real backend Playwright tests (sharded)
+7. **Docker Build** - Build container images
 
 ## Frontend
 
 ### Structure
 
 ```
-frontend/src/app/
+apps/frontend/src/app/
 ├── features/         # Feature components (lazy-loaded)
 ├── services/         # API and WebSocket services
 ├── store/            # NgRx Signal Stores
@@ -174,7 +249,7 @@ frontend/src/app/
 
 ### NgRx Signal Store Guidelines
 
-Stores are located in `frontend/src/app/store/` and follow these patterns:
+Stores are located in `apps/frontend/src/app/store/` and follow these patterns:
 
 #### State Management
 
@@ -216,7 +291,7 @@ export const ExampleStore = signalStore(
 Use `async/await` with `firstValueFrom` instead of `rxMethod`:
 
 ```typescript
-// ✅ Preferred
+// Preferred
 async loadData(): Promise<void> {
   patchState(store, { loading: true, error: null });
   try {
@@ -229,11 +304,6 @@ async loadData(): Promise<void> {
     });
   }
 }
-
-// ❌ Avoid: rxMethod with RxJS pipes
-const loadData = rxMethod<void>(
-  pipe(switchMap(() => api.getData().pipe(tapResponse({...}))))
-);
 ```
 
 #### Entity Operations
@@ -289,22 +359,21 @@ withMethods((store) => ({
 ### Frontend Commands
 
 ```bash
-cd frontend
+# Using Nx (from root)
+npx nx serve frontend          # Start dev server
+npx nx test frontend           # Run tests
+npx nx test frontend --coverage # Tests with coverage
+npx nx lint frontend           # ESLint
+npx nx build frontend          # Build
 
-# Development
+# From apps/frontend directory
 npm start              # Start dev server
-
-# Testing
 npm test               # Run tests
 npm run test:ci        # Run tests with coverage
-
-# Linting & Formatting
 npm run lint           # ESLint
 npm run lint:styles    # Stylelint for SCSS
 npm run format         # Prettier format
 npm run check:all      # All checks
-
-# Build
 npm run build          # Development build
 npm run build:prod     # Production build
 ```

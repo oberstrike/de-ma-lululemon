@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd frontend
+cd apps/frontend
 
 npx lint-staged
 

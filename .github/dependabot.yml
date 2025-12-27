@@ -1,8 +1,18 @@
 version: 2
 updates:
-  # Backend - Maven dependencies
-  - package-ecosystem: "maven"
-    directory: "/backend"
+  # Root - npm dependencies (Nx workspace)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "npm"
+
+  # Backend - Gradle dependencies
+  - package-ecosystem: "gradle"
+    directory: "/apps/backend"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
@@ -12,7 +22,7 @@ updates:
 
   # Frontend - npm dependencies
   - package-ecosystem: "npm"
-    directory: "/frontend"
+    directory: "/apps/frontend"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
@@ -28,3 +38,20 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+
+  # Docker
+  - package-ecosystem: "docker"
+    directory: "/apps/backend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  - package-ecosystem: "docker"
+    directory: "/apps/frontend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Exclude Lombok-generated code -->
+    <Match>
+        <Source name="~.*\.java"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Source name="~.*\.java"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- Exclude builder pattern false positives -->
+    <Match>
+        <Class name="~.*\$.*Builder"/>
+    </Match>
+
+    <!-- Lombok @With generates == comparisons for optimization (false positives) -->
+    <Match>
+        <Or>
+            <Bug pattern="ES_COMPARING_PARAMETER_STRING_WITH_EQ"/>
+            <Bug pattern="RC_REF_COMPARISON"/>
+        </Or>
+    </Match>
+
+    <!-- Exclude test classes -->
+    <Match>
+        <Class name="~.*Test"/>
+    </Match>
+    <Match>
+        <Class name="~.*Tests"/>
+    </Match>
+    <Match>
+        <Package name="~.*\.test\..*"/>
+    </Match>
+
+    <!-- Exclude configuration classes -->
+    <Match>
+        <Class name="~.*Configuration"/>
+        <Bug pattern="MS_SHOULD_BE_FINAL"/>
+    </Match>
+
+    <!-- Exclude DTO/Entity immutability warnings (Lombok handles this) -->
+    <Match>
+        <Or>
+            <Class name="~.*Dto"/>
+            <Class name="~.*Entity"/>
+            <Class name="~.*\.domain\.model\..*"/>
+        </Or>
+        <Or>
+            <Bug pattern="EI_EXPOSE_REP"/>
+            <Bug pattern="EI_EXPOSE_REP2"/>
+        </Or>
+    </Match>
+
+    <!-- Exclude Spring injection patterns -->
+    <Match>
+        <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+    </Match>
+
+    <!-- Security: CRLF log injection - false positives for file path logging -->
+    <!-- File paths from database are logged for debugging, not user input -->
+    <Match>
+        <Bug pattern="CRLF_INJECTION_LOGS"/>
+    </Match>
+
+    <!-- Security: Command injection - paths come from database/config, not user input -->
+    <!-- mega-get/mega-ls commands use validated Mega paths stored in database -->
+    <Match>
+        <Or>
+            <Class name="com.mediaserver.service.MegaDownloadService"/>
+            <Class name="com.mediaserver.service.MegaScanService"/>
+        </Or>
+        <Bug pattern="COMMAND_INJECTION"/>
+    </Match>
+
+    <!-- Java 21 invokedynamic - synthetic methods (not real missing classes) -->
+    <Match>
+        <Or>
+            <Bug pattern="THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION"/>
+            <Bug pattern="THROWS_METHOD_THROWS_RUNTIMEEXCEPTION"/>
+        </Or>
+    </Match>
+
+    <!-- Lambda and method reference synthetic classes -->
+    <Match>
+        <Class name="~.*\$\$Lambda.*"/>
+    </Match>
+</FindBugsFilter>
