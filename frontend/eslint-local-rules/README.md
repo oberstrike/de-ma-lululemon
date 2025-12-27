@@ -4,6 +4,116 @@ This directory contains custom ESLint rules specific to this project.
 
 ## Available Rules
 
+### `signal-store-method-return-type`
+
+Enforces explicit return type annotations on all Signal Store methods.
+
+**Rule Type:** `problem`
+
+**Severity:** `error`
+
+#### What it does
+
+This rule ensures that all methods defined in `withMethods()` have explicit return type annotations. This is required for:
+- Type safety and better IDE support
+- Clear API contracts
+- Preventing accidental return type changes
+- Following the project's coding standards
+
+#### Why?
+
+Explicit return types on store methods provide several benefits:
+
+1. **Type Safety**: Prevents accidental breaking changes to method signatures
+2. **Documentation**: Return types serve as inline documentation
+3. **IDE Support**: Better autocomplete and type checking
+4. **Consistency**: All store methods follow the same pattern
+5. **Refactoring**: Safer refactoring with compile-time guarantees
+
+#### Examples
+
+##### ✅ Valid Usage
+
+```typescript
+import { signalStore, withMethods } from '@ngrx/signals';
+
+export const MovieStore = signalStore(
+  withMethods((store) => ({
+    // ✅ Valid: void return type
+    loadMovies(): void {
+      console.log('loading');
+    },
+
+    // ✅ Valid: async with Promise return type
+    async fetchData(): Promise<void> {
+      await fetch('/api');
+    },
+
+    // ✅ Valid: method with parameter and return type
+    selectMovie(id: string): void {
+      patchState(store, { selectedId: id });
+    },
+
+    // ✅ Valid: arrow function with return type
+    getCount: (): number => {
+      return 42;
+    },
+  }))
+);
+```
+
+##### ❌ Invalid Usage
+
+```typescript
+import { signalStore, withMethods } from '@ngrx/signals';
+
+export const MovieStore = signalStore(
+  withMethods((store) => ({
+    // ❌ Error: missing return type
+    loadMovies() {
+      console.log('loading');
+    },
+
+    // ❌ Error: async method without Promise return type
+    async fetchData() {
+      await fetch('/api');
+    },
+
+    // ❌ Error: arrow function without return type
+    getCount: () => {
+      return 42;
+    },
+  }))
+);
+```
+
+#### Error Messages
+
+- `missingReturnType`: Signal Store method "{{methodName}}" must have an explicit return type. Add : ReturnType after the parameter list.
+
+#### Configuration
+
+This rule has no configuration options. It's enabled by default:
+
+```javascript
+rules: {
+  'local-rules/signal-store-method-return-type': 'error',
+}
+```
+
+#### When to disable
+
+This rule should generally not be disabled. However, if you need to disable it for a specific file:
+
+```typescript
+/* eslint-disable local-rules/signal-store-method-return-type */
+export const MyStore = signalStore(
+  withMethods(() => ({ method() { } }))
+);
+```
+
+---
+
 ### `create-effect-in-service`
 
 Enforces that NgRx `createEffect` calls are only used in appropriate contexts.
@@ -127,22 +237,42 @@ The custom rules are tested using ESLint's built-in `RuleTester`. Tests ensure t
 # Run all ESLint rule tests
 npm run test:eslint-rules
 
-# Or run directly
+# Or run individual test files
+node eslint-local-rules/rules/signal-store-method-return-type.test.js
 node eslint-local-rules/rules/create-effect-in-service.test.js
 ```
 
 ### Test Coverage
 
-The `create-effect-in-service` rule includes tests for:
+#### `signal-store-method-return-type` rule tests:
 
-**Valid usage:**
+**Valid usage (6 tests):**
+- ✅ All methods have explicit return types
+- ✅ Arrow functions with return types
+- ✅ Methods with complex return types (union, array, record)
+- ✅ withMethods with return statement
+- ✅ Empty withMethods
+- ✅ withMethods with non-function properties
+
+**Invalid usage (7 tests):**
+- ❌ Method without return type
+- ❌ Async method without return type
+- ❌ Arrow function without return type
+- ❌ Multiple methods missing return types
+- ❌ Mixed (some with, some without return types)
+- ❌ withMethods with return statement missing types
+- ❌ Arrow function with implicit return
+
+#### `create-effect-in-service` rule tests:
+
+**Valid usage (5 tests):**
 - ✅ createEffect as property in @Injectable class
 - ✅ createEffect with @Injectable decorator (with/without parentheses)
 - ✅ createEffect in class expressions with @Injectable
 - ✅ Multiple effects in same class
 - ✅ createEffect with arrow function properties
 
-**Invalid usage:**
+**Invalid usage (9 tests):**
 - ❌ createEffect in @Component classes
 - ❌ createEffect in classes without decorators
 - ❌ createEffect outside any class (functional effects)
