@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
 
-import ts from "typescript";
-import fs from "node:fs";
-import path from "node:path";
-import { parseTemplate } from "@angular/compiler";
+import ts from 'typescript';
+import fs from 'node:fs';
+import path from 'node:path';
+import { parseTemplate } from '@angular/compiler';
 import {
   AST,
   Call as NgCall,
@@ -17,7 +17,7 @@ import {
   TmplAstTemplate,
   TmplAstElement,
   TmplAstTextAttribute,
-} from "@angular/compiler";
+} from '@angular/compiler';
 
 // -------------------- CLI --------------------
 
@@ -35,12 +35,12 @@ function parseArgs(argv: string[]): CliOptions {
     return idx >= 0 ? argv[idx + 1] : undefined;
   };
 
-  const tsconfigPath = get("--tsconfig") ?? "tsconfig.json";
+  const tsconfigPath = get('--tsconfig') ?? 'tsconfig.json';
   return {
     tsconfigPath: path.isAbsolute(tsconfigPath) ? tsconfigPath : path.join(cwd, tsconfigPath),
     cwd,
-    ignoreSpecs: argv.includes("--ignore-specs") || !argv.includes("--include-specs"),
-    failOnUnused: !argv.includes("--no-fail"),
+    ignoreSpecs: argv.includes('--ignore-specs') || !argv.includes('--include-specs'),
+    failOnUnused: !argv.includes('--no-fail'),
   };
 }
 
@@ -63,7 +63,7 @@ type MethodDef = {
 type Usage = {
   storeName: string;
   methodName: string;
-  via: "ts" | "template";
+  via: 'ts' | 'template';
   filePath: string;
 };
 
@@ -93,7 +93,7 @@ function getAllTsFiles(dir: string, files: string[] = []): string[] {
 function loadTsProgram(tsconfigPath: string): { program: ts.Program; checker: ts.TypeChecker } {
   const configFile = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
   if (configFile.error) {
-    throw new Error(ts.flattenDiagnosticMessageText(configFile.error.messageText, "\n"));
+    throw new Error(ts.flattenDiagnosticMessageText(configFile.error.messageText, '\n'));
   }
   const configDir = path.dirname(tsconfigPath);
   const parsed = ts.parseJsonConfigFileContent(
@@ -105,8 +105,8 @@ function loadTsProgram(tsconfigPath: string): { program: ts.Program; checker: ts
   );
   if (parsed.errors.length) {
     const msg = parsed.errors
-      .map((d) => ts.flattenDiagnosticMessageText(d.messageText, "\n"))
-      .join("\n");
+      .map((d) => ts.flattenDiagnosticMessageText(d.messageText, '\n'))
+      .join('\n');
     throw new Error(msg);
   }
 
@@ -135,7 +135,8 @@ function getCallCalleeIdentifierName(call: ts.CallExpression): string | null {
   const callee = call.expression;
   if (ts.isIdentifier(callee)) return callee.text;
   // Support namespace import usage: signals.withMethods(...)
-  if (ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.name)) return callee.name.text;
+  if (ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.name))
+    return callee.name.text;
   return null;
 }
 
@@ -154,7 +155,11 @@ function tryGetObjectLiteralReturnedBy(fn: ts.Expression): ts.ObjectLiteralExpre
     // Block with return: () => { return { foo: 'bar' }; }
     if (ts.isBlock(fn.body)) {
       for (const stmt of fn.body.statements) {
-        if (ts.isReturnStatement(stmt) && stmt.expression && ts.isObjectLiteralExpression(stmt.expression)) {
+        if (
+          ts.isReturnStatement(stmt) &&
+          stmt.expression &&
+          ts.isObjectLiteralExpression(stmt.expression)
+        ) {
           return stmt.expression;
         }
       }
@@ -162,7 +167,11 @@ function tryGetObjectLiteralReturnedBy(fn: ts.Expression): ts.ObjectLiteralExpre
   }
   if (ts.isFunctionExpression(fn)) {
     for (const stmt of fn.body.statements) {
-      if (ts.isReturnStatement(stmt) && stmt.expression && ts.isObjectLiteralExpression(stmt.expression)) {
+      if (
+        ts.isReturnStatement(stmt) &&
+        stmt.expression &&
+        ts.isObjectLiteralExpression(stmt.expression)
+      ) {
         return stmt.expression;
       }
     }
@@ -170,7 +179,9 @@ function tryGetObjectLiteralReturnedBy(fn: ts.Expression): ts.ObjectLiteralExpre
   return null;
 }
 
-function getObjectLiteralKeyText(name: ts.PropertyName | ts.BindingName | undefined): string | null {
+function getObjectLiteralKeyText(
+  name: ts.PropertyName | ts.BindingName | undefined
+): string | null {
   if (!name) return null;
   if (ts.isIdentifier(name)) return name.text;
   if (ts.isStringLiteral(name)) return name.text;
@@ -183,14 +194,18 @@ function getFilePath(sf: ts.SourceFile): string {
 }
 
 function isDtsOrNodeModules(sf: ts.SourceFile): boolean {
-  return sf.isDeclarationFile || sf.fileName.includes("/node_modules/");
+  return sf.isDeclarationFile || sf.fileName.includes('/node_modules/');
 }
 
 function isSpecFile(fileName: string): boolean {
   return /\.spec\.ts$/i.test(fileName);
 }
 
-function typeMatchesStore(checker: ts.TypeChecker, receiverType: ts.Type, storeType: ts.Type): boolean {
+function typeMatchesStore(
+  checker: ts.TypeChecker,
+  receiverType: ts.Type,
+  storeType: ts.Type
+): boolean {
   // Be pragmatic: allow either direction to handle unions / contextual typing.
   return (
     checker.isTypeAssignableTo(receiverType, storeType) ||
@@ -202,7 +217,7 @@ function typeMatchesStore(checker: ts.TypeChecker, receiverType: ts.Type, storeT
 
 function safeReadFile(p: string): string | null {
   try {
-    return fs.readFileSync(p, "utf8");
+    return fs.readFileSync(p, 'utf8');
   } catch {
     return null;
   }
@@ -210,7 +225,11 @@ function safeReadFile(p: string): string | null {
 
 // -------------------- Phase 1: Collect stores + withMethods keys --------------------
 
-function buildStoreIndex(program: ts.Program, checker: ts.TypeChecker, ignoreSpecs: boolean): StoreIndex {
+function buildStoreIndex(
+  program: ts.Program,
+  checker: ts.TypeChecker,
+  ignoreSpecs: boolean
+): StoreIndex {
   const stores = new Map<string, StoreInfo>();
   const methodsByStore = new Map<string, MethodDef[]>();
   const methodsByName = new Map<string, Set<string>>();
@@ -223,7 +242,7 @@ function buildStoreIndex(program: ts.Program, checker: ts.TypeChecker, ignoreSpe
       // Detect: export const X = signalStore(...)
       if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
         const init = node.initializer;
-        if (ts.isCallExpression(init) && getCallCalleeIdentifierName(init) === "signalStore") {
+        if (ts.isCallExpression(init) && getCallCalleeIdentifierName(init) === 'signalStore') {
           const storeName = node.name.text;
           const storeType = checker.getTypeAtLocation(node.name);
 
@@ -238,7 +257,7 @@ function buildStoreIndex(program: ts.Program, checker: ts.TypeChecker, ignoreSpe
           for (const arg of init.arguments) {
             if (!ts.isCallExpression(arg)) continue;
             const callName = getCallCalleeIdentifierName(arg);
-            if (callName !== "withMethods") continue;
+            if (callName !== 'withMethods') continue;
 
             const factory = arg.arguments[0];
             if (!factory) continue;
@@ -342,10 +361,16 @@ function scanTypeScriptUsages(
       }
 
       // Destructuring: const { foo, bar: baz } = store;
-      if (ts.isVariableDeclaration(node) && node.initializer && ts.isObjectBindingPattern(node.name)) {
+      if (
+        ts.isVariableDeclaration(node) &&
+        node.initializer &&
+        ts.isObjectBindingPattern(node.name)
+      ) {
         const initType = checker.getTypeAtLocation(node.initializer);
         for (const el of node.name.elements) {
-          const propName = el.propertyName ? getObjectLiteralKeyText(el.propertyName) : getObjectLiteralKeyText(el.name);
+          const propName = el.propertyName
+            ? getObjectLiteralKeyText(el.propertyName)
+            : getObjectLiteralKeyText(el.name);
           if (!propName) continue;
 
           const storeNames = index.methodsByName.get(propName);
@@ -406,7 +431,7 @@ function collectComponentsWithTemplates(
       for (const d of decorators) {
         const expr = d.expression;
         if (!ts.isCallExpression(expr)) continue;
-        if (getCallCalleeIdentifierName(expr) !== "Component") continue;
+        if (getCallCalleeIdentifierName(expr) !== 'Component') continue;
         const arg0 = expr.arguments[0];
         if (arg0 && ts.isObjectLiteralExpression(arg0)) {
           componentMeta = arg0;
@@ -425,13 +450,13 @@ function collectComponentsWithTemplates(
 
       for (const prop of componentMeta.properties) {
         if (!ts.isPropertyAssignment(prop) || !ts.isIdentifier(prop.name)) continue;
-        if (prop.name.text === "template" && ts.isNoSubstitutionTemplateLiteral(prop.initializer)) {
+        if (prop.name.text === 'template' && ts.isNoSubstitutionTemplateLiteral(prop.initializer)) {
           inlineTemplate = prop.initializer.text;
         }
-        if (prop.name.text === "template" && ts.isStringLiteral(prop.initializer)) {
+        if (prop.name.text === 'template' && ts.isStringLiteral(prop.initializer)) {
           inlineTemplate = prop.initializer.text;
         }
-        if (prop.name.text === "templateUrl" && ts.isStringLiteral(prop.initializer)) {
+        if (prop.name.text === 'templateUrl' && ts.isStringLiteral(prop.initializer)) {
           templateUrl = prop.initializer.text;
         }
       }
@@ -466,7 +491,7 @@ function collectComponentsWithTemplates(
         if (!member.initializer || !ts.isCallExpression(member.initializer)) continue;
 
         const initCall = member.initializer;
-        if (getCallCalleeIdentifierName(initCall) !== "inject") continue;
+        if (getCallCalleeIdentifierName(initCall) !== 'inject') continue;
 
         const tok = initCall.arguments[0];
         if (!tok || !ts.isIdentifier(tok)) continue;
@@ -648,7 +673,7 @@ function main() {
   }
 
   if (unused.length === 0) {
-    console.log("✅ No unused SignalStore withMethods methods found.");
+    console.log('✅ No unused SignalStore withMethods methods found.');
     process.exit(0);
   }
 

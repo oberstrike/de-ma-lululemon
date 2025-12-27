@@ -13,8 +13,7 @@ module.exports = {
   meta: {
     type: 'problem',
     docs: {
-      description:
-        'Disallow createEffect outside @Injectable services or in improper locations',
+      description: 'Disallow createEffect outside @Injectable services or in improper locations',
       category: 'Best Practices',
       recommended: true,
     },
@@ -120,10 +119,7 @@ module.exports = {
         }
 
         // Check if we're inside a function expression/arrow function
-        if (
-          ancestor.type === 'FunctionExpression' ||
-          ancestor.type === 'ArrowFunctionExpression'
-        ) {
+        if (ancestor.type === 'FunctionExpression' || ancestor.type === 'ArrowFunctionExpression') {
           const parentIndex = i - 1;
           const parent = parentIndex >= 0 ? ancestors[parentIndex] : null;
 

@@ -15,6 +15,7 @@ Enforces that NgRx `createEffect` calls are only used in appropriate contexts.
 #### What it does
 
 This rule ensures that `createEffect` from `@ngrx/effects` is only called:
+
 - Inside a class decorated with `@Injectable()`
 - As a class property initializer (not inside methods or lifecycle hooks)
 - Not at the top level (enforces class-based effects over functional effects)
@@ -41,7 +42,7 @@ export class MovieEffects {
   // ✅ Valid: createEffect as a class property in an @Injectable service
   loadMovies$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(MovieActions.load),
+      ofType(MovieActions.load)
       // ...
     )
   );
@@ -136,6 +137,7 @@ node eslint-local-rules/rules/create-effect-in-service.test.js
 #### `create-effect-in-service` rule tests:
 
 **Valid usage (5 tests):**
+
 - ✅ createEffect as property in @Injectable class
 - ✅ createEffect with @Injectable decorator (with/without parentheses)
 - ✅ createEffect in class expressions with @Injectable
@@ -143,6 +145,7 @@ node eslint-local-rules/rules/create-effect-in-service.test.js
 - ✅ createEffect with arrow function properties
 
 **Invalid usage (9 tests):**
+
 - ❌ createEffect in @Component classes
 - ❌ createEffect in classes without decorators
 - ❌ createEffect outside any class (functional effects)
@@ -170,8 +173,12 @@ const ruleTester = new RuleTester({
 });
 
 ruleTester.run('your-rule-name', rule, {
-  valid: [/* valid test cases */],
-  invalid: [/* invalid test cases with expected errors */],
+  valid: [
+    /* valid test cases */
+  ],
+  invalid: [
+    /* invalid test cases with expected errors */
+  ],
 });
 ```
 
