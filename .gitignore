@@ -12,9 +12,12 @@ frontend/coverage/
 frontend/test-results/
 
 # IDE
-.idea/
 *.iml
 .vscode/
+.idea/*
+!.idea/codeStyles/
+!.idea/prettier.xml
+!.idea/.gitignore
 
 # OS
 .DS_Store
