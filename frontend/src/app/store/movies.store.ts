@@ -1,4 +1,4 @@
-import { computed, inject } from '@angular/core';
+import { computed, effect, inject } from '@angular/core';
 import {
   patchState,
   signalStore,
@@ -17,12 +17,15 @@ import {
 import { firstValueFrom } from 'rxjs';
 
 import { ApiService, Movie, MovieCreateRequest, MovieGroup } from '../services/api.service';
+import { CurrentUserService } from '../services/current-user.service';
 
 interface MoviesState {
   movieGroups: MovieGroup[];
   filter: string;
   loading: boolean;
   error: string | null;
+  currentUserId: string;
+  selectedMovieId: string | null;
 }
 
 function filterGroupsBySearch(groups: MovieGroup[], filter: string): MovieGroup[] {
@@ -54,6 +57,8 @@ export const MoviesStore = signalStore(
     filter: '',
     loading: false,
     error: null,
+    currentUserId: '',
+    selectedMovieId: null,
   }),
 
   withComputed((state) => ({
@@ -80,8 +85,8 @@ export const MoviesStore = signalStore(
     isLoading: computed(() => state.loading()),
   })),
 
-  withMethods((store, api = inject(ApiService)) => ({
-    async loadMovies(): Promise<void> {
+  withMethods((store, api = inject(ApiService), currentUser = inject(CurrentUserService)) => {
+    const loadMovies = async (): Promise<void> => {
       patchState(store, { loading: true, error: null });
       try {
         const groups = await firstValueFrom(api.getMoviesGrouped());
@@ -93,85 +98,110 @@ export const MoviesStore = signalStore(
           loading: false,
         });
       }
-    },
+    };
 
-    async createMovie(request: MovieCreateRequest): Promise<void> {
-      try {
-        const movie = await firstValueFrom(api.createMovie(request));
-        patchState(store, addEntity(movie));
-      } catch (err) {
-        patchState(store, {
-          error: err instanceof Error ? err.message : 'Failed to create movie',
-        });
-      }
-    },
+    return {
+      setupUserSync(): void {
+        effect(
+          () => {
+            const userId = currentUser.userId();
+            patchState(store, { currentUserId: userId });
+            if (userId) {
+              void loadMovies();
+            }
+          },
+          { allowSignalWrites: true }
+        );
+      },
 
-    async startDownload(movieId: string): Promise<void> {
-      patchState(store, updateEntity({ id: movieId, changes: { status: 'DOWNLOADING' as const } }));
-      try {
-        await firstValueFrom(api.startDownload(movieId));
-      } catch (err) {
-        patchState(store, updateEntity({ id: movieId, changes: { status: 'PENDING' as const } }));
-        patchState(store, {
-          error: err instanceof Error ? err.message : 'Failed to start download',
-        });
-      }
-    },
+      async loadMovies(): Promise<void> {
+        await loadMovies();
+      },
 
-    async deleteMovie(id: string): Promise<void> {
-      try {
-        await firstValueFrom(api.deleteMovie(id));
-        patchState(store, removeEntity(id));
-      } catch (err) {
-        patchState(store, {
-          error: err instanceof Error ? err.message : 'Failed to delete movie',
-        });
-      }
-    },
+      async createMovie(request: MovieCreateRequest): Promise<void> {
+        try {
+          const movie = await firstValueFrom(api.createMovie(request));
+          patchState(store, addEntity(movie));
+        } catch (err) {
+          patchState(store, {
+            error: err instanceof Error ? err.message : 'Failed to create movie',
+          });
+        }
+      },
 
-    async addFavorite(movieId: string): Promise<void> {
-      try {
-        const movie = await firstValueFrom(api.addFavorite(movieId));
-        patchState(store, updateEntity({ id: movieId, changes: movie }));
-      } catch (err) {
-        patchState(store, {
-          error: err instanceof Error ? err.message : 'Failed to add favorite',
-        });
-      }
-    },
+      async startDownload(movieId: string): Promise<void> {
+        patchState(
+          store,
+          updateEntity({ id: movieId, changes: { status: 'DOWNLOADING' as const } })
+        );
+        try {
+          await firstValueFrom(api.startDownload(movieId));
+        } catch (err) {
+          patchState(store, updateEntity({ id: movieId, changes: { status: 'PENDING' as const } }));
+          patchState(store, {
+            error: err instanceof Error ? err.message : 'Failed to start download',
+          });
+        }
+      },
 
-    async removeFavorite(movieId: string): Promise<void> {
-      try {
-        const movie = await firstValueFrom(api.removeFavorite(movieId));
-        patchState(store, updateEntity({ id: movieId, changes: movie }));
-      } catch (err) {
-        patchState(store, {
-          error: err instanceof Error ? err.message : 'Failed to remove favorite',
-        });
-      }
-    },
+      async deleteMovie(id: string): Promise<void> {
+        try {
+          await firstValueFrom(api.deleteMovie(id));
+          patchState(store, removeEntity(id));
+          if (store.selectedMovieId() === id) {
+            patchState(store, { selectedMovieId: null });
+          }
+        } catch (err) {
+          patchState(store, {
+            error: err instanceof Error ? err.message : 'Failed to delete movie',
+          });
+        }
+      },
 
-    updateMovieStatus(movieId: string, status: Movie['status'], cached = false): void {
-      patchState(store, updateEntity({ id: movieId, changes: { status, cached } }));
-    },
+      async addFavorite(movieId: string): Promise<void> {
+        try {
+          const movie = await firstValueFrom(api.addFavorite(movieId));
+          patchState(store, updateEntity({ id: movieId, changes: movie }));
+        } catch (err) {
+          patchState(store, {
+            error: err instanceof Error ? err.message : 'Failed to add favorite',
+          });
+        }
+      },
 
-    setFilter(filter: string): void {
-      patchState(store, { filter });
-    },
+      async removeFavorite(movieId: string): Promise<void> {
+        try {
+          const movie = await firstValueFrom(api.removeFavorite(movieId));
+          patchState(store, updateEntity({ id: movieId, changes: movie }));
+        } catch (err) {
+          patchState(store, {
+            error: err instanceof Error ? err.message : 'Failed to remove favorite',
+          });
+        }
+      },
 
-    toggleFavorite(movieId: string): void {
-      const movie = store.entities().find((m) => m.id === movieId);
-      if (movie?.favorite) {
-        void this.removeFavorite(movieId);
-      } else {
-        void this.addFavorite(movieId);
-      }
-    },
-  })),
+      updateMovieStatus(movieId: string, status: Movie['status'], cached = false): void {
+        patchState(store, updateEntity({ id: movieId, changes: { status, cached } }));
+      },
+
+      setFilter(filter: string): void {
+        patchState(store, { filter });
+      },
+
+      toggleFavorite(movieId: string): void {
+        const movie = store.entities().find((m) => m.id === movieId);
+        if (movie?.favorite) {
+          void this.removeFavorite(movieId);
+        } else {
+          void this.addFavorite(movieId);
+        }
+      },
+    };
+  }),
 
   withHooks({
     onInit(store) {
-      void store.loadMovies();
+      store.setupUserSync();
     },
   })
 );

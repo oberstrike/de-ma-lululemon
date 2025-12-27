@@ -84,7 +84,7 @@ public interface MovieRepository {
      *
      * @return total cache size
      */
-    Long getTotalCacheSize();
+    long getTotalCacheSize();
 
     /**
      * Count number of cached movies.
@@ -106,7 +106,13 @@ public interface MovieRepository {
      *
      * @return list of favorite movies
      */
-    List<Movie> findFavorites();
+    List<Movie> findFavorites(String userId);
+
+    void addFavorite(String movieId, String userId);
+
+    void removeFavorite(String movieId, String userId);
+
+    boolean isFavorite(String movieId, String userId);
 
     /**
      * Find cached movies that are not favorites (for cache clearing).

@@ -26,7 +26,6 @@ public class ThumbnailController {
     @GetMapping("/file/{fileName}")
     public ResponseEntity<byte[]> getThumbnail(@PathVariable String fileName) {
         try {
-            // Validate filename to prevent path traversal attacks
             if (fileName == null
                     || fileName.contains("..")
                     || fileName.contains("/")
@@ -35,7 +34,6 @@ public class ThumbnailController {
                 return ResponseEntity.badRequest().build();
             }
 
-            // Only allow valid image extensions
             String lowerName = fileName.toLowerCase();
             if (!lowerName.endsWith(".png")
                     && !lowerName.endsWith(".jpg")
@@ -49,7 +47,6 @@ public class ThumbnailController {
             Path thumbnailDir = Path.of(properties.getStorage().getPath(), "thumbnails");
             Path thumbnailPath = thumbnailDir.resolve(fileName).normalize();
 
-            // Ensure the resolved path is still within the thumbnails directory
             if (!thumbnailPath.startsWith(thumbnailDir)) {
                 log.warn("Path traversal attempt detected: {}", fileName);
                 return ResponseEntity.badRequest().build();
@@ -59,7 +56,6 @@ public class ThumbnailController {
                 return ResponseEntity.notFound().build();
             }
 
-            // Limit file size to prevent memory issues (max 10MB for thumbnails)
             long fileSize = Files.size(thumbnailPath);
             if (fileSize > 10 * 1024 * 1024) {
                 log.warn("Thumbnail file too large: {} ({} bytes)", fileName, fileSize);

@@ -25,6 +25,28 @@
         <property name="message" value="Line has trailing whitespace"/>
     </module>
 
+    <!-- Forbid inline fully qualified class names (use imports instead) -->
+    <!-- Catches: new org.example.Class(), (org.example.Class) cast, extends org.example.Class -->
+    <module name="RegexpSingleline">
+        <property name="format" value="(?&lt;!import\s)(?&lt;!import\sstatic\s)(?&lt;!package\s)(new\s+|extends\s+|implements\s+|\(\s*)(java|javax|jakarta|org|com|io)\.[a-z]+(\.[a-z]+)*\.[A-Z]"/>
+        <property name="message" value="Avoid inline fully qualified class names. Use imports instead."/>
+        <property name="severity" value="error"/>
+    </module>
+
+    <!-- Prohibit regular single-line comments (allow TODO/FIXME/HACK/NOTE) -->
+    <module name="RegexpSingleline">
+        <property name="format" value="^\s*//(?!\s*(TODO|FIXME|HACK|NOTE)[:\s]).*\S"/>
+        <property name="message" value="Code comments are not allowed. Use TODO/FIXME for pending work or remove the comment."/>
+        <property name="severity" value="error"/>
+    </module>
+
+    <!-- Prohibit inline comments at end of code lines -->
+    <module name="RegexpSingleline">
+        <property name="format" value="^.*\S\s+//(?!\s*(TODO|FIXME|HACK|NOTE)[:\s]).*$"/>
+        <property name="message" value="Inline comments are not allowed. Use TODO/FIXME for pending work or remove the comment."/>
+        <property name="severity" value="error"/>
+    </module>
+
     <!-- Newline at end of file -->
     <module name="NewlineAtEndOfFile"/>
 

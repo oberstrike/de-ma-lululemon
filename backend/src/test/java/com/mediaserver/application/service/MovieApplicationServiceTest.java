@@ -3,12 +3,14 @@ package com.mediaserver.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import com.mediaserver.application.command.CreateMovieCommand;
 import com.mediaserver.application.command.UpdateMovieCommand;
 import com.mediaserver.application.port.in.CacheManagementUseCase.CacheStats;
 import com.mediaserver.application.port.out.CategoryPort;
+import com.mediaserver.application.port.out.CurrentUserProvider;
 import com.mediaserver.application.port.out.DownloadServicePort;
 import com.mediaserver.application.port.out.FileStoragePort;
 import com.mediaserver.application.port.out.MoviePort;
@@ -41,6 +43,8 @@ class MovieApplicationServiceTest {
 
     @Mock private DownloadServicePort downloadServicePort;
 
+    @Mock private CurrentUserProvider currentUserProvider;
+
     @Mock private MediaProperties properties;
 
     @InjectMocks private MovieApplicationService movieApplicationService;
@@ -62,43 +66,43 @@ class MovieApplicationServiceTest {
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())
                         .build();
+        lenient().when(currentUserProvider.getCurrentUserId()).thenReturn("user-1");
+        lenient().when(moviePort.findFavorites("user-1")).thenReturn(List.of());
+        lenient().when(moviePort.isFavorite(anyString(), anyString())).thenReturn(false);
+        lenient()
+                .when(moviePort.applyFavoriteStatus(any(), anyString()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
     void getAllMovies_shouldReturnAllMovies() {
-        // Given
         List<Movie> movies = List.of(testMovie);
         when(moviePort.findAll()).thenReturn(movies);
 
-        // When
         List<Movie> result = movieApplicationService.getAllMovies();
 
-        // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle()).isEqualTo("Test Movie");
         verify(moviePort).findAll();
+        verify(moviePort).applyFavoriteStatus(movies, "user-1");
     }
 
     @Test
     void getMovie_shouldReturnMovie_whenExists() {
-        // Given
         when(moviePort.findById("movie-1")).thenReturn(Optional.of(testMovie));
 
-        // When
         Movie result = movieApplicationService.getMovie("movie-1");
 
-        // Then
         assertThat(result.getId()).isEqualTo("movie-1");
         assertThat(result.getTitle()).isEqualTo("Test Movie");
         verify(moviePort).findById("movie-1");
+        verify(moviePort).isFavorite("movie-1", "user-1");
     }
 
     @Test
     void getMovie_shouldThrowException_whenNotFound() {
-        // Given
         when(moviePort.findById("nonexistent")).thenReturn(Optional.empty());
 
-        // When & Then
         assertThatThrownBy(() -> movieApplicationService.getMovie("nonexistent"))
                 .isInstanceOf(MovieNotFoundException.class)
                 .hasMessageContaining("nonexistent");
@@ -107,7 +111,6 @@ class MovieApplicationServiceTest {
 
     @Test
     void createMovie_shouldSaveAndReturnMovie() {
-        // Given
         CreateMovieCommand command =
                 CreateMovieCommand.builder()
                         .title("New Movie")
@@ -133,10 +136,8 @@ class MovieApplicationServiceTest {
         when(categoryPort.findById("cat-1")).thenReturn(Optional.of(category));
         when(moviePort.save(any(Movie.class))).thenReturn(savedMovie);
 
-        // When
         Movie result = movieApplicationService.createMovie(command);
 
-        // Then
         assertThat(result.getId()).isEqualTo("new-movie-id");
         assertThat(result.getTitle()).isEqualTo("New Movie");
         assertThat(result.getStatus()).isEqualTo(MovieStatus.PENDING);
@@ -146,7 +147,6 @@ class MovieApplicationServiceTest {
 
     @Test
     void updateMovie_shouldUpdateAndReturnMovie() {
-        // Given
         UpdateMovieCommand command =
                 UpdateMovieCommand.builder()
                         .title("Updated Title")
@@ -166,10 +166,8 @@ class MovieApplicationServiceTest {
         when(categoryPort.findById("cat-1")).thenReturn(Optional.of(category));
         when(moviePort.save(any(Movie.class))).thenReturn(updatedMovie);
 
-        // When
         Movie result = movieApplicationService.updateMovie("movie-1", command);
 
-        // Then
         assertThat(result.getTitle()).isEqualTo("Updated Title");
         assertThat(result.getDescription()).isEqualTo("Updated description");
         verify(moviePort).findById("movie-1");
@@ -179,11 +177,9 @@ class MovieApplicationServiceTest {
 
     @Test
     void updateMovie_shouldThrowException_whenNotFound() {
-        // Given
         UpdateMovieCommand command = UpdateMovieCommand.builder().title("Updated").build();
         when(moviePort.findById("nonexistent")).thenReturn(Optional.empty());
 
-        // When & Then
         assertThatThrownBy(() -> movieApplicationService.updateMovie("nonexistent", command))
                 .isInstanceOf(MovieNotFoundException.class);
         verify(moviePort).findById("nonexistent");
@@ -192,24 +188,19 @@ class MovieApplicationServiceTest {
 
     @Test
     void deleteMovie_shouldCallPortDelete_whenExists() {
-        // Given
         when(moviePort.findById("movie-1")).thenReturn(Optional.of(testMovie));
         doNothing().when(moviePort).delete(testMovie);
 
-        // When
         movieApplicationService.deleteMovie("movie-1");
 
-        // Then
         verify(moviePort).findById("movie-1");
         verify(moviePort).delete(testMovie);
     }
 
     @Test
     void deleteMovie_shouldThrowException_whenNotFound() {
-        // Given
         when(moviePort.findById("nonexistent")).thenReturn(Optional.empty());
 
-        // When & Then
         assertThatThrownBy(() -> movieApplicationService.deleteMovie("nonexistent"))
                 .isInstanceOf(MovieNotFoundException.class);
         verify(moviePort).findById("nonexistent");
@@ -218,71 +209,65 @@ class MovieApplicationServiceTest {
 
     @Test
     void searchMovies_shouldReturnMatchingMovies() {
-        // Given
         List<Movie> movies = List.of(testMovie);
         when(moviePort.search("test")).thenReturn(movies);
 
-        // When
         List<Movie> result = movieApplicationService.searchMovies("test");
 
-        // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle()).isEqualTo("Test Movie");
         verify(moviePort).search("test");
+        verify(moviePort).applyFavoriteStatus(movies, "user-1");
     }
 
     @Test
     void getReadyMovies_shouldReturnOnlyReadyMovies() {
-        // Given
         Movie readyMovie =
                 testMovie.withStatus(MovieStatus.READY).withLocalPath("/path/to/video.mp4");
+        List<Movie> movies = List.of(readyMovie);
 
-        when(moviePort.findReadyMovies()).thenReturn(List.of(readyMovie));
+        when(moviePort.findReadyMovies()).thenReturn(movies);
 
-        // When
         List<Movie> result = movieApplicationService.getReadyMovies();
 
-        // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getStatus()).isEqualTo(MovieStatus.READY);
         assertThat(result.get(0).isCached()).isTrue();
         verify(moviePort).findReadyMovies();
+        verify(moviePort).applyFavoriteStatus(movies, "user-1");
     }
 
     @Test
     void getMoviesByCategory_shouldReturnMoviesInCategory() {
-        // Given
-        when(moviePort.findByCategoryId("cat-1")).thenReturn(List.of(testMovie));
+        List<Movie> movies = List.of(testMovie);
+        when(moviePort.findByCategoryId("cat-1")).thenReturn(movies);
 
-        // When
         List<Movie> result = movieApplicationService.getMoviesByCategory("cat-1");
 
-        // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getCategoryId()).isEqualTo("cat-1");
         verify(moviePort).findByCategoryId("cat-1");
+        verify(moviePort).applyFavoriteStatus(movies, "user-1");
     }
 
     @Test
     void getCachedMovies_shouldReturnCachedMovies() {
-        // Given
         Movie cachedMovie =
                 testMovie.withStatus(MovieStatus.READY).withLocalPath("/cache/movie.mp4");
+        List<Movie> movies = List.of(cachedMovie);
 
-        when(moviePort.findCachedMovies()).thenReturn(List.of(cachedMovie));
+        when(moviePort.findCachedMovies()).thenReturn(movies);
 
-        // When
         List<Movie> result = movieApplicationService.getCachedMovies();
 
-        // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).isCached()).isTrue();
         verify(moviePort).findCachedMovies();
+        verify(moviePort).applyFavoriteStatus(movies, "user-1");
     }
 
     @Test
     void startDownload_shouldUpdateStatusToDownloading() {
-        // Given
         when(moviePort.findById("movie-1")).thenReturn(Optional.of(testMovie));
 
         Movie downloadingMovie = testMovie.withStatus(MovieStatus.DOWNLOADING);
@@ -293,24 +278,54 @@ class MovieApplicationServiceTest {
                         java.util.concurrent.CompletableFuture.completedFuture(
                                 java.nio.file.Path.of("/cache/movie.mp4")));
 
-        // When
         movieApplicationService.startDownload("movie-1");
 
-        // Then
         verify(moviePort).findById("movie-1");
         verify(moviePort).save(argThat(movie -> movie.getStatus() == MovieStatus.DOWNLOADING));
         verify(downloadServicePort).downloadMovie(any(Movie.class));
     }
 
     @Test
+    void addFavorite_shouldPersistFavoriteForUser() {
+        when(moviePort.findById("movie-1")).thenReturn(Optional.of(testMovie));
+        when(moviePort.isFavorite("movie-1", "user-1")).thenReturn(false);
+
+        Movie result = movieApplicationService.addFavorite("movie-1");
+
+        assertThat(result.isFavorite()).isTrue();
+        verify(moviePort).addFavorite("movie-1", "user-1");
+    }
+
+    @Test
+    void removeFavorite_shouldRemoveFavoriteForUser() {
+        when(moviePort.findById("movie-1")).thenReturn(Optional.of(testMovie));
+        when(moviePort.isFavorite("movie-1", "user-1")).thenReturn(true);
+
+        Movie result = movieApplicationService.removeFavorite("movie-1");
+
+        assertThat(result.isFavorite()).isFalse();
+        verify(moviePort).removeFavorite("movie-1", "user-1");
+    }
+
+    @Test
+    void getFavorites_shouldReturnFavoritesForUser() {
+        Movie favoriteMovie = testMovie.withFavorite(true);
+        when(moviePort.findFavorites("user-1")).thenReturn(List.of(favoriteMovie));
+
+        List<Movie> result = movieApplicationService.getFavorites();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).isFavorite()).isTrue();
+        verify(moviePort).findFavorites("user-1");
+    }
+
+    @Test
     void startDownload_shouldThrowException_whenAlreadyCached() {
-        // Given
         Movie cachedMovie =
                 testMovie.withStatus(MovieStatus.READY).withLocalPath("/cache/movie.mp4");
 
         when(moviePort.findById("movie-1")).thenReturn(Optional.of(cachedMovie));
 
-        // When & Then
         assertThatThrownBy(() -> movieApplicationService.startDownload("movie-1"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("already downloaded");
@@ -321,7 +336,6 @@ class MovieApplicationServiceTest {
 
     @Test
     void clearCache_shouldClearLocalPathAndResetStatus() throws Exception {
-        // Given
         Movie cachedMovie =
                 testMovie
                         .withStatus(MovieStatus.READY)
@@ -340,10 +354,8 @@ class MovieApplicationServiceTest {
         when(fileStoragePort.deleteIfExists(any())).thenReturn(true);
         when(moviePort.save(any(Movie.class))).thenReturn(clearedMovie);
 
-        // When
         movieApplicationService.clearCache("movie-1");
 
-        // Then
         verify(moviePort).findById("movie-1");
         verify(fileStoragePort).deleteIfExists(any());
         verify(moviePort)
@@ -357,18 +369,15 @@ class MovieApplicationServiceTest {
 
     @Test
     void getCacheStats_shouldReturnCacheStatistics() {
-        // Given
         MediaProperties.Storage storage = new MediaProperties.Storage();
         storage.setMaxCacheSizeGb(10);
 
         when(properties.getStorage()).thenReturn(storage);
-        when(moviePort.getTotalCacheSize()).thenReturn(5L * 1024 * 1024 * 1024); // 5GB
+        when(moviePort.getTotalCacheSize()).thenReturn(5L * 1024 * 1024 * 1024);
         when(moviePort.countCachedMovies()).thenReturn(10L);
 
-        // When
         CacheStats result = movieApplicationService.getCacheStats();
 
-        // Then
         assertThat(result.getTotalSizeBytes()).isEqualTo(5L * 1024 * 1024 * 1024);
         assertThat(result.getMaxSizeBytes()).isEqualTo(10L * 1024 * 1024 * 1024);
         assertThat(result.getUsagePercent()).isEqualTo(50);

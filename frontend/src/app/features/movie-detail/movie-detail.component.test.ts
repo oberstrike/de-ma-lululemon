@@ -8,6 +8,7 @@ import { ConfirmationService } from 'primeng/api';
 import { of, Subject } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { CurrentUserService } from '../../services/current-user.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { MoviesStore } from '../../store/movies.store';
 import { MovieDetailComponent } from './movie-detail.component';
@@ -16,6 +17,7 @@ describe('MovieDetailComponent', () => {
   let component: MovieDetailComponent;
   let fixture: ComponentFixture<MovieDetailComponent>;
   let httpMock: HttpTestingController;
+  let currentUser: CurrentUserService;
   let mockWebSocketService: {
     connect: ReturnType<typeof vi.fn>;
     getDownloadProgress: ReturnType<typeof vi.fn>;
@@ -52,6 +54,7 @@ describe('MovieDetailComponent', () => {
     }).compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);
+    currentUser = TestBed.inject(CurrentUserService);
     fixture = TestBed.createComponent(MovieDetailComponent);
     component = fixture.componentInstance;
   });
@@ -81,6 +84,35 @@ describe('MovieDetailComponent', () => {
     httpMock.expectOne('/api/movies/movie-1').flush({ id: 'movie-1', title: 'Test' });
 
     expect(mockWebSocketService.connect).toHaveBeenCalled();
+  });
+
+  it('should reload movie details when user changes', async () => {
+    fixture.detectChanges();
+
+    const firstReq = httpMock.expectOne('/api/movies/movie-1');
+    expect(firstReq.request.headers.get('X-Mock-UserId')).toBe('user-1');
+    firstReq.flush({
+      id: 'movie-1',
+      title: 'User One Movie',
+      status: 'READY',
+      cached: true,
+    });
+
+    currentUser.setUserId('user-2');
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const secondReq = httpMock.expectOne('/api/movies/movie-1');
+    expect(secondReq.request.headers.get('X-Mock-UserId')).toBe('user-2');
+    secondReq.flush({
+      id: 'movie-1',
+      title: 'User Two Movie',
+      status: 'READY',
+      cached: true,
+    });
+
+    expect(component.movie()?.title).toBe('User Two Movie');
   });
 
   it('should format file size correctly', () => {

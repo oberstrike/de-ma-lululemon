@@ -45,15 +45,12 @@ class CategoryApplicationServiceTest {
 
     @Test
     void getAllCategories_shouldReturnAllCategoriesSortedByOrder() {
-        // Given
         Category category2 = Category.builder().id("cat-2").name("Drama").sortOrder(2).build();
 
         when(categoryPort.findAllOrderedBySortOrder()).thenReturn(List.of(testCategory, category2));
 
-        // When
         List<Category> result = categoryApplicationService.getAllCategories();
 
-        // Then
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getSortOrder()).isEqualTo(1);
         assertThat(result.get(1).getSortOrder()).isEqualTo(2);
@@ -62,13 +59,10 @@ class CategoryApplicationServiceTest {
 
     @Test
     void getCategory_shouldReturnCategory_whenExists() {
-        // Given
         when(categoryPort.findById("cat-1")).thenReturn(Optional.of(testCategory));
 
-        // When
         Category result = categoryApplicationService.getCategory("cat-1");
 
-        // Then
         assertThat(result.getId()).isEqualTo("cat-1");
         assertThat(result.getName()).isEqualTo("Action");
         verify(categoryPort).findById("cat-1");
@@ -76,10 +70,8 @@ class CategoryApplicationServiceTest {
 
     @Test
     void getCategory_shouldThrowException_whenNotFound() {
-        // Given
         when(categoryPort.findById("nonexistent")).thenReturn(Optional.empty());
 
-        // When & Then
         assertThatThrownBy(() -> categoryApplicationService.getCategory("nonexistent"))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessageContaining("nonexistent");
@@ -88,7 +80,6 @@ class CategoryApplicationServiceTest {
 
     @Test
     void createCategory_shouldSaveAndReturnCategory() {
-        // Given
         CreateCategoryCommand command =
                 CreateCategoryCommand.builder()
                         .name("Comedy")
@@ -106,10 +97,8 @@ class CategoryApplicationServiceTest {
 
         when(categoryPort.save(any(Category.class))).thenReturn(savedCategory);
 
-        // When
         Category result = categoryApplicationService.createCategory(command);
 
-        // Then
         assertThat(result.getId()).isEqualTo("new-cat-id");
         assertThat(result.getName()).isEqualTo("Comedy");
         assertThat(result.getDescription()).isEqualTo("Comedy movies");
@@ -119,7 +108,6 @@ class CategoryApplicationServiceTest {
 
     @Test
     void updateCategory_shouldUpdateAndReturnCategory() {
-        // Given
         UpdateCategoryCommand command =
                 UpdateCategoryCommand.builder()
                         .name("Updated Action")
@@ -136,10 +124,8 @@ class CategoryApplicationServiceTest {
         when(categoryPort.findById("cat-1")).thenReturn(Optional.of(testCategory));
         when(categoryPort.save(any(Category.class))).thenReturn(updatedCategory);
 
-        // When
         Category result = categoryApplicationService.updateCategory("cat-1", command);
 
-        // Then
         assertThat(result.getName()).isEqualTo("Updated Action");
         assertThat(result.getDescription()).isEqualTo("Updated description");
         assertThat(result.getSortOrder()).isEqualTo(5);
@@ -149,11 +135,9 @@ class CategoryApplicationServiceTest {
 
     @Test
     void updateCategory_shouldThrowException_whenNotFound() {
-        // Given
         UpdateCategoryCommand command = UpdateCategoryCommand.builder().name("Updated").build();
         when(categoryPort.findById("nonexistent")).thenReturn(Optional.empty());
 
-        // When & Then
         assertThatThrownBy(() -> categoryApplicationService.updateCategory("nonexistent", command))
                 .isInstanceOf(CategoryNotFoundException.class);
         verify(categoryPort).findById("nonexistent");
@@ -162,24 +146,19 @@ class CategoryApplicationServiceTest {
 
     @Test
     void deleteCategory_shouldCallPortDelete_whenExists() {
-        // Given
         when(categoryPort.findById("cat-1")).thenReturn(Optional.of(testCategory));
         doNothing().when(categoryPort).delete(testCategory);
 
-        // When
         categoryApplicationService.deleteCategory("cat-1");
 
-        // Then
         verify(categoryPort).findById("cat-1");
         verify(categoryPort).delete(testCategory);
     }
 
     @Test
     void deleteCategory_shouldThrowException_whenNotFound() {
-        // Given
         when(categoryPort.findById("nonexistent")).thenReturn(Optional.empty());
 
-        // When & Then
         assertThatThrownBy(() -> categoryApplicationService.deleteCategory("nonexistent"))
                 .isInstanceOf(CategoryNotFoundException.class);
         verify(categoryPort).findById("nonexistent");

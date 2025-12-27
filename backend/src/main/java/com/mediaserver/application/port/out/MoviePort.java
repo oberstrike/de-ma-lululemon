@@ -93,12 +93,22 @@ public interface MoviePort {
      */
     void delete(Movie movie);
 
+    List<Movie> findFavorites(String userId);
+
+    void addFavorite(String movieId, String userId);
+
+    void removeFavorite(String movieId, String userId);
+
+    boolean isFavorite(String movieId, String userId);
+
     /**
-     * Finds all favorite movies.
+     * Applies favorite status to a list of movies for the given user.
      *
-     * @return list of favorite movies
+     * @param movies the movies to update
+     * @param userId the user ID to check favorites for
+     * @return movies with favorite flag set appropriately
      */
-    List<Movie> findFavorites();
+    List<Movie> applyFavoriteStatus(List<Movie> movies, String userId);
 
     /**
      * Finds cached movies that are not favorites (for cache clearing).

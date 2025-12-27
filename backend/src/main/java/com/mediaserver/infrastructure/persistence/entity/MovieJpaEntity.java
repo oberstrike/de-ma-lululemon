@@ -53,6 +53,9 @@ public class MovieJpaEntity {
     @ToString.Exclude
     private CategoryJpaEntity category;
 
+    @Column(name = "user_id")
+    private String userId;
+
     @Builder.Default private boolean favorite = false;
 
     @Column(name = "created_at")

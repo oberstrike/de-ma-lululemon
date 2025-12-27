@@ -7,7 +7,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -16,8 +16,10 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { ProgressBar } from 'primeng/progressbar';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { TagModule } from 'primeng/tag';
+import { combineLatest, filter, switchMap } from 'rxjs';
 
 import { ApiService, DownloadProgress, Movie } from '../../services/api.service';
+import { CurrentUserService } from '../../services/current-user.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { MoviesStore } from '../../store/movies.store';
 
@@ -284,9 +286,14 @@ export class MovieDetailComponent implements OnInit {
   private readonly ws = inject(WebSocketService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly currentUser = inject(CurrentUserService);
 
   readonly movie = signal<Movie | null>(null);
   readonly downloadProgress = signal<DownloadProgress | null>(null);
+  private readonly movieId = signal<string | null>(null);
+
+  private readonly userId$ = toObservable(this.currentUser.userId);
+  private readonly movieId$ = toObservable(this.movieId);
 
   readonly isDownloading = computed(() => this.movie()?.status === 'DOWNLOADING');
 
@@ -297,9 +304,13 @@ export class MovieDetailComponent implements OnInit {
       return;
     }
 
-    this.api
-      .getMovie(id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+    this.movieId.set(id);
+    combineLatest([this.userId$, this.movieId$])
+      .pipe(
+        filter(([userId, movieId]) => Boolean(userId) && Boolean(movieId)),
+        switchMap(([, movieId]) => this.api.getMovie(movieId ?? '')),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe({
         next: (movie) => {
           this.movie.set(movie);

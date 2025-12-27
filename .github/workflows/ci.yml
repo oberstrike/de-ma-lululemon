@@ -99,7 +99,17 @@ jobs:
         if: always()
         with:
           name: frontend-test-results
-          path: frontend/coverage/
+          path: |
+            frontend/coverage/
+            frontend/test-results/
+
+      - name: Test Report
+        uses: dorny/test-reporter@v2
+        if: always()
+        with:
+          name: Frontend Test Results
+          path: frontend/test-results/junit.xml
+          reporter: jest-junit
 
   docker:
     name: Docker Build

@@ -4,6 +4,7 @@ import com.mediaserver.application.command.CreateMovieCommand;
 import com.mediaserver.application.command.UpdateMovieCommand;
 import com.mediaserver.application.port.in.*;
 import com.mediaserver.application.port.out.CategoryPort;
+import com.mediaserver.application.port.out.CurrentUserProvider;
 import com.mediaserver.application.port.out.DownloadServicePort;
 import com.mediaserver.application.port.out.FileStoragePort;
 import com.mediaserver.application.port.out.MoviePort;
@@ -52,34 +53,41 @@ public class MovieApplicationService
     private final CategoryPort categoryPort;
     private final FileStoragePort fileStoragePort;
     private final DownloadServicePort downloadServicePort;
+    private final CurrentUserProvider currentUserProvider;
     private final MediaProperties properties;
 
-    // Thread-safe set to track movies currently being downloaded
     private static final Set<String> activeDownloads = ConcurrentHashMap.newKeySet();
 
     @Override
     public Movie getMovie(String id) {
-        return moviePort.findById(id).orElseThrow(() -> new MovieNotFoundException(id));
+        Movie movie = moviePort.findById(id).orElseThrow(() -> new MovieNotFoundException(id));
+        String userId = currentUserProvider.getCurrentUserId();
+        boolean isFavorite = moviePort.isFavorite(movie.getId(), userId);
+        return movie.withFavorite(isFavorite);
     }
 
     @Override
     public List<Movie> getAllMovies() {
-        return moviePort.findAll();
+        String userId = currentUserProvider.getCurrentUserId();
+        return moviePort.applyFavoriteStatus(moviePort.findAll(), userId);
     }
 
     @Override
     public List<Movie> getReadyMovies() {
-        return moviePort.findReadyMovies();
+        String userId = currentUserProvider.getCurrentUserId();
+        return moviePort.applyFavoriteStatus(moviePort.findReadyMovies(), userId);
     }
 
     @Override
     public List<Movie> getMoviesByCategory(String categoryId) {
-        return moviePort.findByCategoryId(categoryId);
+        String userId = currentUserProvider.getCurrentUserId();
+        return moviePort.applyFavoriteStatus(moviePort.findByCategoryId(categoryId), userId);
     }
 
     @Override
     public List<Movie> searchMovies(String query) {
-        return moviePort.search(query);
+        String userId = currentUserProvider.getCurrentUserId();
+        return moviePort.applyFavoriteStatus(moviePort.search(query), userId);
     }
 
     @Override
@@ -96,7 +104,6 @@ public class MovieApplicationService
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now());
 
-        // Set category if provided
         if (command.getCategoryId() != null) {
             Category category =
                     categoryPort
@@ -114,7 +121,6 @@ public class MovieApplicationService
     public Movie updateMovie(String id, UpdateMovieCommand command) {
         Movie movie = moviePort.findById(id).orElseThrow(() -> new MovieNotFoundException(id));
 
-        // Check if mega URL changed, if so reset download status
         boolean megaUrlChanged =
                 command.getMegaUrl() != null && !command.getMegaUrl().equals(movie.getMegaUrl());
 
@@ -137,7 +143,6 @@ public class MovieApplicationService
                         .withCategoryId(newCategoryId)
                         .withUpdatedAt(LocalDateTime.now());
 
-        // If Mega URL changed, reset status and clear local path
         if (megaUrlChanged) {
             updatedMovie =
                     updatedMovie
@@ -166,7 +171,6 @@ public class MovieApplicationService
 
     @Override
     public void startDownload(String movieId) {
-        // Use atomic operation to prevent concurrent downloads of the same movie
         if (!activeDownloads.add(movieId)) {
             throw new IllegalStateException("Download already in progress for movie: " + movieId);
         }
@@ -188,13 +192,10 @@ public class MovieApplicationService
             Movie downloadingMovie = movie.withStatus(MovieStatus.DOWNLOADING);
             moviePort.save(downloadingMovie);
 
-            // Start async download - the download service should call removeFromActiveDownloads
-            // when done
             downloadServicePort
                     .downloadMovie(downloadingMovie)
                     .whenComplete((result, error) -> activeDownloads.remove(movieId));
         } catch (Exception e) {
-            // Ensure we remove from active downloads on any error
             activeDownloads.remove(movieId);
             throw e;
         }
@@ -220,7 +221,8 @@ public class MovieApplicationService
 
     @Override
     public List<Movie> getCachedMovies() {
-        return moviePort.findCachedMovies();
+        String userId = currentUserProvider.getCurrentUserId();
+        return moviePort.applyFavoriteStatus(moviePort.findCachedMovies(), userId);
     }
 
     @Override
@@ -255,7 +257,6 @@ public class MovieApplicationService
 
     @Override
     public int clearAllCache() {
-        // Only clear non-favorite movies
         List<Movie> cachedMovies = moviePort.findCachedNonFavorites();
         int cleared = 0;
 
@@ -287,42 +288,41 @@ public class MovieApplicationService
         return cleared;
     }
 
-    // FavoriteMovieUseCase implementation
-
     @Override
     public Movie addFavorite(String movieId) {
+        String userId = currentUserProvider.getCurrentUserId();
         Movie movie =
                 moviePort.findById(movieId).orElseThrow(() -> new MovieNotFoundException(movieId));
 
-        if (movie.isFavorite()) {
+        if (moviePort.isFavorite(movieId, userId)) {
             log.info("Movie {} is already a favorite", movieId);
-            return movie;
+            return movie.withFavorite(true);
         }
 
-        Movie updatedMovie = movie.withFavorite(true).withUpdatedAt(LocalDateTime.now());
-
         log.info("Added movie to favorites: {} ({})", movie.getTitle(), movieId);
-        return moviePort.save(updatedMovie);
+        moviePort.addFavorite(movieId, userId);
+        return movie.withFavorite(true);
     }
 
     @Override
     public Movie removeFavorite(String movieId) {
+        String userId = currentUserProvider.getCurrentUserId();
         Movie movie =
                 moviePort.findById(movieId).orElseThrow(() -> new MovieNotFoundException(movieId));
 
-        if (!movie.isFavorite()) {
+        if (!moviePort.isFavorite(movieId, userId)) {
             log.info("Movie {} is not a favorite", movieId);
-            return movie;
+            return movie.withFavorite(false);
         }
 
-        Movie updatedMovie = movie.withFavorite(false).withUpdatedAt(LocalDateTime.now());
-
         log.info("Removed movie from favorites: {} ({})", movie.getTitle(), movieId);
-        return moviePort.save(updatedMovie);
+        moviePort.removeFavorite(movieId, userId);
+        return movie.withFavorite(false);
     }
 
     @Override
     public List<Movie> getFavorites() {
-        return moviePort.findFavorites();
+        String userId = currentUserProvider.getCurrentUserId();
+        return moviePort.findFavorites(userId);
     }
 }

@@ -7,9 +7,11 @@ import com.mediaserver.domain.model.MovieStatus;
 import com.mediaserver.domain.repository.MovieRepository;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,9 +45,10 @@ class RepositoryIntegrationTest {
 
     @Autowired private MovieRepository movieRepository;
 
+    @Autowired private JdbcTemplate jdbcTemplate;
+
     @Test
     void shouldSaveAndRetrieveMovie() {
-        // Given
         Movie movie =
                 Movie.builder()
                         .title("Integration Test Movie")
@@ -55,14 +58,11 @@ class RepositoryIntegrationTest {
                         .status(MovieStatus.PENDING)
                         .build();
 
-        // When
         Movie savedMovie = movieRepository.save(movie);
 
-        // Then
         assertThat(savedMovie.getId()).isNotNull();
         assertThat(savedMovie.getTitle()).isEqualTo("Integration Test Movie");
 
-        // Verify it can be retrieved
         Optional<Movie> retrieved = movieRepository.findById(savedMovie.getId());
         assertThat(retrieved).isPresent();
         assertThat(retrieved.get().getTitle()).isEqualTo("Integration Test Movie");
@@ -70,7 +70,6 @@ class RepositoryIntegrationTest {
 
     @Test
     void shouldFindMoviesByStatus() {
-        // Given
         Movie pendingMovie =
                 Movie.builder()
                         .title("Pending Movie")
@@ -89,17 +88,14 @@ class RepositoryIntegrationTest {
         movieRepository.save(pendingMovie);
         movieRepository.save(readyMovie);
 
-        // When
         List<Movie> readyMovies = movieRepository.findByStatus(MovieStatus.READY);
 
-        // Then
         assertThat(readyMovies).hasSize(1);
         assertThat(readyMovies.get(0).getTitle()).isEqualTo("Ready Movie");
     }
 
     @Test
     void shouldFindCachedMovies() {
-        // Given
         Movie cachedMovie =
                 Movie.builder()
                         .title("Cached Movie")
@@ -118,22 +114,19 @@ class RepositoryIntegrationTest {
         movieRepository.save(cachedMovie);
         movieRepository.save(uncachedMovie);
 
-        // When
         List<Movie> cachedMovies = movieRepository.findCachedMovies();
 
-        // Then
         assertThat(cachedMovies).hasSize(1);
         assertThat(cachedMovies.get(0).getTitle()).isEqualTo("Cached Movie");
     }
 
     @Test
     void shouldFindFavoriteMovies() {
-        // Given
+        String userId = "user-1";
         Movie favoriteMovie =
                 Movie.builder()
                         .title("Favorite Movie")
                         .megaPath("/path/favorite")
-                        .favorite(true)
                         .status(MovieStatus.PENDING)
                         .build();
 
@@ -141,24 +134,75 @@ class RepositoryIntegrationTest {
                 Movie.builder()
                         .title("Regular Movie")
                         .megaPath("/path/regular")
-                        .favorite(false)
                         .status(MovieStatus.PENDING)
                         .build();
 
         movieRepository.save(favoriteMovie);
         movieRepository.save(regularMovie);
+        movieRepository.addFavorite(favoriteMovie.getId(), userId);
+        movieRepository.addFavorite(regularMovie.getId(), "user-2");
 
-        // When
-        List<Movie> favorites = movieRepository.findFavorites();
+        List<Movie> favorites = movieRepository.findFavorites(userId);
 
-        // Then
         assertThat(favorites).hasSize(1);
         assertThat(favorites.get(0).getTitle()).isEqualTo("Favorite Movie");
     }
 
     @Test
+    void shouldFindFavoriteMoviesByUser() {
+        String userId = UUID.randomUUID().toString();
+        String otherUserId = UUID.randomUUID().toString();
+
+        jdbcTemplate.update(
+                "INSERT INTO users (id, username, email) VALUES (?, ?, ?)",
+                userId,
+                "userA",
+                "userA@example.com");
+        jdbcTemplate.update(
+                "INSERT INTO users (id, username, email) VALUES (?, ?, ?)",
+                otherUserId,
+                "userB",
+                "userB@example.com");
+
+        Movie userFavorite =
+                Movie.builder()
+                        .title("User Favorite")
+                        .megaPath("/path/user-favorite")
+                        .userId(userId)
+                        .status(MovieStatus.PENDING)
+                        .build();
+
+        Movie otherFavorite =
+                Movie.builder()
+                        .title("Other Favorite")
+                        .megaPath("/path/other-favorite")
+                        .userId(otherUserId)
+                        .status(MovieStatus.PENDING)
+                        .build();
+
+        Movie nonFavorite =
+                Movie.builder()
+                        .title("Non Favorite")
+                        .megaPath("/path/non-favorite")
+                        .userId(userId)
+                        .status(MovieStatus.PENDING)
+                        .build();
+
+        movieRepository.save(userFavorite);
+        movieRepository.save(otherFavorite);
+        movieRepository.save(nonFavorite);
+
+        movieRepository.addFavorite(userFavorite.getId(), userId);
+        movieRepository.addFavorite(otherFavorite.getId(), otherUserId);
+
+        List<Movie> favorites = movieRepository.findFavorites(userId);
+
+        assertThat(favorites).hasSize(1);
+        assertThat(favorites.get(0).getTitle()).isEqualTo("User Favorite");
+    }
+
+    @Test
     void shouldCalculateTotalCacheSize() {
-        // Given
         Movie movie1 =
                 Movie.builder()
                         .title("Movie 1")
@@ -180,16 +224,13 @@ class RepositoryIntegrationTest {
         movieRepository.save(movie1);
         movieRepository.save(movie2);
 
-        // When
-        Long totalSize = movieRepository.getTotalCacheSize();
+        long totalSize = movieRepository.getTotalCacheSize();
 
-        // Then
         assertThat(totalSize).isEqualTo(3000L);
     }
 
     @Test
     void shouldSearchMoviesByTitle() {
-        // Given
         Movie actionMovie =
                 Movie.builder()
                         .title("Action Hero")
@@ -207,10 +248,8 @@ class RepositoryIntegrationTest {
         movieRepository.save(actionMovie);
         movieRepository.save(comedyMovie);
 
-        // When
         List<Movie> searchResults = movieRepository.search("action");
 
-        // Then
         assertThat(searchResults).hasSize(1);
         assertThat(searchResults.get(0).getTitle()).isEqualTo("Action Hero");
     }
