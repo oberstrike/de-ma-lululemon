@@ -118,6 +118,110 @@ Or disable it for specific files using ESLint comments:
 export const loadMovies$ = createEffect(() => ..., { functional: true });
 ```
 
+### `no-comments-except-todo`
+
+Prohibits code comments except for TODO/FIXME comments and JSDoc documentation.
+
+**Rule Type:** `suggestion`
+
+**Severity:** `error`
+
+#### What it does
+
+This rule enforces that code should be self-documenting and discourages the use of comments that can become outdated or misleading. However, it allows:
+
+- TODO/FIXME comments for tracking pending work
+- JSDoc comments for API documentation
+
+#### Why?
+
+Comments can become outdated and misleading as code evolves. Self-documenting code with clear naming and structure is more maintainable. This rule encourages:
+
+1. **Clear naming**: Variable and function names should explain intent
+2. **Small functions**: Break complex logic into well-named functions
+3. **Type safety**: TypeScript types serve as documentation
+4. **JSDoc for APIs**: Public interfaces should have proper documentation
+
+#### Examples
+
+##### ✅ Valid Usage
+
+```typescript
+// Self-documenting code without comments
+export class UserService {
+  getActiveUsers(): User[] {
+    return this.users.filter((user) => user.isActive);
+  }
+}
+
+// TODO comments are allowed
+export class UserService {
+  // TODO: Implement caching for better performance
+  getActiveUsers(): User[] {
+    return this.users.filter((user) => user.isActive);
+  }
+}
+
+// JSDoc comments are allowed
+/**
+ * Fetches active users from the database
+ * @returns Array of active users
+ */
+export class UserService {
+  getActiveUsers(): User[] {
+    return this.users.filter((user) => user.isActive);
+  }
+}
+```
+
+##### ❌ Invalid Usage
+
+```typescript
+// ❌ Error: Regular comments not allowed
+export class UserService {
+  // This method gets active users
+  getActiveUsers(): User[] {
+    return this.users.filter((user) => user.isActive);
+  }
+}
+
+// ❌ Error: Commented out code
+export class UserService {
+  getActiveUsers(): User[] {
+    // const inactiveUsers = this.users.filter(u => !u.isActive);
+    return this.users.filter((user) => user.isActive);
+  }
+}
+```
+
+#### Error Messages
+
+- `noComment`: Code comments are not allowed. Code should be self-documenting. Use TODO/FIXME for pending work, or remove the comment.
+
+#### Configuration
+
+This rule has no configuration options. It's enabled by default in the ESLint configuration:
+
+```javascript
+rules: {
+  'local-rules/no-comments-except-todo': 'error',
+}
+```
+
+#### When to disable
+
+You can disable this rule for specific files where extensive comments are necessary:
+
+```typescript
+/* eslint-disable local-rules/no-comments-except-todo */
+// Complex algorithm requiring explanation
+export function complexCalculation() {
+  // Step 1: Initialize variables
+  // Step 2: Process data
+  // ...
+}
+```
+
 ## Testing
 
 The custom rules are tested using ESLint's built-in `RuleTester`. Tests ensure the rules correctly identify violations and allow valid usage patterns.

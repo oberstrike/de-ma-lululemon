@@ -92,6 +92,9 @@ module.exports = tseslint.config(
       // Custom NgRx rules
       'local-rules/create-effect-in-service': 'error',
 
+      // Custom code quality rules
+      'local-rules/no-comments-except-todo': 'error',
+
       // Code complexity
       complexity: ['warn', { max: 15 }],
       'max-depth': ['warn', { max: 4 }],
