@@ -18,11 +18,12 @@ import { Skeleton } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { combineLatest, filter, switchMap } from 'rxjs';
 
-import { ApiService, DownloadProgress, Movie } from '../../services/api.service';
+import { ApiService } from '../../services/api.service';
 import { CurrentUserService } from '../../services/current-user.service';
 import { NotificationService } from '../../services/notification.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { MoviesStore } from '../../store/movies.store';
+import { DownloadProgressResponse, MovieResponse } from '../../types';
 
 @Component({
   selector: 'app-movie-detail',
@@ -496,8 +497,8 @@ export class MovieDetailComponent implements OnInit {
   private readonly currentUser = inject(CurrentUserService);
   private readonly notification = inject(NotificationService);
 
-  readonly movie = signal<Movie | null>(null);
-  readonly downloadProgress = signal<DownloadProgress | null>(null);
+  readonly movie = signal<MovieResponse | null>(null);
+  readonly downloadProgress = signal<DownloadProgressResponse | null>(null);
   private readonly movieId = signal<string | null>(null);
 
   private readonly userId$ = toObservable(this.currentUser.userId);
@@ -642,7 +643,7 @@ export class MovieDetailComponent implements OnInit {
     }
   }
 
-  getStatusLabel(movie: Movie): string {
+  getStatusLabel(movie: MovieResponse): string {
     if (movie.cached) {
       return 'On Server';
     }

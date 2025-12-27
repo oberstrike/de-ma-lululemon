@@ -17,10 +17,10 @@ import { InputTextModule } from 'primeng/inputtext';
 import { Skeleton } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 
-import { Movie } from '../../services/api.service';
 import { NotificationService } from '../../services/notification.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { MoviesStore } from '../../store/movies.store';
+import { MovieResponse } from '../../types';
 
 @Component({
   selector: 'app-movie-list',
@@ -928,7 +928,7 @@ export class MovieListComponent implements OnInit {
     }
   }
 
-  playOrView(event: MouseEvent, movie: Movie): void {
+  playOrView(event: MouseEvent, movie: MovieResponse): void {
     event.stopPropagation();
     event.preventDefault();
     if (movie.cached) {
@@ -938,7 +938,7 @@ export class MovieListComponent implements OnInit {
     }
   }
 
-  toggleFavorite(event: MouseEvent, movie: Movie): void {
+  toggleFavorite(event: MouseEvent, movie: MovieResponse): void {
     event.stopPropagation();
     event.preventDefault();
     this.store.toggleFavorite(movie.id);

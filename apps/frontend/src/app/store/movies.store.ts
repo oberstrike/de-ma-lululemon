@@ -16,11 +16,12 @@ import {
 } from '@ngrx/signals/entities';
 import { firstValueFrom } from 'rxjs';
 
-import { ApiService, Movie, MovieCreateRequest, MovieGroup } from '../services/api.service';
+import { ApiService } from '../services/api.service';
 import { CurrentUserService } from '../services/current-user.service';
+import { MovieCreateRequest, MovieGroupResponse, MovieResponse, MovieStatus } from '../types';
 
 interface MoviesState {
-  movieGroups: MovieGroup[];
+  movieGroups: MovieGroupResponse[];
   filter: string;
   loading: boolean;
   error: string | null;
@@ -28,7 +29,7 @@ interface MoviesState {
   selectedMovieId: string | null;
 }
 
-function filterGroupsBySearch(groups: MovieGroup[], filter: string): MovieGroup[] {
+function filterGroupsBySearch(groups: MovieGroupResponse[], filter: string): MovieGroupResponse[] {
   if (!filter) return groups;
   const lowerFilter = filter.toLowerCase();
   return groups
@@ -39,7 +40,7 @@ function filterGroupsBySearch(groups: MovieGroup[], filter: string): MovieGroup[
     .filter((group) => group.movies.length > 0);
 }
 
-function selectFeaturedMovie(movies: Movie[]): Movie | null {
+function selectFeaturedMovie(movies: MovieResponse[]): MovieResponse | null {
   const cached = movies.filter((m) => m.cached);
   if (cached.length > 0) {
     return cached[Math.floor(Math.random() * cached.length)];
@@ -50,7 +51,7 @@ function selectFeaturedMovie(movies: Movie[]): Movie | null {
 export const MoviesStore = signalStore(
   { providedIn: 'root' },
 
-  withEntities<Movie>(),
+  withEntities<MovieResponse>(),
 
   withState<MoviesState>({
     movieGroups: [],
@@ -132,12 +133,15 @@ export const MoviesStore = signalStore(
       async startDownload(movieId: string): Promise<void> {
         patchState(
           store,
-          updateEntity({ id: movieId, changes: { status: 'DOWNLOADING' as const } })
+          updateEntity({ id: movieId, changes: { status: 'DOWNLOADING' as MovieStatus } })
         );
         try {
           await firstValueFrom(api.startDownload(movieId));
         } catch (err) {
-          patchState(store, updateEntity({ id: movieId, changes: { status: 'PENDING' as const } }));
+          patchState(
+            store,
+            updateEntity({ id: movieId, changes: { status: 'PENDING' as MovieStatus } })
+          );
           patchState(store, {
             error: err instanceof Error ? err.message : 'Failed to start download',
           });
@@ -180,7 +184,7 @@ export const MoviesStore = signalStore(
         }
       },
 
-      updateMovieStatus(movieId: string, status: Movie['status'], cached = false): void {
+      updateMovieStatus(movieId: string, status: MovieStatus, cached = false): void {
         patchState(store, updateEntity({ id: movieId, changes: { status, cached } }));
       },
 

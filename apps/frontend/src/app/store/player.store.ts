@@ -2,11 +2,12 @@ import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { firstValueFrom } from 'rxjs';
 
-import { ApiService, StreamInfo } from '../services/api.service';
+import { ApiService } from '../services/api.service';
+import { StreamInfoResponse } from '../types';
 
 interface PlayerState {
   currentMovieId: string | null;
-  streamInfo: StreamInfo | null;
+  streamInfo: StreamInfoResponse | null;
   isPlaying: boolean;
   currentTime: number;
   duration: number;

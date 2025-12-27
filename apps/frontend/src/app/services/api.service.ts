@@ -3,74 +3,17 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 import { Observable } from 'rxjs';
 
+import {
+  CacheStatsResponse,
+  CategoryResponse,
+  DownloadProgressResponse,
+  MovieCreateRequest,
+  MovieGroupResponse,
+  MovieResponse,
+  MovieUpdateRequest,
+  StreamInfoResponse,
+} from '../types';
 import { CurrentUserService } from './current-user.service';
-export interface Movie {
-  id: string;
-  title: string;
-  description?: string;
-  year?: number;
-  duration?: string;
-  thumbnailUrl?: string;
-  cached: boolean;
-  favorite: boolean;
-  status: 'PENDING' | 'DOWNLOADING' | 'READY' | 'ERROR';
-  categoryId?: string;
-  categoryName?: string;
-  fileSize?: number;
-  createdAt: string;
-}
-
-export interface MovieCreateRequest {
-  title: string;
-  description?: string;
-  year?: number;
-  duration?: string;
-  megaUrl: string;
-  thumbnailUrl?: string;
-  categoryId?: string;
-}
-
-export interface DownloadProgress {
-  movieId: string;
-  movieTitle: string;
-  status: 'QUEUED' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
-  bytesDownloaded: number;
-  totalBytes: number;
-  progress: number;
-  errorMessage?: string;
-}
-
-export interface StreamInfo {
-  movieId: string;
-  title: string;
-  fileSize: number;
-  contentType: string;
-  streamUrl: string;
-  supportsRangeRequests: boolean;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  description?: string;
-  sortOrder?: number;
-  movieCount: number;
-}
-
-export interface CacheStats {
-  totalSizeBytes: number;
-  maxSizeBytes: number;
-  usagePercent: number;
-  movieCount: number;
-}
-
-export interface MovieGroup {
-  name: string;
-  categoryId?: string;
-  special: boolean;
-  sortOrder: number;
-  movies: Movie[];
-}
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -86,33 +29,36 @@ export class ApiService {
     search?: string;
     readyOnly?: boolean;
     categoryId?: string;
-  }): Observable<Movie[]> {
-    return this.http.get<Movie[]>(`${this.baseUrl}/movies`, {
+  }): Observable<MovieResponse[]> {
+    return this.http.get<MovieResponse[]>(`${this.baseUrl}/movies`, {
       params: params as Record<string, string>,
       ...this.userHeaders(),
     });
   }
 
-  getMoviesGrouped(search?: string): Observable<MovieGroup[]> {
+  getMoviesGrouped(search?: string): Observable<MovieGroupResponse[]> {
     if (search) {
-      return this.http.get<MovieGroup[]>(`${this.baseUrl}/movies/grouped`, {
+      return this.http.get<MovieGroupResponse[]>(`${this.baseUrl}/movies/grouped`, {
         params: { search },
         ...this.userHeaders(),
       });
     }
-    return this.http.get<MovieGroup[]>(`${this.baseUrl}/movies/grouped`, this.userHeaders());
+    return this.http.get<MovieGroupResponse[]>(
+      `${this.baseUrl}/movies/grouped`,
+      this.userHeaders()
+    );
   }
 
-  getMovie(id: string): Observable<Movie> {
-    return this.http.get<Movie>(`${this.baseUrl}/movies/${id}`, this.userHeaders());
+  getMovie(id: string): Observable<MovieResponse> {
+    return this.http.get<MovieResponse>(`${this.baseUrl}/movies/${id}`, this.userHeaders());
   }
 
-  createMovie(request: MovieCreateRequest): Observable<Movie> {
-    return this.http.post<Movie>(`${this.baseUrl}/movies`, request);
+  createMovie(request: MovieCreateRequest): Observable<MovieResponse> {
+    return this.http.post<MovieResponse>(`${this.baseUrl}/movies`, request);
   }
 
-  updateMovie(id: string, request: MovieCreateRequest): Observable<Movie> {
-    return this.http.put<Movie>(`${this.baseUrl}/movies/${id}`, request);
+  updateMovie(id: string, request: MovieUpdateRequest): Observable<MovieResponse> {
+    return this.http.put<MovieResponse>(`${this.baseUrl}/movies/${id}`, request);
   }
 
   deleteMovie(id: string): Observable<void> {
@@ -123,16 +69,16 @@ export class ApiService {
     return this.http.post<void>(`${this.baseUrl}/movies/${movieId}/download`, {});
   }
 
-  getDownloadProgress(movieId: string): Observable<DownloadProgress> {
-    return this.http.get<DownloadProgress>(`${this.baseUrl}/downloads/${movieId}`);
+  getDownloadProgress(movieId: string): Observable<DownloadProgressResponse> {
+    return this.http.get<DownloadProgressResponse>(`${this.baseUrl}/downloads/${movieId}`);
   }
 
-  getActiveDownloads(): Observable<DownloadProgress[]> {
-    return this.http.get<DownloadProgress[]>(`${this.baseUrl}/downloads`);
+  getActiveDownloads(): Observable<DownloadProgressResponse[]> {
+    return this.http.get<DownloadProgressResponse[]>(`${this.baseUrl}/downloads`);
   }
 
-  getStreamInfo(movieId: string): Observable<StreamInfo> {
-    return this.http.get<StreamInfo>(`${this.baseUrl}/stream/${movieId}/info`);
+  getStreamInfo(movieId: string): Observable<StreamInfoResponse> {
+    return this.http.get<StreamInfoResponse>(`${this.baseUrl}/stream/${movieId}/info`);
   }
 
   getStreamUrl(movieId: string): string {
@@ -143,16 +89,16 @@ export class ApiService {
     return `${this.baseUrl}/thumbnails/${movieId}`;
   }
 
-  getCategories(): Observable<Category[]> {
-    return this.http.get<Category[]>(`${this.baseUrl}/categories`);
+  getCategories(): Observable<CategoryResponse[]> {
+    return this.http.get<CategoryResponse[]>(`${this.baseUrl}/categories`);
   }
 
-  getCacheStats(): Observable<CacheStats> {
-    return this.http.get<CacheStats>(`${this.baseUrl}/movies/cache/stats`);
+  getCacheStats(): Observable<CacheStatsResponse> {
+    return this.http.get<CacheStatsResponse>(`${this.baseUrl}/movies/cache/stats`);
   }
 
-  getCachedMovies(): Observable<Movie[]> {
-    return this.http.get<Movie[]>(`${this.baseUrl}/movies/cached`);
+  getCachedMovies(): Observable<MovieResponse[]> {
+    return this.http.get<MovieResponse[]>(`${this.baseUrl}/movies/cached`);
   }
 
   clearMovieCache(movieId: string): Observable<void> {
@@ -163,20 +109,20 @@ export class ApiService {
     return this.http.delete<number>(`${this.baseUrl}/movies/cache`);
   }
 
-  getFavoriteMovies(): Observable<Movie[]> {
-    return this.http.get<Movie[]>(`${this.baseUrl}/movies/favorites`, this.userHeaders());
+  getFavoriteMovies(): Observable<MovieResponse[]> {
+    return this.http.get<MovieResponse[]>(`${this.baseUrl}/movies/favorites`, this.userHeaders());
   }
 
-  addFavorite(movieId: string): Observable<Movie> {
-    return this.http.post<Movie>(
+  addFavorite(movieId: string): Observable<MovieResponse> {
+    return this.http.post<MovieResponse>(
       `${this.baseUrl}/movies/${movieId}/favorite`,
       {},
       this.userHeaders()
     );
   }
 
-  removeFavorite(movieId: string): Observable<Movie> {
-    return this.http.delete<Movie>(
+  removeFavorite(movieId: string): Observable<MovieResponse> {
+    return this.http.delete<MovieResponse>(
       `${this.baseUrl}/movies/${movieId}/favorite`,
       this.userHeaders()
     );

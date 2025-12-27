@@ -74,6 +74,7 @@ describe('MovieDetailComponent', () => {
       title: 'Test Movie',
       status: 'READY',
       cached: true,
+      favorite: false,
     });
 
     expect(component.movie()).toBeTruthy();
@@ -97,6 +98,7 @@ describe('MovieDetailComponent', () => {
       title: 'User One Movie',
       status: 'READY',
       cached: true,
+      favorite: false,
     });
 
     currentUser.setUserId('user-2');
@@ -111,6 +113,7 @@ describe('MovieDetailComponent', () => {
       title: 'User Two Movie',
       status: 'READY',
       cached: true,
+      favorite: false,
     });
 
     expect(component.movie()?.title).toBe('User Two Movie');
@@ -132,6 +135,8 @@ describe('MovieDetailComponent', () => {
       id: 'movie-1',
       title: 'Test Movie',
       status: 'DOWNLOADING',
+      cached: false,
+      favorite: false,
     });
 
     progressSubject.next({

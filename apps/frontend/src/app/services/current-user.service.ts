@@ -1,9 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
 
-export interface CurrentUser {
-  id: string;
-  name: string;
-}
+import { CurrentUser } from '../types';
 
 @Injectable({ providedIn: 'root' })
 export class CurrentUserService {

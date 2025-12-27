@@ -3,13 +3,13 @@ import { Client, IMessage } from '@stomp/stompjs';
 import { Observable, Subject } from 'rxjs';
 import SockJS from 'sockjs-client';
 
-import { DownloadProgress } from './api.service';
+import { DownloadProgressResponse } from '../types';
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService {
   private client: Client | undefined;
   private readonly ngZone = inject(NgZone);
-  private readonly downloadProgress$ = new Subject<DownloadProgress>();
+  private readonly downloadProgress$ = new Subject<DownloadProgressResponse>();
   private readonly connected$ = new Subject<boolean>();
   private initialized = false;
 
@@ -31,7 +31,7 @@ export class WebSocketService {
 
       this.client?.subscribe('/topic/downloads', (message: IMessage) => {
         this.ngZone.run(() => {
-          const progress = JSON.parse(message.body) as DownloadProgress;
+          const progress = JSON.parse(message.body) as DownloadProgressResponse;
           this.downloadProgress$.next(progress);
         });
       });
@@ -53,7 +53,7 @@ export class WebSocketService {
     }
   }
 
-  getDownloadProgress(): Observable<DownloadProgress> {
+  getDownloadProgress(): Observable<DownloadProgressResponse> {
     return this.downloadProgress$.asObservable();
   }
 

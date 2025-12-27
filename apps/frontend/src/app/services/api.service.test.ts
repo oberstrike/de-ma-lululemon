@@ -4,7 +4,8 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { ApiService, Movie, MovieCreateRequest } from './api.service';
+import { MovieCreateRequest, MovieResponse } from '../types';
+import { ApiService } from './api.service';
 import { CurrentUserService } from './current-user.service';
 
 describe('ApiService', (): void => {
@@ -31,12 +32,13 @@ describe('ApiService', (): void => {
 
   describe('getMovies', (): void => {
     it('should return movies', async (): Promise<void> => {
-      const mockMovies: Movie[] = [
+      const mockMovies: MovieResponse[] = [
         {
           id: '1',
           title: 'Test Movie',
           cached: false,
           status: 'PENDING',
+          favorite: false,
           createdAt: '2024-01-01',
         },
       ];
@@ -100,11 +102,12 @@ describe('ApiService', (): void => {
 
   describe('getMovie', (): void => {
     it('should return a single movie', async (): Promise<void> => {
-      const mockMovie: Movie = {
+      const mockMovie: MovieResponse = {
         id: '1',
         title: 'Test Movie',
         description: 'A test',
         cached: true,
+        favorite: false,
         status: 'READY',
         createdAt: '2024-01-01',
       };
@@ -128,10 +131,11 @@ describe('ApiService', (): void => {
         megaUrl: 'https://mega.nz/file/test',
       };
 
-      const mockResponse: Movie = {
+      const mockResponse: MovieResponse = {
         id: '2',
         title: 'New Movie',
         cached: false,
+        favorite: false,
         status: 'PENDING',
         createdAt: '2024-01-01',
       };
@@ -156,10 +160,11 @@ describe('ApiService', (): void => {
         megaUrl: 'https://mega.nz/file/test',
       };
 
-      const mockResponse: Movie = {
+      const mockResponse: MovieResponse = {
         id: '1',
         title: 'Updated Movie',
         cached: false,
+        favorite: false,
         status: 'PENDING',
         createdAt: '2024-01-01',
       };
