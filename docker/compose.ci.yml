@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: mediaserver
+      POSTGRES_USER: mediaserver
+      POSTGRES_PASSWORD: mediaserver
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mediaserver"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ..
+      dockerfile: apps/backend/Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mediaserver
+      SPRING_DATASOURCE_USERNAME: mediaserver
+      SPRING_DATASOURCE_PASSWORD: mediaserver
+      SPRING_PROFILES_ACTIVE: ci
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ../apps/frontend
+      dockerfile: Dockerfile
+    environment:
+      API_URL: http://backend:8080
+    ports:
+      - "4200:80"
+    depends_on:
+      backend:
+        condition: service_healthy

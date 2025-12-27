@@ -1,0 +1,164 @@
+@import 'primeicons/primeicons.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #e50914;
+  --primary-hover: #f40612;
+  --primary-dark: #b20710;
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #141414;
+  --bg-tertiary: #1a1a1a;
+  --bg-elevated: #232323;
+  --bg-card: #181818;
+  --bg-card-hover: #252525;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-tertiary: #808080;
+  --text-muted: #595959;
+  --border-subtle: rgb(255 255 255 / 8%);
+  --border-default: rgb(255 255 255 / 15%);
+  --toast-success: rgb(34 197 94 / 90%);
+  --toast-info: rgb(59 130 246 / 90%);
+  --toast-warn: rgb(234 179 8 / 90%);
+  --toast-error: rgb(239 68 68 / 90%);
+  --overlay-dark: rgb(0 0 0 / 80%);
+  --overlay-dark-90: rgb(0 0 0 / 90%);
+  --overlay-dark-95: rgb(0 0 0 / 95%);
+  --overlay-dark-70: rgb(0 0 0 / 70%);
+  --overlay-medium: rgb(0 0 0 / 60%);
+  --overlay-medium-50: rgb(0 0 0 / 50%);
+  --overlay-light: rgb(0 0 0 / 40%);
+  --overlay-light-30: rgb(0 0 0 / 30%);
+  --overlay-card: rgb(10 10 10 / 95%);
+  --overlay-card-light: rgb(10 10 10 / 85%);
+  --gradient-fade: rgb(20 20 20 / 80%);
+  --gradient-subtle: rgb(20 20 20 / 40%);
+  --text-bright: rgb(255 255 255 / 90%);
+  --text-dimmed: rgb(255 255 255 / 85%);
+  --control-bg: rgb(109 109 110 / 70%);
+  --control-bg-hover: rgb(109 109 110 / 50%);
+  --input-bg: rgb(0 0 0 / 60%);
+  --input-bg-focus: rgb(0 0 0 / 80%);
+  --nav-gradient-scrolled: rgb(10 10 10 / 95%);
+  --btn-bg-hover: rgb(20 20 20 / 70%);
+  --btn-bg-active: rgb(20 20 20 / 90%);
+  --card-overlay-bottom: rgb(10 10 10 / 98%);
+  --white-85: rgb(255 255 255 / 85%);
+  --white-15: rgb(255 255 255 / 15%);
+  --white-20: rgb(255 255 255 / 20%);
+  --white-25: rgb(255 255 255 / 25%);
+  --black: #000000;
+  --primary-alpha-15: rgb(229 9 20 / 15%);
+  --shadow-sm: 0 2px 8px rgb(0 0 0 / 40%);
+  --shadow-md: 0 4px 16px rgb(0 0 0 / 50%);
+  --shadow-lg: 0 8px 32px rgb(0 0 0 / 60%);
+  --shadow-glow: 0 0 20px rgb(229 9 20 / 30%);
+  --transition-fast: 150ms ease;
+  --transition-default: 250ms ease;
+  --transition-slow: 400ms ease;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+}
+
+body {
+  min-height: 100vh;
+  font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-full);
+
+  &:hover {
+    background: var(--text-muted);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in var(--transition-default);
+}
+
+.animate-slide-up {
+  animation: slide-up var(--transition-slow);
+}
+
+.animate-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
