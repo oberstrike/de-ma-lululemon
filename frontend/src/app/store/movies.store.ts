@@ -20,7 +20,6 @@ import { ApiService, Movie, MovieCreateRequest, MovieGroup } from '../services/a
 
 interface MoviesState {
   movieGroups: MovieGroup[];
-  selectedMovieId: string | null;
   filter: string;
   loading: boolean;
   error: string | null;
@@ -54,7 +53,6 @@ export const MoviesStore = signalStore(
   // State
   withState<MoviesState>({
     movieGroups: [],
-    selectedMovieId: null,
     filter: '',
     loading: false,
     error: null,
@@ -70,10 +68,6 @@ export const MoviesStore = signalStore(
       return state.entities().filter((m) => m.title.toLowerCase().includes(filter));
     }),
 
-    selectedMovie: computed(
-      () => state.entities().find((m) => m.id === state.selectedMovieId()) ?? null
-    ),
-
     readyMovies: computed(() => state.entities().filter((m) => m.status === 'READY')),
 
     downloadingMovies: computed(() => state.entities().filter((m) => m.status === 'DOWNLOADING')),
@@ -87,7 +81,6 @@ export const MoviesStore = signalStore(
     featuredMovie: computed(() => selectFeaturedMovie(state.entities())),
 
     isLoading: computed(() => state.loading()),
-    hasError: computed(() => state.error() !== null),
   })),
 
   withMethods((store, api = inject(ApiService)) => ({
@@ -134,9 +127,6 @@ export const MoviesStore = signalStore(
       try {
         await firstValueFrom(api.deleteMovie(id));
         patchState(store, removeEntity(id));
-        if (store.selectedMovieId() === id) {
-          patchState(store, { selectedMovieId: null });
-        }
       } catch (err) {
         patchState(store, {
           error: err instanceof Error ? err.message : 'Failed to delete movie',
@@ -170,10 +160,6 @@ export const MoviesStore = signalStore(
       patchState(store, updateEntity({ id: movieId, changes: { status, cached } }));
     },
 
-    selectMovie(id: string | null): void {
-      patchState(store, { selectedMovieId: id });
-    },
-
     setFilter(filter: string): void {
       patchState(store, { filter });
     },
@@ -185,10 +171,6 @@ export const MoviesStore = signalStore(
       } else {
         void this.addFavorite(movieId);
       }
-    },
-
-    clearError(): void {
-      patchState(store, { error: null });
     },
   })),
 
