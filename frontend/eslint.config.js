@@ -91,7 +91,6 @@ module.exports = tseslint.config(
 
       // Custom NgRx rules
       'local-rules/create-effect-in-service': 'error',
-      'local-rules/signal-store-no-unused-methods': 'warn',
 
       // Code complexity
       complexity: ['warn', { max: 15 }],

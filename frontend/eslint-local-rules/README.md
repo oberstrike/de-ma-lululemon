@@ -4,109 +4,6 @@ This directory contains custom ESLint rules specific to this project.
 
 ## Available Rules
 
-### `signal-store-no-unused-methods`
-
-Detects and reports unused methods in Signal Store `withMethods()` blocks.
-
-**Rule Type:** `suggestion`
-
-**Severity:** `warn`
-
-#### What it does
-
-This rule detects methods defined in `withMethods()` that are never called or used anywhere in the codebase. This helps identify dead code and ensures all store methods serve a purpose.
-
-The rule checks for method usage through:
-- Direct calls: `store.methodName()`
-- Optional chaining: `store?.methodName()`
-- Destructured usage: `const { methodName } = store`
-- Template usage in components
-
-#### Why?
-
-Removing unused methods provides several benefits:
-
-1. **Code Cleanliness**: Eliminates dead code from your Signal Stores
-2. **Maintainability**: Reduces confusion about which methods are actually used
-3. **Bundle Size**: Smaller production bundles by removing unused code
-4. **Clarity**: Makes it clear which methods are part of the public API
-5. **Refactoring**: Helps identify methods that can be safely removed during refactoring
-
-#### Examples
-
-##### ✅ Valid Usage (Methods are used)
-
-```typescript
-import { signalStore, withMethods } from '@ngrx/signals';
-
-export const MovieStore = signalStore(
-  withMethods((store) => ({
-    loadMovies() {
-      console.log('loading');
-    },
-  }))
-);
-
-// Method is used
-const store = inject(MovieStore);
-store.loadMovies();
-```
-
-```typescript
-// Destructured usage
-const { loadMovies } = inject(MovieStore);
-loadMovies();
-```
-
-##### ❌ Invalid Usage (Methods are unused)
-
-```typescript
-import { signalStore, withMethods } from '@ngrx/signals';
-
-export const MovieStore = signalStore(
-  withMethods((store) => ({
-    // ❌ Warning: This method is never called
-    unusedMethod() {
-      console.log('never used');
-    },
-  }))
-);
-
-const store = inject(MovieStore);
-// unusedMethod is never called
-```
-
-#### Error Messages
-
-- `unusedMethod`: Signal Store method "{{methodName}}" is defined but never used. Remove it or use it.
-
-#### Configuration
-
-This rule is enabled by default as a warning:
-
-```javascript
-rules: {
-  'local-rules/signal-store-no-unused-methods': 'warn',
-}
-```
-
-#### When to disable
-
-You may want to disable this rule if:
-- You're building a library and methods are intended for external use
-- You're gradually migrating code and plan to use the method later
-
-```typescript
-/* eslint-disable local-rules/signal-store-no-unused-methods */
-export const MyStore = signalStore(
-  withMethods(() => ({
-    futureMethod() { } // Will be used later
-  }))
-);
-```
-
----
-
 ### `create-effect-in-service`
 
 Enforces that NgRx `createEffect` calls are only used in appropriate contexts.
@@ -230,28 +127,11 @@ The custom rules are tested using ESLint's built-in `RuleTester`. Tests ensure t
 # Run all ESLint rule tests
 npm run test:eslint-rules
 
-# Or run individual test files
-node eslint-local-rules/rules/signal-store-no-unused-methods.test.js
+# Or run directly
 node eslint-local-rules/rules/create-effect-in-service.test.js
 ```
 
 ### Test Coverage
-
-#### `signal-store-no-unused-methods` rule tests:
-
-**Valid usage (6 tests):**
-- ✅ Method called directly on store instance
-- ✅ Method called with optional chaining
-- ✅ Method destructured from store
-- ✅ Multiple methods all used
-- ✅ Method used in component template pattern
-- ✅ Empty withMethods
-
-**Invalid usage (4 tests):**
-- ❌ Method defined but never used
-- ❌ Multiple unused methods
-- ❌ Some methods used, some unused
-- ❌ Method with similar name but not called
 
 #### `create-effect-in-service` rule tests:
 
@@ -320,8 +200,123 @@ rules: {
 }
 ```
 
+## Detecting Unused Code
+
+### Why Not an ESLint Rule?
+
+We previously attempted to create an ESLint rule to detect unused Signal Store methods, but **ESLint cannot perform cross-file analysis**. ESLint processes one file at a time, meaning it cannot detect if a method defined in `store.ts` is used in `component.ts`. This results in false positives where actually-used methods are flagged as unused.
+
+### Recommended Tool: Knip
+
+For detecting unused exports, methods, files, and dependencies across your entire project, use [**Knip**](https://knip.dev/).
+
+#### What is Knip?
+
+Knip finds unused files, dependencies, and exports in JavaScript and TypeScript projects using project-wide analysis. Unlike ESLint, Knip can detect:
+
+- ✅ Unused exports (functions, classes, types)
+- ✅ Unused files
+- ✅ Unused dependencies and devDependencies
+- ✅ Unlisted dependencies
+- ✅ Unused class members and enum members
+- ✅ Duplicate exports
+
+#### Installation
+
+Knip works out of the box without installation:
+
+```bash
+npx knip
+```
+
+Or install it as a dev dependency:
+
+```bash
+npm install -D knip
+```
+
+#### Usage
+
+```bash
+# Analyze entire project
+npx knip
+
+# Only check exports (including unused Signal Store methods)
+npx knip --exports
+
+# Only check dependencies
+npx knip --dependencies
+
+# Only check unused files
+npx knip --files
+
+# Auto-fix issues (use with caution)
+npx knip --fix
+
+# Generate report in JSON format
+npx knip --reporter json > knip-report.json
+```
+
+#### Example Output
+
+```bash
+$ npx knip --exports
+
+Unused exported types (2)
+Category    interface  src/app/services/api.service.ts:51:18
+CacheStats  interface  src/app/services/api.service.ts:59:18
+```
+
+#### Configuration
+
+Create a `knip.json` file to customize Knip's behavior:
+
+```json
+{
+  "ignore": [
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ],
+  "ignoreDependencies": [
+    "@angular/platform-browser-dynamic"
+  ]
+}
+```
+
+#### When to Run Knip
+
+- **Before refactoring**: Identify dead code that can be safely removed
+- **In CI/CD**: Prevent unused code from being merged
+- **During code reviews**: Ensure all new exports are actually used
+- **Periodic cleanup**: Monthly or quarterly cleanup sessions
+
+#### Why Knip Over ts-prune?
+
+- **ts-prune is in maintenance mode** (no longer actively developed)
+- Knip has **broader feature set** (dependencies, files, types)
+- Knip is **actively maintained** and receives regular updates
+- Knip is **faster** and more accurate
+- Knip works with **modern tooling** (Vite, Next.js, Angular, etc.)
+
+### Comparison: ESLint Rule vs Knip
+
+| Feature | ESLint Custom Rule | Knip |
+|---------|-------------------|------|
+| Cross-file analysis | ❌ No | ✅ Yes |
+| Detects unused exports | ⚠️ False positives | ✅ Accurate |
+| Detects unused files | ❌ No | ✅ Yes |
+| Detects unused dependencies | ❌ No | ✅ Yes |
+| Real-time feedback | ✅ Yes (on save) | ⚠️ On-demand |
+| CI/CD integration | ✅ Easy | ✅ Easy |
+| Setup complexity | 🔴 High | 🟢 Low |
+
+**Conclusion**: Use Knip for unused code detection. ESLint is excellent for code style and patterns, but cross-file analysis requires specialized tooling.
+
 ## References
 
 - [ESLint Custom Rules Documentation](https://eslint.org/docs/latest/extend/custom-rules)
 - [NgRx Effects Best Practices](https://ngrx.io/guide/effects/lifecycle)
 - [@ngrx/eslint-plugin](https://ngrx.io/guide/eslint-plugin)
+- [Knip Documentation](https://knip.dev/)
+- [Why Knip Over ts-prune](https://levelup.gitconnected.com/dead-code-detection-in-typescript-projects-why-we-chose-knip-over-ts-prune-8feea827da35)
+- [Knip Comparison & Migration Guide](https://knip.dev/explanations/comparison-and-migration)
