@@ -95,6 +95,9 @@ module.exports = tseslint.config(
       // Custom code quality rules
       'local-rules/no-comments-except-todo': 'error',
 
+      // Style guide rules
+      'local-rules/prefer-css-variables': 'warn',
+
       // Code complexity
       complexity: ['warn', { max: 15 }],
       'max-depth': ['warn', { max: 4 }],

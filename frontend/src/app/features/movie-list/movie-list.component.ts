@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  HostListener,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -6,10 +14,11 @@ import { ButtonModule } from 'primeng/button';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
-import { ProgressSpinner } from 'primeng/progressspinner';
+import { Skeleton } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 
 import { Movie } from '../../services/api.service';
+import { NotificationService } from '../../services/notification.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { MoviesStore } from '../../store/movies.store';
 
@@ -22,7 +31,7 @@ import { MoviesStore } from '../../store/movies.store';
     FormsModule,
     InputTextModule,
     TagModule,
-    ProgressSpinner,
+    Skeleton,
     IconField,
     InputIcon,
     ButtonModule,
@@ -30,9 +39,12 @@ import { MoviesStore } from '../../store/movies.store';
   template: `
     <div class="netflix-browse">
       <!-- Navigation Bar -->
-      <nav class="nav-bar">
+      <nav class="nav-bar" [class.scrolled]="isScrolled()">
         <div class="nav-left">
-          <h1 class="logo">MEDIASERVER</h1>
+          <h1 class="logo">
+            <i class="pi pi-video logo-icon"></i>
+            MEDIASERVER
+          </h1>
         </div>
         <div class="nav-right">
           <p-iconfield class="search-field">
@@ -40,17 +52,36 @@ import { MoviesStore } from '../../store/movies.store';
             <input
               type="text"
               pInputText
-              placeholder="Titles, categories..."
+              placeholder="Search titles, categories..."
               [ngModel]="store.filter()"
               (ngModelChange)="store.setFilter($event)"
+              aria-label="Search movies"
             />
           </p-iconfield>
         </div>
       </nav>
 
       @if (store.loading()) {
-        <div class="loading-screen">
-          <p-progressspinner strokeWidth="4" />
+        <!-- Skeleton Loading State -->
+        <div class="skeleton-container">
+          <div class="skeleton-hero">
+            <p-skeleton width="100%" height="80vh" styleClass="skeleton-hero-bg" />
+          </div>
+          <div class="skeleton-content">
+            @for (i of [1, 2, 3]; track i) {
+              <div class="skeleton-category">
+                <p-skeleton width="200px" height="28px" styleClass="skeleton-title" />
+                <div class="skeleton-row">
+                  @for (j of [1, 2, 3, 4, 5, 6]; track j) {
+                    <div class="skeleton-card">
+                      <p-skeleton width="240px" height="135px" styleClass="skeleton-card-img" />
+                      <p-skeleton width="160px" height="16px" styleClass="skeleton-card-title" />
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
         </div>
       } @else {
         <!-- Hero Section -->
@@ -60,20 +91,20 @@ import { MoviesStore } from '../../store/movies.store';
             [style.background-image]="'url(' + (featured.thumbnailUrl || '') + ')'"
           >
             <div class="hero-gradient"></div>
-            <div class="hero-content">
+            <div class="hero-content animate-slide-up">
               <h2 class="hero-title">{{ featured.title }}</h2>
               @if (featured.description) {
                 <p class="hero-description">{{ featured.description }}</p>
               }
               <div class="hero-meta">
                 @if (featured.year) {
-                  <span>{{ featured.year }}</span>
+                  <span><i class="pi pi-calendar"></i> {{ featured.year }}</span>
                 }
                 @if (featured.duration) {
-                  <span>{{ featured.duration }}</span>
+                  <span><i class="pi pi-clock"></i> {{ featured.duration }}</span>
                 }
                 @if (featured.categoryName) {
-                  <span>{{ featured.categoryName }}</span>
+                  <span><i class="pi pi-tag"></i> {{ featured.categoryName }}</span>
                 }
               </div>
               <div class="hero-actions">
@@ -102,10 +133,14 @@ import { MoviesStore } from '../../store/movies.store';
         <!-- Category Rows -->
         <div class="content-rows">
           @for (category of store.moviesByCategory(); track category.name) {
-            <section class="category-row">
+            <section class="category-row animate-fade-in">
               <h3 class="category-title">{{ category.name }}</h3>
               <div class="row-wrapper">
-                <button class="scroll-btn scroll-left" (click)="scrollRow($event, -1)">
+                <button
+                  class="scroll-btn scroll-left"
+                  (click)="scrollRow($event, -1)"
+                  aria-label="Scroll left"
+                >
                   <i class="pi pi-chevron-left"></i>
                 </button>
                 <div class="movies-row">
@@ -114,6 +149,10 @@ import { MoviesStore } from '../../store/movies.store';
                       class="movie-card"
                       [class.cached]="movie.cached"
                       [routerLink]="['/movie', movie.id]"
+                      [attr.aria-label]="
+                        movie.title + (movie.cached ? ' - Ready to play' : ' - On Mega')
+                      "
+                      tabindex="0"
                     >
                       <div class="card-image">
                         @if (movie.thumbnailUrl) {
@@ -131,7 +170,11 @@ import { MoviesStore } from '../../store/movies.store';
                         <div class="card-overlay">
                           <div class="overlay-content">
                             <div class="overlay-actions">
-                              <button class="play-icon" (click)="playOrView($event, movie)">
+                              <button
+                                class="play-icon"
+                                (click)="playOrView($event, movie)"
+                                [attr.aria-label]="movie.cached ? 'Play movie' : 'View details'"
+                              >
                                 <i
                                   class="pi"
                                   [class.pi-play]="movie.cached"
@@ -142,7 +185,7 @@ import { MoviesStore } from '../../store/movies.store';
                                 class="favorite-icon"
                                 [class.favorited]="movie.favorite"
                                 (click)="toggleFavorite($event, movie)"
-                                [title]="
+                                [attr.aria-label]="
                                   movie.favorite ? 'Remove from favorites' : 'Add to favorites'
                                 "
                               >
@@ -175,16 +218,27 @@ import { MoviesStore } from '../../store/movies.store';
                     </div>
                   }
                 </div>
-                <button class="scroll-btn scroll-right" (click)="scrollRow($event, 1)">
+                <button
+                  class="scroll-btn scroll-right"
+                  (click)="scrollRow($event, 1)"
+                  aria-label="Scroll right"
+                >
                   <i class="pi pi-chevron-right"></i>
                 </button>
               </div>
             </section>
           } @empty {
-            <div class="empty-state">
-              <i class="pi pi-video"></i>
-              <p>No movies found</p>
-              <span>Movies will appear here once discovered from Mega.nz</span>
+            <div class="empty-state animate-fade-in">
+              <div class="empty-icon">
+                <i class="pi pi-video"></i>
+              </div>
+              <h3>No movies found</h3>
+              <p>Movies will appear here once discovered from Mega.nz</p>
+              @if (store.filter()) {
+                <button pButton [text]="true" icon="pi pi-times" (click)="store.setFilter('')">
+                  Clear Search
+                </button>
+              }
             </div>
           }
         </div>
@@ -195,13 +249,13 @@ import { MoviesStore } from '../../store/movies.store';
     `
       :host {
         display: block;
-        background: #141414;
+        background: var(--bg-secondary);
         min-height: 100vh;
       }
 
       .netflix-browse {
-        background: #141414;
-        color: #fff;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
       }
 
       /* Navigation */
@@ -214,42 +268,108 @@ import { MoviesStore } from '../../store/movies.store';
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 3rem;
-        background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
-        transition: background 0.3s;
+        padding: var(--space-md) var(--space-2xl);
+        background: linear-gradient(180deg, rgb(0 0 0 / 90%) 0%, transparent 100%);
+        transition:
+          background var(--transition-default),
+          backdrop-filter var(--transition-default);
+      }
+
+      .nav-bar.scrolled {
+        background: rgb(10 10 10 / 95%);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border-subtle);
       }
 
       .logo {
         font-size: 1.75rem;
         font-weight: 700;
-        color: var(--p-primary-color);
-        letter-spacing: 2px;
+        color: var(--primary);
+        letter-spacing: 3px;
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+      }
+
+      .logo-icon {
+        font-size: 1.5rem;
       }
 
       .search-field {
         :host ::ng-deep input {
-          background: rgba(0, 0, 0, 0.6);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          color: #fff;
-          width: 250px;
+          background: rgb(0 0 0 / 60%);
+          border: 1px solid var(--border-default);
+          color: var(--text-primary);
+          width: 280px;
+          border-radius: var(--radius-md);
+          padding: 0.75rem 1rem 0.75rem 2.5rem;
+          transition: all var(--transition-fast);
 
           &::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--text-tertiary);
+          }
+
+          &:hover {
+            border-color: var(--text-muted);
           }
 
           &:focus {
-            border-color: #fff;
+            border-color: var(--text-primary);
+            background: rgb(0 0 0 / 80%);
+            width: 320px;
           }
         }
       }
 
-      /* Loading */
-      .loading-screen {
+      /* Skeleton Loading */
+      .skeleton-container {
+        background: var(--bg-secondary);
+        min-height: 100vh;
+        padding-top: 70px;
+      }
+
+      .skeleton-hero {
+        margin-bottom: var(--space-xl);
+      }
+
+      :host ::ng-deep .skeleton-hero-bg {
+        border-radius: 0;
+      }
+
+      .skeleton-content {
+        margin-top: -6rem;
+        position: relative;
+        z-index: 2;
+      }
+
+      .skeleton-category {
+        padding: 0 var(--space-2xl);
+        margin-bottom: var(--space-2xl);
+      }
+
+      :host ::ng-deep .skeleton-title {
+        margin-bottom: var(--space-md);
+        border-radius: var(--radius-sm);
+      }
+
+      .skeleton-row {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
+        gap: var(--space-sm);
+        overflow: hidden;
+      }
+
+      .skeleton-card {
+        flex-shrink: 0;
+      }
+
+      :host ::ng-deep .skeleton-card-img {
+        border-radius: var(--radius-md);
+      }
+
+      :host ::ng-deep .skeleton-card-title {
+        margin-top: var(--space-sm);
+        border-radius: var(--radius-sm);
       }
 
       /* Hero Section */
@@ -261,7 +381,7 @@ import { MoviesStore } from '../../store/movies.store';
         background-position: center top;
         display: flex;
         align-items: flex-end;
-        padding: 0 3rem 8rem;
+        padding: 0 var(--space-2xl) 8rem;
       }
 
       .hero-gradient {
@@ -269,11 +389,11 @@ import { MoviesStore } from '../../store/movies.store';
         inset: 0;
         background: linear-gradient(
           0deg,
-          #141414 0%,
-          rgba(20, 20, 20, 0.8) 20%,
-          rgba(20, 20, 20, 0.4) 40%,
-          rgba(20, 20, 20, 0.2) 60%,
-          rgba(20, 20, 20, 0.4) 100%
+          var(--bg-secondary) 0%,
+          rgb(20 20 20 / 80%) 20%,
+          rgb(20 20 20 / 40%) 40%,
+          rgb(20 20 20 / 20%) 60%,
+          rgb(20 20 20 / 40%) 100%
         );
       }
 
@@ -286,74 +406,85 @@ import { MoviesStore } from '../../store/movies.store';
       .hero-title {
         font-size: 3.5rem;
         font-weight: 700;
-        margin: 0 0 1rem;
-        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        margin: 0 0 var(--space-md);
+        text-shadow: 2px 2px 8px rgb(0 0 0 / 80%);
+        letter-spacing: -0.5px;
+        line-height: 1.1;
       }
 
       .hero-description {
         font-size: 1.1rem;
-        line-height: 1.5;
-        margin: 0 0 1rem;
-        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.6;
+        margin: 0 0 var(--space-md);
+        color: rgb(255 255 255 / 90%);
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+        text-shadow: 1px 1px 4px rgb(0 0 0 / 80%);
       }
 
       .hero-meta {
         display: flex;
-        gap: 1.5rem;
-        margin-bottom: 1.5rem;
+        gap: var(--space-lg);
+        margin-bottom: var(--space-lg);
         font-size: 0.95rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
 
         span {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: var(--space-xs);
+
+          i {
+            color: var(--primary);
+            font-size: 0.85rem;
+          }
         }
       }
 
       .hero-actions {
         display: flex;
-        gap: 1rem;
+        gap: var(--space-md);
       }
 
       .play-btn {
-        background: #fff !important;
-        color: #000 !important;
+        background: var(--text-primary) !important;
+        color: var(--bg-primary) !important;
         border: none !important;
         font-weight: 600;
-        padding: 0.75rem 2rem;
+        padding: 0.875rem 2rem;
         font-size: 1.1rem;
-        border-radius: 4px;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
 
         i {
-          margin-right: 0.5rem;
+          margin-right: var(--space-sm);
         }
 
         &:hover {
-          background: rgba(255, 255, 255, 0.85) !important;
+          background: rgb(255 255 255 / 85%) !important;
+          transform: scale(1.05);
         }
       }
 
       .info-btn {
-        background: rgba(109, 109, 110, 0.7) !important;
-        color: #fff !important;
+        background: rgb(109 109 110 / 70%) !important;
+        color: var(--text-primary) !important;
         border: none !important;
         font-weight: 600;
-        padding: 0.75rem 2rem;
+        padding: 0.875rem 2rem;
         font-size: 1.1rem;
-        border-radius: 4px;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
 
         i {
-          margin-right: 0.5rem;
+          margin-right: var(--space-sm);
         }
 
         &:hover {
-          background: rgba(109, 109, 110, 0.5) !important;
+          background: rgb(109 109 110 / 50%) !important;
+          transform: scale(1.05);
         }
       }
 
@@ -362,12 +493,12 @@ import { MoviesStore } from '../../store/movies.store';
         margin-top: -6rem;
         position: relative;
         z-index: 2;
-        padding-bottom: 3rem;
+        padding-bottom: var(--space-2xl);
       }
 
       .category-row {
-        margin-bottom: 2.5rem;
-        padding: 0 3rem;
+        margin-bottom: var(--space-2xl);
+        padding: 0 var(--space-2xl);
       }
 
       .category-title {
@@ -379,8 +510,8 @@ import { MoviesStore } from '../../store/movies.store';
 
       .row-wrapper {
         position: relative;
-        margin: 0 -3rem;
-        padding: 0 3rem;
+        margin: 0 calc(var(--space-2xl) * -1);
+        padding: 0 var(--space-2xl);
       }
 
       .scroll-btn {
@@ -388,12 +519,12 @@ import { MoviesStore } from '../../store/movies.store';
         top: 0;
         bottom: 0;
         width: 3rem;
-        background: rgba(20, 20, 20, 0.7);
+        background: rgb(20 20 20 / 70%);
         border: none;
-        color: #fff;
+        color: var(--text-primary);
         cursor: pointer;
         opacity: 0;
-        transition: opacity 0.2s;
+        transition: opacity var(--transition-fast);
         z-index: 10;
         display: flex;
         align-items: center;
@@ -401,7 +532,11 @@ import { MoviesStore } from '../../store/movies.store';
         font-size: 1.5rem;
 
         &:hover {
-          background: rgba(20, 20, 20, 0.9);
+          background: rgb(20 20 20 / 90%);
+        }
+
+        &:focus-visible {
+          opacity: 1;
         }
       }
 
@@ -419,10 +554,10 @@ import { MoviesStore } from '../../store/movies.store';
 
       .movies-row {
         display: flex;
-        gap: 0.5rem;
+        gap: var(--space-sm);
         overflow-x: auto;
         scroll-behavior: smooth;
-        padding: 1rem 0;
+        padding: var(--space-md) 0;
         scrollbar-width: none;
 
         &::-webkit-scrollbar {
@@ -436,15 +571,17 @@ import { MoviesStore } from '../../store/movies.store';
         width: 240px;
         cursor: pointer;
         transition:
-          transform 0.3s ease,
-          z-index 0s 0.3s;
+          transform var(--transition-default),
+          z-index 0s var(--transition-default);
         position: relative;
+        border-radius: var(--radius-md);
+        overflow: visible;
 
         &:hover {
-          transform: scale(1.3);
+          transform: scale(1.35);
           z-index: 20;
           transition:
-            transform 0.3s ease,
+            transform var(--transition-default),
             z-index 0s;
 
           .card-overlay {
@@ -453,6 +590,23 @@ import { MoviesStore } from '../../store/movies.store';
 
           .card-info {
             opacity: 0;
+            transform: translateY(10px);
+          }
+
+          .card-image {
+            box-shadow: var(--shadow-lg);
+
+            img {
+              transform: scale(1.05);
+            }
+          }
+        }
+
+        &:focus-visible {
+          outline: none;
+
+          .card-image {
+            box-shadow: 0 0 0 3px var(--primary);
           }
         }
       }
@@ -460,14 +614,16 @@ import { MoviesStore } from '../../store/movies.store';
       .card-image {
         position: relative;
         aspect-ratio: 16/9;
-        border-radius: 4px;
+        border-radius: var(--radius-md);
         overflow: hidden;
-        background: #2a2a2a;
+        background: var(--bg-tertiary);
+        transition: box-shadow var(--transition-default);
 
         img {
           width: 100%;
           height: 100%;
           object-fit: cover;
+          transition: transform var(--transition-slow);
         }
       }
 
@@ -477,7 +633,8 @@ import { MoviesStore } from '../../store/movies.store';
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #555;
+        color: var(--text-muted);
+        background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-elevated));
 
         i {
           font-size: 2.5rem;
@@ -488,15 +645,16 @@ import { MoviesStore } from '../../store/movies.store';
         position: absolute;
         top: 8px;
         right: 8px;
-        background: var(--p-primary-color);
-        color: #fff;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
+        background: var(--primary);
+        color: var(--text-primary);
+        width: 26px;
+        height: 26px;
+        border-radius: var(--radius-full);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 0.75rem;
+        box-shadow: var(--shadow-sm);
       }
 
       .card-overlay {
@@ -504,17 +662,18 @@ import { MoviesStore } from '../../store/movies.store';
         inset: 0;
         background: linear-gradient(
           0deg,
-          rgba(20, 20, 20, 0.95) 0%,
-          rgba(20, 20, 20, 0.7) 50%,
+          rgb(10 10 10 / 98%) 0%,
+          rgb(10 10 10 / 85%) 40%,
+          rgb(10 10 10 / 40%) 70%,
           transparent 100%
         );
         opacity: 0;
-        transition: opacity 0.3s;
+        transition: opacity var(--transition-default);
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
-        padding: 1rem;
-        border-radius: 4px;
+        padding: var(--space-md);
+        border-radius: var(--radius-md);
       }
 
       .overlay-content {
@@ -525,27 +684,33 @@ import { MoviesStore } from '../../store/movies.store';
 
       .overlay-actions {
         display: flex;
-        gap: 0.5rem;
+        gap: var(--space-sm);
       }
 
       .play-icon,
       .favorite-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        border: 2px solid #fff;
-        background: rgba(30, 30, 30, 0.8);
-        color: #fff;
+        width: 42px;
+        height: 42px;
+        border-radius: var(--radius-full);
+        border: 2px solid var(--text-primary);
+        background: rgb(20 20 20 / 90%);
+        color: var(--text-primary);
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s;
+        transition: all var(--transition-fast);
+        backdrop-filter: blur(10px);
 
         &:hover {
-          background: #fff;
-          color: #000;
-          transform: scale(1.1);
+          background: var(--text-primary);
+          color: var(--bg-primary);
+          transform: scale(1.15);
+          box-shadow: var(--shadow-sm);
+        }
+
+        &:active {
+          transform: scale(1.05);
         }
 
         i {
@@ -553,15 +718,26 @@ import { MoviesStore } from '../../store/movies.store';
         }
       }
 
-      .favorite-icon.favorited {
-        background: #e50914;
-        border-color: #e50914;
-        color: #fff;
+      .play-icon {
+        background: var(--primary);
+        border-color: var(--primary);
 
         &:hover {
-          background: #b20710;
-          border-color: #b20710;
-          color: #fff;
+          background: var(--primary-hover);
+          border-color: var(--primary-hover);
+          color: var(--text-primary);
+        }
+      }
+
+      .favorite-icon.favorited {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: var(--text-primary);
+
+        &:hover {
+          background: var(--primary-dark);
+          border-color: var(--primary-dark);
+          color: var(--text-primary);
         }
       }
 
@@ -579,9 +755,9 @@ import { MoviesStore } from '../../store/movies.store';
       .overlay-meta {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: var(--space-sm);
         font-size: 0.8rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
       }
 
       :host ::ng-deep .status-badge {
@@ -590,13 +766,15 @@ import { MoviesStore } from '../../store/movies.store';
       }
 
       .card-info {
-        padding: 0.5rem 0;
-        transition: opacity 0.3s;
+        padding: var(--space-sm) 0;
+        transition:
+          opacity var(--transition-default),
+          transform var(--transition-default);
       }
 
       .card-title {
         font-size: 0.85rem;
-        color: #b3b3b3;
+        color: var(--text-secondary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -604,7 +782,7 @@ import { MoviesStore } from '../../store/movies.store';
       }
 
       .movie-card.cached .card-image {
-        box-shadow: 0 0 0 2px var(--p-primary-color);
+        box-shadow: 0 0 0 2px var(--primary);
       }
 
       /* Empty State */
@@ -613,23 +791,36 @@ import { MoviesStore } from '../../store/movies.store';
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 6rem 2rem;
+        padding: 8rem var(--space-xl);
         text-align: center;
-        color: #808080;
 
-        i {
-          font-size: 4rem;
-          margin-bottom: 1rem;
+        .empty-icon {
+          width: 120px;
+          height: 120px;
+          border-radius: var(--radius-full);
+          background: var(--bg-tertiary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: var(--space-xl);
+
+          i {
+            font-size: 3rem;
+            color: var(--text-tertiary);
+          }
+        }
+
+        h3 {
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin: 0 0 var(--space-sm);
+          color: var(--text-primary);
         }
 
         p {
-          font-size: 1.5rem;
-          margin: 0 0 0.5rem;
-          color: #e5e5e5;
-        }
-
-        span {
           font-size: 1rem;
+          color: var(--text-tertiary);
+          margin: 0 0 var(--space-lg);
         }
       }
 
@@ -646,20 +837,28 @@ import { MoviesStore } from '../../store/movies.store';
 
       @media (max-width: 768px) {
         .nav-bar {
-          padding: 1rem;
+          padding: var(--space-md);
+        }
+
+        .search-field :host ::ng-deep input {
+          width: 180px;
+
+          &:focus {
+            width: 220px;
+          }
         }
 
         .category-row {
-          padding: 0 1rem;
+          padding: 0 var(--space-md);
         }
 
         .row-wrapper {
-          margin: 0 -1rem;
-          padding: 0 1rem;
+          margin: 0 calc(var(--space-md) * -1);
+          padding: 0 var(--space-md);
         }
 
         .hero {
-          padding: 0 1rem 6rem;
+          padding: 0 var(--space-md) 6rem;
           height: 60vh;
         }
 
@@ -678,6 +877,10 @@ import { MoviesStore } from '../../store/movies.store';
         .scroll-btn {
           display: none;
         }
+
+        .skeleton-category {
+          padding: 0 var(--space-md);
+        }
       }
     `,
   ],
@@ -687,6 +890,14 @@ export class MovieListComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly ws = inject(WebSocketService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly notification = inject(NotificationService);
+
+  readonly isScrolled = signal(false);
+
+  @HostListener('window:scroll')
+  onScroll(): void {
+    this.isScrolled.set(window.scrollY > 50);
+  }
 
   ngOnInit(): void {
     this.store.loadMovies();
@@ -698,8 +909,10 @@ export class MovieListComponent implements OnInit {
       .subscribe((progress) => {
         if (progress.status === 'COMPLETED') {
           this.store.updateMovieStatus(progress.movieId, 'READY', true);
+          this.notification.success('Download Complete', 'Movie is ready to play');
         } else if (progress.status === 'FAILED') {
           this.store.updateMovieStatus(progress.movieId, 'ERROR', false);
+          this.notification.error('Download Failed', 'Please try again');
         }
       });
   }
@@ -719,9 +932,9 @@ export class MovieListComponent implements OnInit {
     event.stopPropagation();
     event.preventDefault();
     if (movie.cached) {
-      this.router.navigate(['/play', movie.id]);
+      void this.router.navigate(['/play', movie.id]);
     } else {
-      this.router.navigate(['/movie', movie.id]);
+      void this.router.navigate(['/movie', movie.id]);
     }
   }
 
@@ -729,5 +942,11 @@ export class MovieListComponent implements OnInit {
     event.stopPropagation();
     event.preventDefault();
     this.store.toggleFavorite(movie.id);
+
+    if (movie.favorite) {
+      this.notification.info('Removed from My List', movie.title);
+    } else {
+      this.notification.success('Added to My List', movie.title);
+    }
   }
 }

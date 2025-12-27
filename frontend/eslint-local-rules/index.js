@@ -5,5 +5,6 @@ module.exports = {
   rules: {
     'create-effect-in-service': require('./rules/create-effect-in-service'),
     'no-comments-except-todo': require('./rules/no-comments-except-todo'),
+    'prefer-css-variables': require('./rules/prefer-css-variables'),
   },
 };

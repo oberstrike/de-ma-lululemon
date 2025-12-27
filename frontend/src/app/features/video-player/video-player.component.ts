@@ -31,11 +31,16 @@ import { PlayerStore } from '../../store/player.store';
       (keyup.space)="player.togglePlay()"
       tabindex="0"
       role="application"
+      aria-label="Video player"
     >
       @if (player.loading()) {
         <div class="loading-overlay">
-          <p-progressspinner strokeWidth="4" />
-          <p>Loading video...</p>
+          <div class="loading-content">
+            <div class="loading-spinner">
+              <p-progressspinner strokeWidth="3" />
+            </div>
+            <p class="loading-text">Loading video...</p>
+          </div>
         </div>
       }
 
@@ -46,15 +51,28 @@ import { PlayerStore } from '../../store/player.store';
           (keydown)="$event.stopPropagation()"
           tabindex="-1"
           role="dialog"
+          aria-label="Video error"
         >
-          <i
-            class="pi pi-exclamation-triangle"
-            style="font-size: 3rem; color: var(--p-red-500)"
-          ></i>
-          <p>{{ player.error() }}</p>
-          <div class="error-actions">
-            <p-button icon="pi pi-refresh" label="Retry" (click)="retry($event)" />
-            <p-button icon="pi pi-home" label="Back to Movies" routerLink="/" [outlined]="true" />
+          <div class="error-content">
+            <div class="error-icon">
+              <i class="pi pi-exclamation-circle"></i>
+            </div>
+            <h3>Unable to Play Video</h3>
+            <p>{{ player.error() }}</p>
+            <div class="error-actions">
+              <p-button
+                icon="pi pi-refresh"
+                label="Try Again"
+                (click)="retry($event)"
+                styleClass="retry-btn"
+              />
+              <p-button
+                icon="pi pi-arrow-left"
+                label="Back to Movies"
+                routerLink="/"
+                [outlined]="true"
+              />
+            </div>
           </div>
         </div>
       }
@@ -74,7 +92,7 @@ import { PlayerStore } from '../../store/player.store';
 
       @if (isBuffering() && player.isPlaying()) {
         <div class="buffering-indicator">
-          <p-progressspinner strokeWidth="4" />
+          <p-progressspinner strokeWidth="3" />
         </div>
       }
 
@@ -85,6 +103,7 @@ import { PlayerStore } from '../../store/player.store';
         (keydown)="$event.stopPropagation()"
         role="toolbar"
         tabindex="-1"
+        aria-label="Video controls"
       >
         <div
           class="progress-container"
@@ -96,6 +115,7 @@ import { PlayerStore } from '../../store/player.store';
           [attr.aria-valuenow]="player.progress()"
           aria-valuemin="0"
           aria-valuemax="100"
+          aria-label="Video progress"
         >
           <div class="buffered" [style.width.%]="player.bufferedPercent()"></div>
           <div class="progress" [style.width.%]="player.progress()"></div>
@@ -109,18 +129,21 @@ import { PlayerStore } from '../../store/player.store';
               [rounded]="true"
               [text]="true"
               (click)="togglePlay()"
+              [attr.aria-label]="player.isPlaying() ? 'Pause' : 'Play'"
             />
             <p-button
               icon="pi pi-step-backward"
               [rounded]="true"
               [text]="true"
               (click)="seekRelative(-10)"
+              aria-label="Rewind 10 seconds"
             />
             <p-button
               icon="pi pi-step-forward"
               [rounded]="true"
               [text]="true"
               (click)="seekRelative(10)"
+              aria-label="Forward 10 seconds"
             />
 
             <div class="volume-control">
@@ -131,6 +154,7 @@ import { PlayerStore } from '../../store/player.store';
                 [rounded]="true"
                 [text]="true"
                 (click)="player.toggleMute()"
+                [attr.aria-label]="player.muted() ? 'Unmute' : 'Mute'"
               />
               <p-slider
                 [(ngModel)]="volumeValue"
@@ -138,6 +162,7 @@ import { PlayerStore } from '../../store/player.store';
                 [max]="100"
                 (onChange)="onVolumeSliderChange($event)"
                 styleClass="volume-slider"
+                aria-label="Volume"
               />
             </div>
 
@@ -147,12 +172,19 @@ import { PlayerStore } from '../../store/player.store';
           </div>
 
           <div class="right">
-            <p-button icon="pi pi-times" [rounded]="true" [text]="true" routerLink="/" />
+            <p-button
+              icon="pi pi-times"
+              [rounded]="true"
+              [text]="true"
+              routerLink="/"
+              aria-label="Close player"
+            />
             <p-button
               [icon]="player.isFullscreen() ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
               [rounded]="true"
               [text]="true"
               (click)="toggleFullscreen()"
+              [attr.aria-label]="player.isFullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'"
             />
           </div>
         </div>
@@ -183,60 +215,165 @@ import { PlayerStore } from '../../store/player.store';
         object-fit: contain;
       }
 
-      .loading-overlay,
-      .error-overlay,
-      .buffering-indicator {
+      /* Loading Overlay */
+      .loading-overlay {
         position: absolute;
         inset: 0;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: rgba(0, 0, 0, 0.8);
+        background: rgb(0 0 0 / 90%);
         z-index: 10;
-        gap: 1rem;
+        animation: fade-in var(--transition-default);
       }
 
+      .loading-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: var(--space-lg);
+      }
+
+      .loading-spinner {
+        :host ::ng-deep .p-progress-spinner {
+          width: 60px;
+          height: 60px;
+
+          .p-progress-spinner-circle {
+            stroke: var(--primary);
+          }
+        }
+      }
+
+      .loading-text {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        margin: 0;
+      }
+
+      /* Error Overlay */
       .error-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgb(0 0 0 / 90%);
+        z-index: 10;
+        animation: fade-in var(--transition-default);
+      }
+
+      .error-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: var(--space-lg);
+        max-width: 400px;
+        padding: var(--space-xl);
+
+        h3 {
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin: 0;
+          color: var(--text-primary);
+        }
+
         p {
-          margin: 1rem 0;
-          font-size: 1.25rem;
+          color: var(--text-secondary);
+          margin: 0;
+          line-height: 1.5;
+        }
+      }
+
+      .error-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        background: rgb(229 9 20 / 15%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i {
+          font-size: 2.5rem;
+          color: var(--primary);
         }
       }
 
       .error-actions {
         display: flex;
-        gap: 1rem;
+        gap: var(--space-md);
+        margin-top: var(--space-sm);
+
+        :host ::ng-deep .retry-btn {
+          background: var(--primary);
+          border-color: var(--primary);
+
+          &:hover {
+            background: var(--primary-hover) !important;
+            border-color: var(--primary-hover) !important;
+          }
+        }
       }
 
+      /* Buffering Indicator */
+      .buffering-indicator {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgb(0 0 0 / 50%);
+        z-index: 5;
+
+        :host ::ng-deep .p-progress-spinner {
+          width: 50px;
+          height: 50px;
+
+          .p-progress-spinner-circle {
+            stroke: var(--primary);
+          }
+        }
+      }
+
+      /* Controls */
       .controls {
         position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
-        padding: 1rem 1.5rem;
-        background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+        padding: var(--space-lg) var(--space-xl);
+        background: linear-gradient(transparent, rgb(0 0 0 / 70%) 30%, rgb(0 0 0 / 95%));
         opacity: 0;
-        transition: opacity 0.3s;
+        transform: translateY(10px);
+        transition:
+          opacity var(--transition-default),
+          transform var(--transition-default);
 
         &.visible {
           opacity: 1;
+          transform: translateY(0);
         }
       }
 
+      /* Progress Bar */
       .progress-container {
-        height: 6px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 3px;
+        height: 5px;
+        background: rgb(255 255 255 / 15%);
+        border-radius: var(--radius-full);
         cursor: pointer;
         position: relative;
-        margin-bottom: 1rem;
+        margin-bottom: var(--space-md);
+        transition: height var(--transition-fast);
 
         &:hover {
-          height: 10px;
+          height: 8px;
 
           .scrubber {
-            transform: translateX(-50%) scale(1.5);
+            transform: translateX(-50%) translateY(-50%) scale(1);
+            opacity: 1;
           }
         }
       }
@@ -244,28 +381,34 @@ import { PlayerStore } from '../../store/player.store';
       .buffered {
         position: absolute;
         height: 100%;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 3px;
+        background: rgb(255 255 255 / 25%);
+        border-radius: var(--radius-full);
+        transition: width 0.1s linear;
       }
 
       .progress {
         position: absolute;
         height: 100%;
-        background: var(--p-primary-color);
-        border-radius: 3px;
+        background: var(--primary);
+        border-radius: var(--radius-full);
+        transition: width 0.1s linear;
       }
 
       .scrubber {
         position: absolute;
         top: 50%;
-        width: 14px;
-        height: 14px;
-        background: #fff;
-        border-radius: 50%;
-        transform: translateX(-50%) translateY(-50%);
-        transition: transform 0.1s;
+        width: 16px;
+        height: 16px;
+        background: var(--primary);
+        border: 2px solid var(--text-primary);
+        border-radius: var(--radius-full);
+        transform: translateX(-50%) translateY(-50%) scale(0);
+        opacity: 0;
+        transition: all var(--transition-fast);
+        box-shadow: 0 2px 8px rgb(0 0 0 / 50%);
       }
 
+      /* Controls Row */
       .controls-row {
         display: flex;
         justify-content: space-between;
@@ -276,35 +419,88 @@ import { PlayerStore } from '../../store/player.store';
       .right {
         display: flex;
         align-items: center;
-        gap: 0.25rem;
+        gap: var(--space-xs);
       }
 
       .volume-control {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: var(--space-sm);
+        opacity: 0.8;
+        transition: opacity var(--transition-fast);
+
+        &:hover {
+          opacity: 1;
+        }
 
         :host ::ng-deep .volume-slider {
-          width: 80px;
+          width: 100px;
+
+          .p-slider {
+            background: rgb(255 255 255 / 20%);
+          }
+
+          .p-slider-range {
+            background: var(--primary);
+          }
 
           .p-slider-handle {
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
+            background: var(--text-primary);
+            border: none;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 30%);
+            transition: transform var(--transition-fast);
+
+            &:hover {
+              transform: scale(1.2);
+            }
           }
         }
       }
 
       .time {
-        font-size: 0.875rem;
-        color: var(--p-text-muted-color);
-        margin-left: 1rem;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-left: var(--space-md);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.5px;
       }
 
       :host ::ng-deep .p-button {
-        color: white;
+        color: var(--text-primary);
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-full);
+        transition: all var(--transition-fast);
 
         &:hover {
-          background: rgba(255, 255, 255, 0.1) !important;
+          background: rgb(255 255 255 / 15%) !important;
+          transform: scale(1.1);
+        }
+
+        &:active {
+          transform: scale(1);
+        }
+
+        .p-button-icon {
+          font-size: 1.2rem;
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .controls {
+          padding: var(--space-md);
+        }
+
+        .volume-control {
+          display: none;
+        }
+
+        :host ::ng-deep .p-button {
+          width: 40px;
+          height: 40px;
         }
       }
     `,
@@ -348,7 +544,7 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
 
   onLoaded(): void {
     this.player.setDuration(this.videoRef.nativeElement.duration);
-    this.videoRef.nativeElement.play();
+    void this.videoRef.nativeElement.play();
   }
 
   onTimeUpdate(): void {
@@ -407,9 +603,9 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     const wrapper = this.videoRef.nativeElement.parentElement;
     if (!wrapper) return;
     if (!document.fullscreenElement) {
-      wrapper.requestFullscreen?.();
+      void wrapper.requestFullscreen?.();
     } else {
-      document.exitFullscreen?.();
+      void document.exitFullscreen?.();
     }
     this.player.toggleFullscreen();
   }
@@ -418,7 +614,7 @@ export class VideoPlayerComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     const movieId = this.route.snapshot.paramMap.get('id');
     if (movieId) {
-      this.player.loadMovie(movieId);
+      void this.player.loadMovie(movieId);
     }
   }
 }

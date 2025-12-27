@@ -41,6 +41,7 @@ bootstrapApplication(AppComponent, {
           darkModeSelector: '.dark-mode',
         },
       },
+      ripple: true,
     }),
   ],
 }).catch((err) => {
