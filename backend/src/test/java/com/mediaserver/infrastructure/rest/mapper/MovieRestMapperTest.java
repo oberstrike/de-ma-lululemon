@@ -40,7 +40,7 @@ class MovieRestMapperTest {
                         .megaUrl("https://mega.nz/file/test123")
                         .thumbnailUrl("https://example.com/thumb.jpg")
                         .localPath("/cache/test.mp4")
-                        .fileSize(1024L * 1024 * 1024) // 1GB
+                        .fileSize(1024L * 1024 * 1024)
                         .status(MovieStatus.READY)
                         .categoryId("cat-1")
                         .createdAt(now)
@@ -59,14 +59,11 @@ class MovieRestMapperTest {
                         .build();
     }
 
-    // ========== toResponse() Tests ==========
 
     @Test
     void toResponse_shouldMapAllBasicFields() {
-        // When
         MovieResponseDTO result = movieRestMapper.toResponse(movie);
 
-        // Then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("movie-1");
         assertThat(result.getTitle()).isEqualTo("Test Movie");
@@ -81,67 +78,52 @@ class MovieRestMapperTest {
 
     @Test
     void toResponse_shouldMapCategoryId() {
-        // When
         MovieResponseDTO result = movieRestMapper.toResponse(movie);
 
-        // Then - categoryName is ignored by mapper, only categoryId is mapped
         assertThat(result.getCategoryId()).isEqualTo("cat-1");
         assertThat(result.getCategoryName()).isNull();
     }
 
     @Test
     void toResponse_shouldMapCachedField_whenMovieIsCached() {
-        // Given - movie with localPath and READY status
         Movie cachedMovie = movie.withLocalPath("/cache/video.mp4").withStatus(MovieStatus.READY);
 
-        // When
         MovieResponseDTO result = movieRestMapper.toResponse(cachedMovie);
 
-        // Then
         assertThat(result.isCached()).isTrue();
     }
 
     @Test
     void toResponse_shouldMapCachedFieldFalse_whenNoLocalPath() {
-        // Given
         Movie notCachedMovie = movie.withLocalPath(null).withStatus(MovieStatus.READY);
 
-        // When
         MovieResponseDTO result = movieRestMapper.toResponse(notCachedMovie);
 
-        // Then
         assertThat(result.isCached()).isFalse();
     }
 
     @Test
     void toResponse_shouldMapCachedFieldFalse_whenStatusNotReady() {
-        // Given
         Movie downloadingMovie =
                 movie.withLocalPath("/cache/video.mp4").withStatus(MovieStatus.DOWNLOADING);
 
-        // When
         MovieResponseDTO result = movieRestMapper.toResponse(downloadingMovie);
 
-        // Then
         assertThat(result.isCached()).isFalse();
     }
 
     @Test
     void toResponse_shouldHandleNullCategoryId() {
-        // Given
         Movie movieWithoutCategory = movie.withCategoryId(null);
 
-        // When
         MovieResponseDTO result = movieRestMapper.toResponse(movieWithoutCategory);
 
-        // Then
         assertThat(result.getCategoryId()).isNull();
         assertThat(result.getCategoryName()).isNull();
     }
 
     @Test
     void toResponse_shouldHandleNullOptionalFields() {
-        // Given
         Movie minimalMovie =
                 Movie.builder()
                         .id("movie-2")
@@ -149,10 +131,8 @@ class MovieRestMapperTest {
                         .status(MovieStatus.PENDING)
                         .build();
 
-        // When
         MovieResponseDTO result = movieRestMapper.toResponse(minimalMovie);
 
-        // Then
         assertThat(result.getId()).isEqualTo("movie-2");
         assertThat(result.getTitle()).isEqualTo("Minimal Movie");
         assertThat(result.getStatus()).isEqualTo(MovieStatus.PENDING);
@@ -168,53 +148,41 @@ class MovieRestMapperTest {
 
     @Test
     void toResponse_shouldHandleAllMovieStatuses() {
-        // Test PENDING
         Movie pendingMovie = movie.withStatus(MovieStatus.PENDING).withLocalPath(null);
         assertThat(movieRestMapper.toResponse(pendingMovie).getStatus())
                 .isEqualTo(MovieStatus.PENDING);
 
-        // Test DOWNLOADING
         Movie downloadingMovie = movie.withStatus(MovieStatus.DOWNLOADING);
         assertThat(movieRestMapper.toResponse(downloadingMovie).getStatus())
                 .isEqualTo(MovieStatus.DOWNLOADING);
 
-        // Test READY
         Movie readyMovie = movie.withStatus(MovieStatus.READY);
         assertThat(movieRestMapper.toResponse(readyMovie).getStatus()).isEqualTo(MovieStatus.READY);
     }
 
     @Test
     void toResponse_shouldHandleZeroFileSize() {
-        // Given
         Movie movieWithZeroSize = movie.withFileSize(0L);
 
-        // When
         MovieResponseDTO result = movieRestMapper.toResponse(movieWithZeroSize);
 
-        // Then
         assertThat(result.getFileSize()).isEqualTo(0L);
     }
 
     @Test
     void toResponse_shouldHandleLargeFileSize() {
-        // Given
-        Movie movieWithLargeSize = movie.withFileSize(5L * 1024 * 1024 * 1024); // 5GB
+        Movie movieWithLargeSize = movie.withFileSize(5L * 1024 * 1024 * 1024);
 
-        // When
         MovieResponseDTO result = movieRestMapper.toResponse(movieWithLargeSize);
 
-        // Then
         assertThat(result.getFileSize()).isEqualTo(5L * 1024 * 1024 * 1024);
     }
 
-    // ========== toCreateCommand() Tests ==========
 
     @Test
     void toCreateCommand_shouldMapAllFields() {
-        // When
         CreateMovieCommand result = movieRestMapper.toCreateCommand(requestDto);
 
-        // Then
         assertThat(result).isNotNull();
         assertThat(result.getTitle()).isEqualTo("New Movie");
         assertThat(result.getDescription()).isEqualTo("A new movie description");
@@ -227,17 +195,14 @@ class MovieRestMapperTest {
 
     @Test
     void toCreateCommand_shouldHandleNullOptionalFields() {
-        // Given
         MovieRequestDTO minimalRequest =
                 MovieRequestDTO.builder()
                         .title("Minimal Movie")
                         .megaUrl("https://mega.nz/file/minimal")
                         .build();
 
-        // When
         CreateMovieCommand result = movieRestMapper.toCreateCommand(minimalRequest);
 
-        // Then
         assertThat(result.getTitle()).isEqualTo("Minimal Movie");
         assertThat(result.getMegaUrl()).isEqualTo("https://mega.nz/file/minimal");
         assertThat(result.getDescription()).isNull();
@@ -249,7 +214,6 @@ class MovieRestMapperTest {
 
     @Test
     void toCreateCommand_shouldMapEmptyStringsAsNull() {
-        // Given
         MovieRequestDTO requestWithEmptyStrings =
                 MovieRequestDTO.builder()
                         .title("Test Movie")
@@ -259,29 +223,22 @@ class MovieRestMapperTest {
                         .categoryId("")
                         .build();
 
-        // When
         CreateMovieCommand result = movieRestMapper.toCreateCommand(requestWithEmptyStrings);
 
-        // Then
         assertThat(result.getTitle()).isEqualTo("Test Movie");
         assertThat(result.getMegaUrl()).isEqualTo("https://mega.nz/file/test");
-        // Empty strings are passed through by MapStruct by default
         assertThat(result.getDescription()).isEqualTo("");
         assertThat(result.getThumbnailUrl()).isEqualTo("");
         assertThat(result.getCategoryId()).isEqualTo("");
     }
 
-    // ========== toUpdateCommand() Tests ==========
 
     @Test
     void toUpdateCommand_shouldMapAllFieldsIncludingId() {
-        // Given
         String movieId = "movie-update-1";
 
-        // When
         UpdateMovieCommand result = movieRestMapper.toUpdateCommand(movieId, requestDto);
 
-        // Then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("movie-update-1");
         assertThat(result.getTitle()).isEqualTo("New Movie");
@@ -295,7 +252,6 @@ class MovieRestMapperTest {
 
     @Test
     void toUpdateCommand_shouldHandleNullOptionalFields() {
-        // Given
         String movieId = "movie-update-2";
         MovieRequestDTO minimalRequest =
                 MovieRequestDTO.builder()
@@ -303,10 +259,8 @@ class MovieRestMapperTest {
                         .megaUrl("https://mega.nz/file/updated")
                         .build();
 
-        // When
         UpdateMovieCommand result = movieRestMapper.toUpdateCommand(movieId, minimalRequest);
 
-        // Then
         assertThat(result.getId()).isEqualTo("movie-update-2");
         assertThat(result.getTitle()).isEqualTo("Updated Title");
         assertThat(result.getMegaUrl()).isEqualTo("https://mega.nz/file/updated");
@@ -319,10 +273,8 @@ class MovieRestMapperTest {
 
     @Test
     void toUpdateCommand_shouldHandleNullId() {
-        // When
         UpdateMovieCommand result = movieRestMapper.toUpdateCommand(null, requestDto);
 
-        // Then
         assertThat(result.getId()).isNull();
         assertThat(result.getTitle()).isEqualTo("New Movie");
         assertThat(result.getDescription()).isEqualTo("A new movie description");
@@ -330,7 +282,6 @@ class MovieRestMapperTest {
 
     @Test
     void toUpdateCommand_shouldMapDifferentIdsCorrectly() {
-        // Test with various ID formats
         String uuidId = "550e8400-e29b-41d4-a716-446655440000";
         UpdateMovieCommand result1 = movieRestMapper.toUpdateCommand(uuidId, requestDto);
         assertThat(result1.getId()).isEqualTo(uuidId);

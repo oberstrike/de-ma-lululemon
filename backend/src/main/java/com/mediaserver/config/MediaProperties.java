@@ -31,13 +31,13 @@ public class MediaProperties {
         private String[] videoExtensions = {
             ".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm"
         };
-        private String scanCron = "0 0 * * * *"; // Default: every hour
+        private String scanCron = "0 0 * * * *";
         private boolean scanEnabled = true;
     }
 
     @Data
     public static class Streaming {
-        private int chunkSize = 1048576; // 1MB
+        private int chunkSize = 1048576;
     }
 
     @Data
@@ -47,13 +47,13 @@ public class MediaProperties {
 
     @Data
     public static class Download {
-        private int processTimeoutMinutes = 60; // Default: 1 hour timeout for mega-get
+        private int processTimeoutMinutes = 60;
     }
 
     @Data
     public static class Admin {
         private String username = "admin";
-        private String password; // Must be set via environment variable MEDIA_ADMIN_PASSWORD
+        private String password;
     }
 
     @Data

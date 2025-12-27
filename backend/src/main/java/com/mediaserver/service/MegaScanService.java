@@ -34,10 +34,8 @@ public class MegaScanService {
     private final CategoryRepository categoryRepository;
     private final MovieRepository movieRepository;
 
-    // Prevent concurrent scans
     private final AtomicBoolean scanInProgress = new AtomicBoolean(false);
 
-    // Process timeout in seconds
     private static final int PROCESS_TIMEOUT_SECONDS = 120;
 
     @Scheduled(cron = "${media.mega.scan-cron:0 0 * * * *}")
@@ -82,7 +80,6 @@ public class MegaScanService {
         List<String> errors = new ArrayList<>();
 
         try {
-            // List top-level folders (categories)
             List<MegaEntry> entries = listFolder(rootPath);
 
             for (MegaEntry entry : entries) {
@@ -104,9 +101,8 @@ public class MegaScanService {
                     try {
                         List<MegaEntry> movieEntries = listFolder(categoryPath);
 
-                        // Separate video and image files
                         List<MegaEntry> videoFiles = new ArrayList<>();
-                        Map<String, String> imageFiles = new HashMap<>(); // baseName -> full path
+                        Map<String, String> imageFiles = new HashMap<>();
 
                         for (MegaEntry movieEntry : movieEntries) {
                             if (movieEntry.isDirectory()) continue;
@@ -122,7 +118,6 @@ public class MegaScanService {
                             }
                         }
 
-                        // Process video files and match with thumbnails
                         for (MegaEntry videoEntry : videoFiles) {
                             String moviePath = categoryPath + "/" + videoEntry.name();
 
@@ -134,7 +129,6 @@ public class MegaScanService {
                             String videoBaseName = getBaseName(videoEntry.name()).toLowerCase();
                             String thumbnailPath = imageFiles.get(videoBaseName);
 
-                            // If no exact match, try to find any image in the folder
                             if (thumbnailPath == null && !imageFiles.isEmpty()) {
                                 thumbnailPath = imageFiles.values().iterator().next();
                             }
@@ -159,7 +153,6 @@ public class MegaScanService {
                 }
             }
 
-            // Also process videos in root folder (uncategorized)
             List<MegaEntry> rootVideoFiles = new ArrayList<>();
             Map<String, String> rootImageFiles = new HashMap<>();
 
@@ -269,7 +262,6 @@ public class MegaScanService {
                 throw new RuntimeException("mega-ls failed with exit code: " + exitCode);
             }
         } finally {
-            // Ensure process is always destroyed
             if (process.isAlive()) {
                 process.destroyForcibly();
             }
@@ -279,21 +271,15 @@ public class MegaScanService {
     }
 
     private MegaEntry parseMegaLsLine(String line) {
-        // mega-ls -l output format: FLAGS SIZE DATE NAME
-        // Example: "d--- 0 01Jan2024 12:00:00 FolderName"
-        // Example: "---- 1.5G 01Jan2024 12:00:00 Movie.mp4"
 
         String[] parts = line.trim().split("\\s+", 4);
         if (parts.length < 4) return null;
 
         String flags = parts[0];
         String sizeStr = parts[1];
-        // parts[2] is date, parts[3] is name (we already verified length >= 4)
         String name = parts[3];
 
-        // Handle date+time taking multiple parts
         if (name.matches("\\d{2}:\\d{2}:\\d{2}")) {
-            // This is time, real name is after
             String[] reParts = line.trim().split("\\s+", 5);
             if (reParts.length >= 5) {
                 name = reParts[4];
@@ -373,7 +359,6 @@ public class MegaScanService {
         Integer year = extractYearFromFileName(entry.name());
         String localThumbnailUrl = null;
 
-        // Download thumbnail if available
         if (megaThumbnailPath != null) {
             localThumbnailUrl = downloadThumbnail(megaThumbnailPath, title);
         }
@@ -394,34 +379,26 @@ public class MegaScanService {
     private String downloadThumbnail(String megaPath, String movieTitle) {
         Process process = null;
         try {
-            // Create thumbnails directory
             Path thumbnailsDir = Path.of(properties.getStorage().getPath(), "thumbnails");
             Files.createDirectories(thumbnailsDir);
 
-            // Generate safe filename
             String safeTitle = movieTitle.replaceAll("[^a-zA-Z0-9.-]", "_");
             String extension = getExtension(megaPath);
             String fileName = safeTitle + "_" + System.currentTimeMillis() + extension;
             Path localPath = thumbnailsDir.resolve(fileName);
 
-            // Download from Mega with timeout
             ProcessBuilder pb = new ProcessBuilder("mega-get", megaPath, localPath.toString());
             pb.redirectErrorStream(true);
             process = pb.start();
 
-            // Drain the input stream to prevent process from blocking
             try (BufferedReader reader =
                     new BufferedReader(
                             new InputStreamReader(
                                     process.getInputStream(), StandardCharsets.UTF_8))) {
-                // Consume and discard output
-                // spotless:off
                 @SuppressWarnings("unused")
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    // Just consume the output
                 }
-                // spotless:on
             }
 
             boolean completed = process.waitFor(60, TimeUnit.SECONDS);
@@ -463,7 +440,6 @@ public class MegaScanService {
             name = name.substring(0, lastDot);
         }
 
-        // Remove common patterns like (2023), [1080p], etc.
         name =
                 name.replaceAll("\\[.*?\\]", "")
                         .replaceAll("\\(\\d{4}\\)", "")
@@ -487,7 +463,6 @@ public class MegaScanService {
     }
 
     private Integer extractYearFromFileName(String fileName) {
-        // Look for year pattern (1900-2099)
         Pattern yearPattern = Pattern.compile("(19|20)\\d{2}");
         Matcher matcher = yearPattern.matcher(fileName);
         if (matcher.find()) {

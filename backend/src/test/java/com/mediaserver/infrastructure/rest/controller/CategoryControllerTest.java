@@ -79,11 +79,9 @@ class CategoryControllerTest {
 
     @Test
     void getAllCategories_shouldReturnCategoryList() throws Exception {
-        // Given
         when(getAllCategoriesUseCase.getAllCategories()).thenReturn(List.of(domainCategory));
         when(categoryRestMapper.toResponse(domainCategory)).thenReturn(categoryResponseDto);
 
-        // When & Then
         mockMvc.perform(get("/api/categories"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value("cat-1"))
@@ -95,11 +93,9 @@ class CategoryControllerTest {
 
     @Test
     void getCategory_shouldReturnCategory_whenExists() throws Exception {
-        // Given
         when(getCategoryUseCase.getCategory("cat-1")).thenReturn(domainCategory);
         when(categoryRestMapper.toResponse(domainCategory)).thenReturn(categoryResponseDto);
 
-        // When & Then
         mockMvc.perform(get("/api/categories/cat-1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("cat-1"))
@@ -111,17 +107,14 @@ class CategoryControllerTest {
 
     @Test
     void getCategory_shouldReturn404_whenNotFound() throws Exception {
-        // Given
         when(getCategoryUseCase.getCategory("nonexistent"))
                 .thenThrow(new CategoryNotFoundException("nonexistent"));
 
-        // When & Then
         mockMvc.perform(get("/api/categories/nonexistent")).andExpect(status().isNotFound());
     }
 
     @Test
     void createCategory_shouldReturnCreatedCategory() throws Exception {
-        // Given
         CategoryRequestDTO request =
                 CategoryRequestDTO.builder()
                         .name("Comedy")
@@ -158,7 +151,6 @@ class CategoryControllerTest {
                 .thenReturn(savedCategory);
         when(categoryRestMapper.toResponse(savedCategory)).thenReturn(createdDto);
 
-        // When & Then
         mockMvc.perform(
                         post("/api/categories")
                                 .with(csrf())
@@ -174,11 +166,9 @@ class CategoryControllerTest {
 
     @Test
     void createCategory_shouldReturn400_whenNameMissing() throws Exception {
-        // Given
         CategoryRequestDTO request =
                 CategoryRequestDTO.builder().description("Some description").build();
 
-        // When & Then
         mockMvc.perform(
                         post("/api/categories")
                                 .with(csrf())
@@ -189,7 +179,6 @@ class CategoryControllerTest {
 
     @Test
     void updateCategory_shouldReturnUpdatedCategory() throws Exception {
-        // Given
         CategoryRequestDTO request =
                 CategoryRequestDTO.builder()
                         .name("Updated Action")
@@ -225,7 +214,6 @@ class CategoryControllerTest {
                 .thenReturn(updatedCategory);
         when(categoryRestMapper.toResponse(updatedCategory)).thenReturn(updatedDto);
 
-        // When & Then
         mockMvc.perform(
                         put("/api/categories/cat-1")
                                 .with(csrf())
@@ -239,10 +227,8 @@ class CategoryControllerTest {
 
     @Test
     void deleteCategory_shouldReturn204() throws Exception {
-        // Given
         doNothing().when(deleteCategoryUseCase).deleteCategory("cat-1");
 
-        // When & Then
         mockMvc.perform(delete("/api/categories/cat-1").with(csrf()))
                 .andExpect(status().isNoContent());
 
@@ -251,7 +237,6 @@ class CategoryControllerTest {
 
     @Test
     void getAllCategories_shouldReturnSortedCategories() throws Exception {
-        // Given
         Category category2 = Category.builder().id("cat-2").name("Drama").sortOrder(2).build();
 
         CategoryResponseDTO categoryResponseDto2 =
@@ -267,7 +252,6 @@ class CategoryControllerTest {
         when(categoryRestMapper.toResponse(domainCategory)).thenReturn(categoryResponseDto);
         when(categoryRestMapper.toResponse(category2)).thenReturn(categoryResponseDto2);
 
-        // When & Then
         mockMvc.perform(get("/api/categories"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].sortOrder").value(1))
@@ -276,7 +260,6 @@ class CategoryControllerTest {
 
     @Test
     void createCategory_shouldHandleNullOptionalFields() throws Exception {
-        // Given
         CategoryRequestDTO request = CategoryRequestDTO.builder().name("Minimal Category").build();
 
         CreateCategoryCommand command =
@@ -296,7 +279,6 @@ class CategoryControllerTest {
                 .thenReturn(savedCategory);
         when(categoryRestMapper.toResponse(savedCategory)).thenReturn(createdDto);
 
-        // When & Then
         mockMvc.perform(
                         post("/api/categories")
                                 .with(csrf())

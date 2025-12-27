@@ -41,10 +41,8 @@ public class MegaDownloadService {
     private final DownloadTaskRepository taskRepository;
     private final ApplicationEventPublisher eventPublisher;
 
-    // Lock for task creation to prevent race conditions
     private final ReentrantLock taskCreationLock = new ReentrantLock();
 
-    // Reusable HTTP client for better resource management
     private static final HttpClient HTTP_CLIENT =
             HttpClient.newBuilder()
                     .followRedirects(HttpClient.Redirect.NORMAL)
@@ -190,7 +188,6 @@ public class MegaDownloadService {
 
     @Transactional
     protected DownloadTask createOrUpdateTask(Movie movie, DownloadStatus status) {
-        // Use lock to prevent race conditions when creating/updating tasks
         taskCreationLock.lock();
         try {
             DownloadTask task =

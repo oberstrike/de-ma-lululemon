@@ -74,8 +74,6 @@ class ArchitectureTest {
                             "Application", "Infrastructure", "Config", "Service", "Event", "Dto")
                     .whereLayer("Application")
                     .mayOnlyBeAccessedByLayers("Infrastructure", "Config", "Service")
-                    // Infrastructure DTOs can be accessed by Service/Event for now
-                    // TODO: Consider moving shared DTOs to application layer
                     .whereLayer("Infrastructure")
                     .mayOnlyBeAccessedByLayers("Service", "Event", "Config")
                     .check(importedClasses);

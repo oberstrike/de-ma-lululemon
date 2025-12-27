@@ -56,7 +56,6 @@ public class MovieApplicationService
     private final CurrentUserProvider currentUserProvider;
     private final MediaProperties properties;
 
-    // Thread-safe set to track movies currently being downloaded
     private static final Set<String> activeDownloads = ConcurrentHashMap.newKeySet();
 
     @Override
@@ -105,7 +104,6 @@ public class MovieApplicationService
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now());
 
-        // Set category if provided
         if (command.getCategoryId() != null) {
             Category category =
                     categoryPort
@@ -123,7 +121,6 @@ public class MovieApplicationService
     public Movie updateMovie(String id, UpdateMovieCommand command) {
         Movie movie = moviePort.findById(id).orElseThrow(() -> new MovieNotFoundException(id));
 
-        // Check if mega URL changed, if so reset download status
         boolean megaUrlChanged =
                 command.getMegaUrl() != null && !command.getMegaUrl().equals(movie.getMegaUrl());
 
@@ -146,7 +143,6 @@ public class MovieApplicationService
                         .withCategoryId(newCategoryId)
                         .withUpdatedAt(LocalDateTime.now());
 
-        // If Mega URL changed, reset status and clear local path
         if (megaUrlChanged) {
             updatedMovie =
                     updatedMovie
@@ -175,7 +171,6 @@ public class MovieApplicationService
 
     @Override
     public void startDownload(String movieId) {
-        // Use atomic operation to prevent concurrent downloads of the same movie
         if (!activeDownloads.add(movieId)) {
             throw new IllegalStateException("Download already in progress for movie: " + movieId);
         }
@@ -197,13 +192,10 @@ public class MovieApplicationService
             Movie downloadingMovie = movie.withStatus(MovieStatus.DOWNLOADING);
             moviePort.save(downloadingMovie);
 
-            // Start async download - the download service should call removeFromActiveDownloads
-            // when done
             downloadServicePort
                     .downloadMovie(downloadingMovie)
                     .whenComplete((result, error) -> activeDownloads.remove(movieId));
         } catch (Exception e) {
-            // Ensure we remove from active downloads on any error
             activeDownloads.remove(movieId);
             throw e;
         }
@@ -265,7 +257,6 @@ public class MovieApplicationService
 
     @Override
     public int clearAllCache() {
-        // Only clear non-favorite movies
         List<Movie> cachedMovies = moviePort.findCachedNonFavorites();
         int cleared = 0;
 
@@ -297,7 +288,6 @@ public class MovieApplicationService
         return cleared;
     }
 
-    // FavoriteMovieUseCase implementation
 
     @Override
     public Movie addFavorite(String movieId) {

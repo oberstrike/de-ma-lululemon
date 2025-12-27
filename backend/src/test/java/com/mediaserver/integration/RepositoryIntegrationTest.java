@@ -49,7 +49,6 @@ class RepositoryIntegrationTest {
 
     @Test
     void shouldSaveAndRetrieveMovie() {
-        // Given
         Movie movie =
                 Movie.builder()
                         .title("Integration Test Movie")
@@ -59,14 +58,11 @@ class RepositoryIntegrationTest {
                         .status(MovieStatus.PENDING)
                         .build();
 
-        // When
         Movie savedMovie = movieRepository.save(movie);
 
-        // Then
         assertThat(savedMovie.getId()).isNotNull();
         assertThat(savedMovie.getTitle()).isEqualTo("Integration Test Movie");
 
-        // Verify it can be retrieved
         Optional<Movie> retrieved = movieRepository.findById(savedMovie.getId());
         assertThat(retrieved).isPresent();
         assertThat(retrieved.get().getTitle()).isEqualTo("Integration Test Movie");
@@ -74,7 +70,6 @@ class RepositoryIntegrationTest {
 
     @Test
     void shouldFindMoviesByStatus() {
-        // Given
         Movie pendingMovie =
                 Movie.builder()
                         .title("Pending Movie")
@@ -93,17 +88,14 @@ class RepositoryIntegrationTest {
         movieRepository.save(pendingMovie);
         movieRepository.save(readyMovie);
 
-        // When
         List<Movie> readyMovies = movieRepository.findByStatus(MovieStatus.READY);
 
-        // Then
         assertThat(readyMovies).hasSize(1);
         assertThat(readyMovies.get(0).getTitle()).isEqualTo("Ready Movie");
     }
 
     @Test
     void shouldFindCachedMovies() {
-        // Given
         Movie cachedMovie =
                 Movie.builder()
                         .title("Cached Movie")
@@ -122,10 +114,8 @@ class RepositoryIntegrationTest {
         movieRepository.save(cachedMovie);
         movieRepository.save(uncachedMovie);
 
-        // When
         List<Movie> cachedMovies = movieRepository.findCachedMovies();
 
-        // Then
         assertThat(cachedMovies).hasSize(1);
         assertThat(cachedMovies.get(0).getTitle()).isEqualTo("Cached Movie");
     }
@@ -163,7 +153,6 @@ class RepositoryIntegrationTest {
         String userId = UUID.randomUUID().toString();
         String otherUserId = UUID.randomUUID().toString();
 
-        // Create users with proper columns
         jdbcTemplate.update(
                 "INSERT INTO users (id, username, email) VALUES (?, ?, ?)",
                 userId,
@@ -203,7 +192,6 @@ class RepositoryIntegrationTest {
         movieRepository.save(otherFavorite);
         movieRepository.save(nonFavorite);
 
-        // Add favorites via the join table
         movieRepository.addFavorite(userFavorite.getId(), userId);
         movieRepository.addFavorite(otherFavorite.getId(), otherUserId);
 
@@ -215,7 +203,6 @@ class RepositoryIntegrationTest {
 
     @Test
     void shouldCalculateTotalCacheSize() {
-        // Given
         Movie movie1 =
                 Movie.builder()
                         .title("Movie 1")
@@ -237,16 +224,13 @@ class RepositoryIntegrationTest {
         movieRepository.save(movie1);
         movieRepository.save(movie2);
 
-        // When
         long totalSize = movieRepository.getTotalCacheSize();
 
-        // Then
         assertThat(totalSize).isEqualTo(3000L);
     }
 
     @Test
     void shouldSearchMoviesByTitle() {
-        // Given
         Movie actionMovie =
                 Movie.builder()
                         .title("Action Hero")
@@ -264,10 +248,8 @@ class RepositoryIntegrationTest {
         movieRepository.save(actionMovie);
         movieRepository.save(comedyMovie);
 
-        // When
         List<Movie> searchResults = movieRepository.search("action");
 
-        // Then
         assertThat(searchResults).hasSize(1);
         assertThat(searchResults.get(0).getTitle()).isEqualTo("Action Hero");
     }

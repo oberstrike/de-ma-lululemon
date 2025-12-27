@@ -65,7 +65,6 @@ public class VideoStreamingService {
             String rangeSpec = rangeHeader.substring(6);
             String[] ranges = rangeSpec.split("-", 2);
 
-            // Validate range format
             if (ranges.length == 0 || ranges[0].isEmpty()) {
                 log.warn("Invalid range header format: {}", rangeHeader);
                 return new HttpRange(0, fileSize - 1, fileSize);
@@ -77,7 +76,6 @@ public class VideoStreamingService {
                             ? Long.parseLong(ranges[1].trim())
                             : fileSize - 1;
 
-            // Validate range values
             if (start < 0 || start >= fileSize || end < start) {
                 log.warn(
                         "Invalid range values: start={}, end={}, fileSize={}",
@@ -109,10 +107,8 @@ public class VideoStreamingService {
             InputStream channelStream = Channels.newInputStream(file.getChannel());
             InputStream boundedStream = new BoundedInputStream(channelStream, range.length);
 
-            // Capture the file reference for the wrapper
             final RandomAccessFile fileRef = file;
 
-            // Wrap to ensure RandomAccessFile is closed when stream is closed
             return new InputStream() {
                 private boolean closed = false;
 
@@ -148,7 +144,6 @@ public class VideoStreamingService {
                 }
             };
         } catch (IOException e) {
-            // Ensure file is closed if exception occurs during setup
             if (file != null) {
                 try {
                     file.close();

@@ -40,7 +40,6 @@ public class MovieGroupingService implements GetMoviesGroupedUseCase {
 
     @Override
     public List<MovieGroup> getMoviesGrouped(String search) {
-        // Get all movies, optionally filtered by search
         String userId = currentUserProvider.getCurrentUserId();
         List<Movie> allMovies =
                 (search != null && !search.isBlank())
@@ -48,7 +47,6 @@ public class MovieGroupingService implements GetMoviesGroupedUseCase {
                         : moviePort.findAll();
         allMovies = moviePort.applyFavoriteStatus(allMovies, userId);
 
-        // Get all categories for name lookup
         Map<String, Category> categoriesById =
                 categoryPort.findAllOrderedBySortOrder().stream()
                         .collect(
@@ -58,7 +56,6 @@ public class MovieGroupingService implements GetMoviesGroupedUseCase {
         List<MovieGroup> groups = new ArrayList<>();
         int sortOrder = 0;
 
-        // 1. Favorites group (special)
         List<Movie> favorites = allMovies.stream().filter(Movie::isFavorite).toList();
         if (!favorites.isEmpty()) {
             groups.add(
@@ -70,7 +67,6 @@ public class MovieGroupingService implements GetMoviesGroupedUseCase {
                             .build());
         }
 
-        // 2. Cached/Downloaded group (special)
         List<Movie> cached = allMovies.stream().filter(Movie::isCached).toList();
         if (!cached.isEmpty()) {
             groups.add(
@@ -82,13 +78,11 @@ public class MovieGroupingService implements GetMoviesGroupedUseCase {
                             .build());
         }
 
-        // 3. Group by category
         Map<String, List<Movie>> moviesByCategory =
                 allMovies.stream()
                         .filter(m -> m.getCategoryId() != null)
                         .collect(Collectors.groupingBy(Movie::getCategoryId));
 
-        // Add category groups in sort order
         for (Category category : categoriesById.values()) {
             List<Movie> categoryMovies = moviesByCategory.get(category.getId());
             if (categoryMovies != null && !categoryMovies.isEmpty()) {
@@ -103,7 +97,6 @@ public class MovieGroupingService implements GetMoviesGroupedUseCase {
             }
         }
 
-        // 4. Uncategorized movies
         List<Movie> uncategorized =
                 allMovies.stream().filter(m -> m.getCategoryId() == null).toList();
         if (!uncategorized.isEmpty()) {
