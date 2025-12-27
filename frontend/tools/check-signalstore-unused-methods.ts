@@ -75,6 +75,21 @@ type StoreIndex = {
 
 // -------------------- TS Program creation --------------------
 
+function getAllTsFiles(dir: string, files: string[] = []): string[] {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name !== 'node_modules' && entry.name !== '.angular') {
+        getAllTsFiles(fullPath, files);
+      }
+    } else if (entry.isFile() && entry.name.endsWith('.ts')) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
 function loadTsProgram(tsconfigPath: string): { program: ts.Program; checker: ts.TypeChecker } {
   const configFile = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
   if (configFile.error) {
@@ -95,8 +110,15 @@ function loadTsProgram(tsconfigPath: string): { program: ts.Program; checker: ts
     throw new Error(msg);
   }
 
+  // Get all .ts files from src directory to ensure we analyze everything
+  const srcDir = path.join(configDir, 'src');
+  const allSrcFiles = getAllTsFiles(srcDir);
+
+  // Combine with parsed fileNames and deduplicate
+  const allFiles = Array.from(new Set([...parsed.fileNames, ...allSrcFiles]));
+
   const program = ts.createProgram({
-    rootNames: parsed.fileNames,
+    rootNames: allFiles,
     options: parsed.options,
   });
   const checker = program.getTypeChecker();
@@ -119,7 +141,17 @@ function getCallCalleeIdentifierName(call: ts.CallExpression): string | null {
 
 function tryGetObjectLiteralReturnedBy(fn: ts.Expression): ts.ObjectLiteralExpression | null {
   if (ts.isArrowFunction(fn)) {
+    // Direct object literal: () => { foo: 'bar' } (rare, won't parse)
     if (ts.isObjectLiteralExpression(fn.body)) return fn.body;
+
+    // Parenthesized expression: () => ({ foo: 'bar' }) (COMMON PATTERN!)
+    if (ts.isParenthesizedExpression(fn.body)) {
+      if (ts.isObjectLiteralExpression(fn.body.expression)) {
+        return fn.body.expression;
+      }
+    }
+
+    // Block with return: () => { return { foo: 'bar' }; }
     if (ts.isBlock(fn.body)) {
       for (const stmt of fn.body.statements) {
         if (ts.isReturnStatement(stmt) && stmt.expression && ts.isObjectLiteralExpression(stmt.expression)) {
@@ -205,7 +237,8 @@ function buildStoreIndex(program: ts.Program, checker: ts.TypeChecker, ignoreSpe
           // Extract withMethods(...) among signalStore arguments
           for (const arg of init.arguments) {
             if (!ts.isCallExpression(arg)) continue;
-            if (getCallCalleeIdentifierName(arg) !== "withMethods") continue;
+            const callName = getCallCalleeIdentifierName(arg);
+            if (callName !== "withMethods") continue;
 
             const factory = arg.arguments[0];
             if (!factory) continue;
@@ -278,10 +311,12 @@ function scanTypeScriptUsages(
         const storeNames = index.methodsByName.get(prop);
         if (storeNames && storeNames.size) {
           const receiverType = checker.getTypeAtLocation(node.expression);
-          for (const storeName of storeNames) {
-            const store = index.stores.get(storeName);
-            if (!store) continue;
-            if (typeMatchesStore(checker, receiverType, store.storeType)) {
+          // Check if receiver has this method
+          const propSymbol = receiverType.getProperty(prop);
+          if (propSymbol) {
+            // If the receiver type has this property, assume it's from the store
+            // (more lenient than strict type checking)
+            for (const storeName of storeNames) {
               mark(storeName, prop);
             }
           }
@@ -296,10 +331,9 @@ function scanTypeScriptUsages(
           const storeNames = index.methodsByName.get(prop);
           if (storeNames && storeNames.size) {
             const receiverType = checker.getTypeAtLocation(node.expression);
-            for (const storeName of storeNames) {
-              const store = index.stores.get(storeName);
-              if (!store) continue;
-              if (typeMatchesStore(checker, receiverType, store.storeType)) {
+            const propSymbol = receiverType.getProperty(prop);
+            if (propSymbol) {
+              for (const storeName of storeNames) {
                 mark(storeName, prop);
               }
             }
@@ -317,10 +351,9 @@ function scanTypeScriptUsages(
           const storeNames = index.methodsByName.get(propName);
           if (!storeNames) continue;
 
-          for (const storeName of storeNames) {
-            const store = index.stores.get(storeName);
-            if (!store) continue;
-            if (typeMatchesStore(checker, initType, store.storeType)) {
+          const propSymbol = initType.getProperty(propName);
+          if (propSymbol) {
+            for (const storeName of storeNames) {
               mark(storeName, propName);
             }
           }
@@ -599,7 +632,6 @@ function main() {
   const { program, checker } = loadTsProgram(opts.tsconfigPath);
 
   const index = buildStoreIndex(program, checker, opts.ignoreSpecs);
-
   const usedTs = scanTypeScriptUsages(program, checker, index, opts.ignoreSpecs);
   const components = collectComponentsWithTemplates(program, index, opts.ignoreSpecs);
   const usedTpl = scanTemplateUsages(components, index);

@@ -18,7 +18,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:all": "npm run format:check && npm run lint:all",
-    "check:signalstore-methods": "tsx tools/check-signalstore-unused-methods.ts --tsconfig tsconfig.json --ignore-specs",
+    "check:signalstore-methods": "tsx tools/check-signalstore-unused-methods.ts --tsconfig tsconfig.app.json --ignore-specs",
     "prepare": "cd .. && husky || true"
   },
   "lint-staged": {
