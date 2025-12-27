@@ -4,111 +4,104 @@ This directory contains custom ESLint rules specific to this project.
 
 ## Available Rules
 
-### `signal-store-method-return-type`
+### `signal-store-no-unused-methods`
 
-Enforces explicit return type annotations on all Signal Store methods.
+Detects and reports unused methods in Signal Store `withMethods()` blocks.
 
-**Rule Type:** `problem`
+**Rule Type:** `suggestion`
 
-**Severity:** `error`
+**Severity:** `warn`
 
 #### What it does
 
-This rule ensures that all methods defined in `withMethods()` have explicit return type annotations. This is required for:
-- Type safety and better IDE support
-- Clear API contracts
-- Preventing accidental return type changes
-- Following the project's coding standards
+This rule detects methods defined in `withMethods()` that are never called or used anywhere in the codebase. This helps identify dead code and ensures all store methods serve a purpose.
+
+The rule checks for method usage through:
+- Direct calls: `store.methodName()`
+- Optional chaining: `store?.methodName()`
+- Destructured usage: `const { methodName } = store`
+- Template usage in components
 
 #### Why?
 
-Explicit return types on store methods provide several benefits:
+Removing unused methods provides several benefits:
 
-1. **Type Safety**: Prevents accidental breaking changes to method signatures
-2. **Documentation**: Return types serve as inline documentation
-3. **IDE Support**: Better autocomplete and type checking
-4. **Consistency**: All store methods follow the same pattern
-5. **Refactoring**: Safer refactoring with compile-time guarantees
+1. **Code Cleanliness**: Eliminates dead code from your Signal Stores
+2. **Maintainability**: Reduces confusion about which methods are actually used
+3. **Bundle Size**: Smaller production bundles by removing unused code
+4. **Clarity**: Makes it clear which methods are part of the public API
+5. **Refactoring**: Helps identify methods that can be safely removed during refactoring
 
 #### Examples
 
-##### ✅ Valid Usage
+##### ✅ Valid Usage (Methods are used)
 
 ```typescript
 import { signalStore, withMethods } from '@ngrx/signals';
 
 export const MovieStore = signalStore(
   withMethods((store) => ({
-    // ✅ Valid: void return type
-    loadMovies(): void {
-      console.log('loading');
-    },
-
-    // ✅ Valid: async with Promise return type
-    async fetchData(): Promise<void> {
-      await fetch('/api');
-    },
-
-    // ✅ Valid: method with parameter and return type
-    selectMovie(id: string): void {
-      patchState(store, { selectedId: id });
-    },
-
-    // ✅ Valid: arrow function with return type
-    getCount: (): number => {
-      return 42;
-    },
-  }))
-);
-```
-
-##### ❌ Invalid Usage
-
-```typescript
-import { signalStore, withMethods } from '@ngrx/signals';
-
-export const MovieStore = signalStore(
-  withMethods((store) => ({
-    // ❌ Error: missing return type
     loadMovies() {
       console.log('loading');
     },
+  }))
+);
 
-    // ❌ Error: async method without Promise return type
-    async fetchData() {
-      await fetch('/api');
-    },
+// Method is used
+const store = inject(MovieStore);
+store.loadMovies();
+```
 
-    // ❌ Error: arrow function without return type
-    getCount: () => {
-      return 42;
+```typescript
+// Destructured usage
+const { loadMovies } = inject(MovieStore);
+loadMovies();
+```
+
+##### ❌ Invalid Usage (Methods are unused)
+
+```typescript
+import { signalStore, withMethods } from '@ngrx/signals';
+
+export const MovieStore = signalStore(
+  withMethods((store) => ({
+    // ❌ Warning: This method is never called
+    unusedMethod() {
+      console.log('never used');
     },
   }))
 );
+
+const store = inject(MovieStore);
+// unusedMethod is never called
 ```
 
 #### Error Messages
 
-- `missingReturnType`: Signal Store method "{{methodName}}" must have an explicit return type. Add : ReturnType after the parameter list.
+- `unusedMethod`: Signal Store method "{{methodName}}" is defined but never used. Remove it or use it.
 
 #### Configuration
 
-This rule has no configuration options. It's enabled by default:
+This rule is enabled by default as a warning:
 
 ```javascript
 rules: {
-  'local-rules/signal-store-method-return-type': 'error',
+  'local-rules/signal-store-no-unused-methods': 'warn',
 }
 ```
 
 #### When to disable
 
-This rule should generally not be disabled. However, if you need to disable it for a specific file:
+You may want to disable this rule if:
+- You're building a library and methods are intended for external use
+- You're gradually migrating code and plan to use the method later
 
 ```typescript
-/* eslint-disable local-rules/signal-store-method-return-type */
+/* eslint-disable local-rules/signal-store-no-unused-methods */
 export const MyStore = signalStore(
-  withMethods(() => ({ method() { } }))
+  withMethods(() => ({
+    futureMethod() { } // Will be used later
+  }))
 );
 ```
 
@@ -238,30 +231,27 @@ The custom rules are tested using ESLint's built-in `RuleTester`. Tests ensure t
 npm run test:eslint-rules
 
 # Or run individual test files
-node eslint-local-rules/rules/signal-store-method-return-type.test.js
+node eslint-local-rules/rules/signal-store-no-unused-methods.test.js
 node eslint-local-rules/rules/create-effect-in-service.test.js
 ```
 
 ### Test Coverage
 
-#### `signal-store-method-return-type` rule tests:
+#### `signal-store-no-unused-methods` rule tests:
 
 **Valid usage (6 tests):**
-- ✅ All methods have explicit return types
-- ✅ Arrow functions with return types
-- ✅ Methods with complex return types (union, array, record)
-- ✅ withMethods with return statement
+- ✅ Method called directly on store instance
+- ✅ Method called with optional chaining
+- ✅ Method destructured from store
+- ✅ Multiple methods all used
+- ✅ Method used in component template pattern
 - ✅ Empty withMethods
-- ✅ withMethods with non-function properties
 
-**Invalid usage (7 tests):**
-- ❌ Method without return type
-- ❌ Async method without return type
-- ❌ Arrow function without return type
-- ❌ Multiple methods missing return types
-- ❌ Mixed (some with, some without return types)
-- ❌ withMethods with return statement missing types
-- ❌ Arrow function with implicit return
+**Invalid usage (4 tests):**
+- ❌ Method defined but never used
+- ❌ Multiple unused methods
+- ❌ Some methods used, some unused
+- ❌ Method with similar name but not called
 
 #### `create-effect-in-service` rule tests:
 
