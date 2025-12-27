@@ -1,4 +1,7 @@
 #!/bin/sh
 
-# Run lint-staged in frontend directory
-cd frontend && npx lint-staged
+cd frontend
+
+npx lint-staged
+
+npm run check:signalstore-methods
