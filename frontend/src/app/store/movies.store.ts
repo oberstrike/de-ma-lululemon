@@ -47,10 +47,8 @@ function selectFeaturedMovie(movies: Movie[]): Movie | null {
 export const MoviesStore = signalStore(
   { providedIn: 'root' },
 
-  // Entity management for movies collection
   withEntities<Movie>(),
 
-  // State
   withState<MoviesState>({
     movieGroups: [],
     filter: '',
@@ -59,7 +57,6 @@ export const MoviesStore = signalStore(
   }),
 
   withComputed((state) => ({
-    // Alias for entities
     movies: computed(() => state.entities()),
 
     filteredMovies: computed(() => {
@@ -110,12 +107,10 @@ export const MoviesStore = signalStore(
     },
 
     async startDownload(movieId: string): Promise<void> {
-      // Optimistic update
       patchState(store, updateEntity({ id: movieId, changes: { status: 'DOWNLOADING' as const } }));
       try {
         await firstValueFrom(api.startDownload(movieId));
       } catch (err) {
-        // Revert on error
         patchState(store, updateEntity({ id: movieId, changes: { status: 'PENDING' as const } }));
         patchState(store, {
           error: err instanceof Error ? err.message : 'Failed to start download',
@@ -174,7 +169,6 @@ export const MoviesStore = signalStore(
     },
   })),
 
-  // Lifecycle hooks - auto-load on store initialization
   withHooks({
     onInit(store) {
       void store.loadMovies();
