@@ -25,19 +25,19 @@ import { Toast } from 'primeng/toast';
         }
 
         .p-toast-message-success {
-          background: rgb(34 197 94 / 90%);
+          background: var(--toast-success);
         }
 
         .p-toast-message-info {
-          background: rgb(59 130 246 / 90%);
+          background: var(--toast-info);
         }
 
         .p-toast-message-warn {
-          background: rgb(234 179 8 / 90%);
+          background: var(--toast-warn);
         }
 
         .p-toast-message-error {
-          background: rgb(239 68 68 / 90%);
+          background: var(--toast-error);
         }
       }
     `,

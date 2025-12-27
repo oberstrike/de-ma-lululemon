@@ -24,7 +24,7 @@
     ],
     "color-named": "never",
     "color-hex-length": "long",
-    "custom-property-pattern": "^(primary|bg|text|border|shadow|transition|space|radius)(-[a-z0-9]+)*$",
+    "custom-property-pattern": "^(primary|bg|text|border|shadow|transition|space|radius|toast|overlay|gradient|control|input|nav|btn|card|white|black)(-[a-z0-9]+)*$",
     "declaration-block-no-duplicate-properties": true,
     "declaration-block-no-redundant-longhand-properties": true,
     "shorthand-property-no-redundant-values": true,

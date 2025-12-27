@@ -196,7 +196,7 @@ import { PlayerStore } from '../../store/player.store';
       .player-wrapper {
         position: fixed;
         inset: 0;
-        background: #000;
+        background: var(--black);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -222,7 +222,7 @@ import { PlayerStore } from '../../store/player.store';
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgb(0 0 0 / 90%);
+        background: var(--overlay-dark);
         z-index: 10;
         animation: fade-in var(--transition-default);
       }
@@ -259,7 +259,7 @@ import { PlayerStore } from '../../store/player.store';
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgb(0 0 0 / 90%);
+        background: var(--overlay-dark);
         z-index: 10;
         animation: fade-in var(--transition-default);
       }
@@ -291,7 +291,7 @@ import { PlayerStore } from '../../store/player.store';
         width: 80px;
         height: 80px;
         border-radius: var(--radius-full);
-        background: rgb(229 9 20 / 15%);
+        background: var(--primary-alpha-15);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -325,7 +325,7 @@ import { PlayerStore } from '../../store/player.store';
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgb(0 0 0 / 50%);
+        background: var(--overlay-medium);
         z-index: 5;
 
         :host ::ng-deep .p-progress-spinner {
@@ -345,7 +345,11 @@ import { PlayerStore } from '../../store/player.store';
         left: 0;
         right: 0;
         padding: var(--space-lg) var(--space-xl);
-        background: linear-gradient(transparent, rgb(0 0 0 / 70%) 30%, rgb(0 0 0 / 95%));
+        background: linear-gradient(
+          transparent,
+          var(--overlay-dark-70) 30%,
+          var(--overlay-dark-95)
+        );
         opacity: 0;
         transform: translateY(10px);
         transition:
@@ -361,7 +365,7 @@ import { PlayerStore } from '../../store/player.store';
       /* Progress Bar */
       .progress-container {
         height: 5px;
-        background: rgb(255 255 255 / 15%);
+        background: var(--white-15);
         border-radius: var(--radius-full);
         cursor: pointer;
         position: relative;
@@ -381,7 +385,7 @@ import { PlayerStore } from '../../store/player.store';
       .buffered {
         position: absolute;
         height: 100%;
-        background: rgb(255 255 255 / 25%);
+        background: var(--white-25);
         border-radius: var(--radius-full);
         transition: width 0.1s linear;
       }
@@ -405,7 +409,7 @@ import { PlayerStore } from '../../store/player.store';
         transform: translateX(-50%) translateY(-50%) scale(0);
         opacity: 0;
         transition: all var(--transition-fast);
-        box-shadow: 0 2px 8px rgb(0 0 0 / 50%);
+        box-shadow: 0 2px 8px var(--overlay-medium-50);
       }
 
       /* Controls Row */
@@ -437,7 +441,7 @@ import { PlayerStore } from '../../store/player.store';
           width: 100px;
 
           .p-slider {
-            background: rgb(255 255 255 / 20%);
+            background: var(--white-20);
           }
 
           .p-slider-range {
@@ -449,7 +453,7 @@ import { PlayerStore } from '../../store/player.store';
             height: 14px;
             background: var(--text-primary);
             border: none;
-            box-shadow: 0 2px 4px rgb(0 0 0 / 30%);
+            box-shadow: 0 2px 4px var(--overlay-light-30);
             transition: transform var(--transition-fast);
 
             &:hover {
@@ -475,7 +479,7 @@ import { PlayerStore } from '../../store/player.store';
         transition: all var(--transition-fast);
 
         &:hover {
-          background: rgb(255 255 255 / 15%) !important;
+          background: var(--white-15) !important;
           transform: scale(1.1);
         }
 

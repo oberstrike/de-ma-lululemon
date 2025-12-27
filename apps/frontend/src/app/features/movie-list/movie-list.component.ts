@@ -269,14 +269,14 @@ import { MoviesStore } from '../../store/movies.store';
         justify-content: space-between;
         align-items: center;
         padding: var(--space-md) var(--space-2xl);
-        background: linear-gradient(180deg, rgb(0 0 0 / 90%) 0%, transparent 100%);
+        background: linear-gradient(180deg, var(--overlay-dark-90) 0%, transparent 100%);
         transition:
           background var(--transition-default),
           backdrop-filter var(--transition-default);
       }
 
       .nav-bar.scrolled {
-        background: rgb(10 10 10 / 95%);
+        background: var(--nav-gradient-scrolled);
         backdrop-filter: blur(20px);
         border-bottom: 1px solid var(--border-subtle);
       }
@@ -298,7 +298,7 @@ import { MoviesStore } from '../../store/movies.store';
 
       .search-field {
         :host ::ng-deep input {
-          background: rgb(0 0 0 / 60%);
+          background: var(--input-bg);
           border: 1px solid var(--border-default);
           color: var(--text-primary);
           width: 280px;
@@ -316,7 +316,7 @@ import { MoviesStore } from '../../store/movies.store';
 
           &:focus {
             border-color: var(--text-primary);
-            background: rgb(0 0 0 / 80%);
+            background: var(--input-bg-focus);
             width: 320px;
           }
         }
@@ -390,10 +390,10 @@ import { MoviesStore } from '../../store/movies.store';
         background: linear-gradient(
           0deg,
           var(--bg-secondary) 0%,
-          rgb(20 20 20 / 80%) 20%,
-          rgb(20 20 20 / 40%) 40%,
-          rgb(20 20 20 / 20%) 60%,
-          rgb(20 20 20 / 40%) 100%
+          var(--gradient-fade) 20%,
+          var(--gradient-subtle) 40%,
+          var(--overlay-light) 60%,
+          var(--gradient-subtle) 100%
         );
       }
 
@@ -407,7 +407,7 @@ import { MoviesStore } from '../../store/movies.store';
         font-size: 3.5rem;
         font-weight: 700;
         margin: 0 0 var(--space-md);
-        text-shadow: 2px 2px 8px rgb(0 0 0 / 80%);
+        text-shadow: 2px 2px 8px var(--overlay-dark);
         letter-spacing: -0.5px;
         line-height: 1.1;
       }
@@ -416,12 +416,12 @@ import { MoviesStore } from '../../store/movies.store';
         font-size: 1.1rem;
         line-height: 1.6;
         margin: 0 0 var(--space-md);
-        color: rgb(255 255 255 / 90%);
+        color: var(--text-bright);
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        text-shadow: 1px 1px 4px rgb(0 0 0 / 80%);
+        text-shadow: 1px 1px 4px var(--overlay-dark);
       }
 
       .hero-meta {
@@ -463,13 +463,13 @@ import { MoviesStore } from '../../store/movies.store';
         }
 
         &:hover {
-          background: rgb(255 255 255 / 85%) !important;
+          background: var(--white-85) !important;
           transform: scale(1.05);
         }
       }
 
       .info-btn {
-        background: rgb(109 109 110 / 70%) !important;
+        background: var(--control-bg) !important;
         color: var(--text-primary) !important;
         border: none !important;
         font-weight: 600;
@@ -483,7 +483,7 @@ import { MoviesStore } from '../../store/movies.store';
         }
 
         &:hover {
-          background: rgb(109 109 110 / 50%) !important;
+          background: var(--control-bg-hover) !important;
           transform: scale(1.05);
         }
       }
@@ -505,7 +505,7 @@ import { MoviesStore } from '../../store/movies.store';
         font-size: 1.4rem;
         font-weight: 600;
         margin: 0 0 0.75rem;
-        color: #e5e5e5;
+        color: var(--text-secondary);
       }
 
       .row-wrapper {
@@ -519,7 +519,7 @@ import { MoviesStore } from '../../store/movies.store';
         top: 0;
         bottom: 0;
         width: 3rem;
-        background: rgb(20 20 20 / 70%);
+        background: var(--btn-bg-hover);
         border: none;
         color: var(--text-primary);
         cursor: pointer;
@@ -532,7 +532,7 @@ import { MoviesStore } from '../../store/movies.store';
         font-size: 1.5rem;
 
         &:hover {
-          background: rgb(20 20 20 / 90%);
+          background: var(--btn-bg-active);
         }
 
         &:focus-visible {
@@ -662,9 +662,9 @@ import { MoviesStore } from '../../store/movies.store';
         inset: 0;
         background: linear-gradient(
           0deg,
-          rgb(10 10 10 / 98%) 0%,
-          rgb(10 10 10 / 85%) 40%,
-          rgb(10 10 10 / 40%) 70%,
+          var(--card-overlay-bottom) 0%,
+          var(--overlay-card-light) 40%,
+          var(--overlay-light) 70%,
           transparent 100%
         );
         opacity: 0;
@@ -693,7 +693,7 @@ import { MoviesStore } from '../../store/movies.store';
         height: 42px;
         border-radius: var(--radius-full);
         border: 2px solid var(--text-primary);
-        background: rgb(20 20 20 / 90%);
+        background: var(--btn-bg-active);
         color: var(--text-primary);
         cursor: pointer;
         display: flex;
