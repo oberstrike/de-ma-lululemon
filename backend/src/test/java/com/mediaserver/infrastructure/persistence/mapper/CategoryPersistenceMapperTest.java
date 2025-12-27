@@ -70,11 +70,7 @@ class CategoryPersistenceMapperTest {
     @Test
     void toDomain_shouldNotIncludeMoviesList() {
         CategoryJpaEntity categoryWithMovies =
-                CategoryJpaEntity.builder()
-                        .id("cat-1")
-                        .name("Action")
-                        .movies(List.of())
-                        .build();
+                CategoryJpaEntity.builder().id("cat-1").name("Action").movies(List.of()).build();
 
         Category result = categoryPersistenceMapper.toDomain(categoryWithMovies);
 

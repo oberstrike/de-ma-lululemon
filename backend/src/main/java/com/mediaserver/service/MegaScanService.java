@@ -397,8 +397,7 @@ public class MegaScanService {
                                     process.getInputStream(), StandardCharsets.UTF_8))) {
                 @SuppressWarnings("unused")
                 String line;
-                while ((line = reader.readLine()) != null) {
-                }
+                while ((line = reader.readLine()) != null) {}
             }
 
             boolean completed = process.waitFor(60, TimeUnit.SECONDS);

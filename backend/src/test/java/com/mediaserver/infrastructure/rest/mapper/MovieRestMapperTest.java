@@ -59,7 +59,6 @@ class MovieRestMapperTest {
                         .build();
     }
 
-
     @Test
     void toResponse_shouldMapAllBasicFields() {
         MovieResponseDTO result = movieRestMapper.toResponse(movie);
@@ -178,7 +177,6 @@ class MovieRestMapperTest {
         assertThat(result.getFileSize()).isEqualTo(5L * 1024 * 1024 * 1024);
     }
 
-
     @Test
     void toCreateCommand_shouldMapAllFields() {
         CreateMovieCommand result = movieRestMapper.toCreateCommand(requestDto);
@@ -231,7 +229,6 @@ class MovieRestMapperTest {
         assertThat(result.getThumbnailUrl()).isEqualTo("");
         assertThat(result.getCategoryId()).isEqualTo("");
     }
-
 
     @Test
     void toUpdateCommand_shouldMapAllFieldsIncludingId() {

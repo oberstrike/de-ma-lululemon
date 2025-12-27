@@ -288,7 +288,6 @@ public class MovieApplicationService
         return cleared;
     }
 
-
     @Override
     public Movie addFavorite(String movieId) {
         String userId = currentUserProvider.getCurrentUserId();
