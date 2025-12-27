@@ -5,6 +5,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { definePreset } from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
+import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 
 import { AppComponent } from './app/app.component';
@@ -34,6 +35,7 @@ bootstrapApplication(AppComponent, {
     provideRouter(routes, withViewTransitions()),
     provideHttpClient(withFetch()),
     provideAnimations(),
+    MessageService,
     providePrimeNG({
       theme: {
         preset: MediaPreset,
