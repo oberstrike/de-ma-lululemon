@@ -221,6 +221,29 @@ Knip finds unused files, dependencies, and exports in JavaScript and TypeScript 
 - ✅ Unused class members and enum members
 - ✅ Duplicate exports
 
+#### ⚠️ Knip Limitations with Signal Store Methods
+
+**Important**: While Knip can detect unused class members in traditional Angular components and services, it **cannot detect unused methods within Signal Store `withMethods()` blocks**.
+
+**Why?** Methods in `withMethods()` are defined as properties in an object literal returned by a function:
+
+```typescript
+withMethods((store) => ({
+  usedMethod() { },      // Knip cannot tell if this is used
+  unusedMethod() { },    // Knip cannot detect this is unused
+}))
+```
+
+**Testing Results:**
+- ✅ **Detects**: Unused class members in Components, Services, Directives
+- ❌ **Cannot detect**: Unused methods in Signal Store `withMethods()` blocks
+- ✅ **Detects**: Entire store file if unused
+- ✅ **Detects**: Exported store if never imported
+
+**Workaround**: Manually review Signal Store methods or use TypeScript's `noUnusedLocals` compiler option (though it also has limitations with object methods).
+
+**Bottom Line**: For Signal Store methods specifically, there is currently **no automated tool** that can reliably detect unused methods. Manual code review and testing remain the best approach.
+
 #### Installation
 
 Knip works out of the box without installation:
@@ -298,19 +321,32 @@ Create a `knip.json` file to customize Knip's behavior:
 - Knip is **faster** and more accurate
 - Knip works with **modern tooling** (Vite, Next.js, Angular, etc.)
 
-### Comparison: ESLint Rule vs Knip
+### Comparison: ESLint Rule vs Knip vs Manual Review
 
-| Feature | ESLint Custom Rule | Knip |
-|---------|-------------------|------|
-| Cross-file analysis | ❌ No | ✅ Yes |
-| Detects unused exports | ⚠️ False positives | ✅ Accurate |
-| Detects unused files | ❌ No | ✅ Yes |
-| Detects unused dependencies | ❌ No | ✅ Yes |
-| Real-time feedback | ✅ Yes (on save) | ⚠️ On-demand |
-| CI/CD integration | ✅ Easy | ✅ Easy |
-| Setup complexity | 🔴 High | 🟢 Low |
+| Feature | ESLint Custom Rule | Knip | Manual Review |
+|---------|-------------------|------|---------------|
+| Cross-file analysis | ❌ No | ✅ Yes | ✅ Yes |
+| Detects unused exports | ⚠️ False positives | ✅ Accurate | ✅ Accurate |
+| Detects unused files | ❌ No | ✅ Yes | ✅ Yes |
+| Detects unused dependencies | ❌ No | ✅ Yes | ⚠️ Manual |
+| **Signal Store methods** | ⚠️ False positives | ❌ Cannot detect | ✅ Can detect |
+| Detects unused class members | ❌ No | ✅ Yes | ✅ Yes |
+| Real-time feedback | ✅ Yes (on save) | ⚠️ On-demand | ❌ No |
+| CI/CD integration | ✅ Easy | ✅ Easy | ❌ Difficult |
+| Setup complexity | 🔴 High | 🟢 Low | 🟢 None |
+| Accuracy | 🔴 Low (false +) | 🟢 High | 🟢 Perfect |
 
-**Conclusion**: Use Knip for unused code detection. ESLint is excellent for code style and patterns, but cross-file analysis requires specialized tooling.
+**Conclusion**:
+- **For general unused code detection**: Use Knip (detects unused exports, files, dependencies, class members)
+- **For Signal Store methods specifically**: Manual code review and comprehensive testing
+- **For code style and patterns**: Use ESLint
+
+There is currently **no automated solution** for detecting unused Signal Store methods. The combination of:
+1. Knip for general dead code
+2. Manual review for Signal Store methods
+3. Comprehensive test coverage
+
+...provides the best approach for maintaining clean code.
 
 ## References
 
