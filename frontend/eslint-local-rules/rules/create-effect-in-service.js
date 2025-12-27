@@ -100,7 +100,7 @@ module.exports = {
     }
 
     /**
-     * Check if createEffect is inside a method/function body
+     * Check if createEffect is inside a method/function body or improperly wrapped
      * @param {import('eslint').Rule.Node[]} ancestors
      * @param {import('eslint').Rule.Node} classNode
      * @returns {boolean}
@@ -120,19 +120,37 @@ module.exports = {
         }
 
         // Check if we're inside a function expression/arrow function
-        // that's not the direct property initializer
         if (
           ancestor.type === 'FunctionExpression' ||
           ancestor.type === 'ArrowFunctionExpression'
         ) {
-          // If the parent is a PropertyDefinition, it's a property initializer (allowed)
           const parentIndex = i - 1;
-          if (
-            parentIndex >= 0 &&
-            ancestors[parentIndex].type === 'PropertyDefinition'
-          ) {
+          const parent = parentIndex >= 0 ? ancestors[parentIndex] : null;
+
+          // If parent is PropertyDefinition, check if the function is the DIRECT value
+          if (parent && parent.type === 'PropertyDefinition') {
+            // If the arrow function's body contains createEffect, it's wrapped (INVALID)
+            // Valid:   load$ = createEffect(...)
+            // Invalid: load$ = () => createEffect(...)
+            //
+            // We detect this by checking if there's a CallExpression between
+            // the PropertyDefinition and createEffect, which means createEffect
+            // is inside the arrow function body, not the direct property value
+            const grandparentIndex = i - 2;
+            const grandparent = grandparentIndex >= 0 ? ancestors[grandparentIndex] : null;
+
+            // If createEffect's CallExpression parent is NOT the property definition,
+            // then it's nested inside the arrow function (invalid)
+            if (grandparent && grandparent.type !== 'PropertyDefinition') {
+              return true; // Wrapped in arrow function - invalid
+            }
+
+            // The arrow function itself is the property initializer value,
+            // and createEffect is called directly as an argument - this is valid
+            // Example: load$ = createEffect(() => ...)
             continue;
           }
+
           // Otherwise, it's inside a function (not allowed)
           return true;
         }

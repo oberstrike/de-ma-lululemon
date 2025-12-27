@@ -280,6 +280,27 @@ ruleTester.run('create-effect-in-service', rule, {
         },
       ],
     },
+    {
+      name: 'Invalid: createEffect wrapped in arrow function (never registered)',
+      code: `
+        import { Injectable } from '@angular/core';
+        import { Actions, createEffect } from '@ngrx/effects';
+
+        @Injectable()
+        export class BrokenEffects {
+          // Effect wrapped in arrow function won't be registered
+          load$ = () => createEffect(() => this.actions$.pipe());
+
+          constructor(private actions$: Actions) {}
+        }
+      `,
+      errors: [
+        {
+          messageId: 'createEffectInMethod',
+          line: 8,
+        },
+      ],
+    },
   ],
 });
 
