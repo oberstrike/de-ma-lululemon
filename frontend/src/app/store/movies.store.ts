@@ -184,10 +184,6 @@ export const MoviesStore = signalStore(
         patchState(store, updateEntity({ id: movieId, changes: { status, cached } }));
       },
 
-      selectMovie(id: string | null): void {
-        patchState(store, { selectedMovieId: id });
-      },
-
       setFilter(filter: string): void {
         patchState(store, { filter });
       },
@@ -199,10 +195,6 @@ export const MoviesStore = signalStore(
         } else {
           void this.addFavorite(movieId);
         }
-      },
-
-      clearError(): void {
-        patchState(store, { error: null });
       },
     };
   }),
